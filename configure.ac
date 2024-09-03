@@ -731,6 +731,8 @@ elif test x"${FC_ACT}" = x"mpifrtpx"; then
   
 fi
 
+AC_SUBST(CXXFLAGS0)
+
 
 # LDFLAGS
 if test -z "${LDFLAGS}"; then
