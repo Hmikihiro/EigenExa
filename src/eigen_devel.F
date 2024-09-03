@@ -13,7 +13,7 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       module eigen_devel_mod
-
+      use, intrinsic :: iso_c_binding
       use mpi
 !$    use omp_lib
 
@@ -307,7 +307,7 @@
 
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     
-! Subroutine: eigen_get_grid_major
+! Function: eigen_get_grid_major
 !
 ! Purpose
 ! =======
@@ -315,7 +315,7 @@
 ! eigen_set_grid_major returns the grid major registered.
 !
 !
-! Arguments
+! Return
 ! =========
 !
 ! Major   (output) character(*)
@@ -324,15 +324,14 @@
 !
 !--------*---------*---------*---------*---------*---------*---------*-*
 
-      subroutine eigen_get_grid_major(Major)
+      character(c_char) function eigen_get_grid_major() result(Major)
+     & bind(c, name="eigen_get_grid_major")
 
-      character(*), intent(out) :: Major
-
-      Major(1:1) = Process_Grid_Major(1:1)
+      Major = Process_Grid_Major(1:1)
 
       return
       
-      end subroutine eigen_get_grid_major
+      end function eigen_get_grid_major
 
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     
@@ -667,5 +666,30 @@
 !$    end do
 !$
 !$    end subroutine sync_other_than_master
+
+      subroutine eigen_abort_c_FS()
+     & bind(c, name="eigen_abort")
+      use,intrinsic :: iso_c_binding
+      
+      call eigen_abort("Memory exhausted [DC-FS]", 1)
+
+      end subroutine
+
+      subroutine eigen_timer_reset_c(bcast, reduce, redist, gather)
+     & bind(c, name="eigen_timer_reset")
+      use, intrinsic :: iso_c_binding
+      integer(c_int), intent(in), value :: bcast
+      integer(c_int), intent(in), value :: reduce
+      integer(c_int), intent(in), value :: redist
+      integer(c_int), intent(in), value :: gather
+      call eigen_timer_reset(bcast, reduce, redist, gather)
+      end subroutine
+
+      real(c_double) function eigen_timer_print_c_FS()
+     & bind(c, name="eigen_timer_print")
+      use,intrinsic :: iso_c_binding
+      
+      eigen_timer_print_c_FS = eigen_timer_print("")
+      end function
 
       end module eigen_devel_mod

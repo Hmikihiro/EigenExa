@@ -26,13 +26,14 @@
 !  = 'X' : mode 'A' + improve accuracy of eigenvalues
 !
 !--------*---------*---------*---------*---------*---------*---------*-*
-      subroutine eigen_FS(n, nvec, a, lda, w, z, ldz,
+      subroutine eigen_FS_single_float(n, nvec, a, lda, w, z, ldz,
      &     m_forward, m_backward, mode)
 
       !
       ! Trick to avoid a conflict between func-name and interface
       !
-      use eigen_libs_mod, eigen_FS_interface => eigen_FS
+      use eigen_libs_mod,
+     & eigen_FS_single_float_interface => eigen_FS_single_float
       use eigen_devel_mod
       use eigen_scaling_mod
       use eigen_trd_mod
@@ -59,6 +60,10 @@
 
       real(8), allocatable   :: d(:), e(:), e2(:)
 
+      real(4), allocatable :: z_f32(:, :)
+      real(4), allocatable :: w_f32(:), d_f32(:),e2_f32(:)
+      real(4) :: ret_2_f32
+
       integer                :: m_f, m_b
       character              :: mode_
 
@@ -72,6 +77,7 @@
       real(8)                :: ret, ret_1, ret_2, ret_3
       integer :: nnod,x_nnod_dummy, y_nnod_dummy
       integer I
+      integer J
 
       call eigen_get_procs(nnod,x_nnod_dummy, y_nnod_dummy)
       if( (n<=nnod) .or. (nnod < 4) )then
@@ -197,14 +203,65 @@
         end if
         d (1:n) = w(1:n)
         e2(1:n) = e(1:n)
-        call dc2_FS(n, ABS(nvec), w, e2(2:), z, ldz, INFO, ret_2)
+        
+        allocate(z_f32(1:ldz, 1:(ny)), stat=ierr)
+        allocate(w_f32(1:n), e2_f32(1:n), stat=ierr)
+        do i=1, ny
+          do j=1, ldz
+            z_f32(j,i) = z(j, i)
+          enddo
+        enddo
+        do i=1, N
+          w_f32(i) = w(i)
+          e2_f32(i) = e2(i)
+        enddo
+
+        call dc2_FS_f32(n, ABS(nvec), w_f32, e2_f32(2:),
+     &    z_f32, ldz, INFO, ret_2_f32)
+        do i=1, ny
+          do j= 1, ldz
+            z(j, i) = z_f32(j, i)
+          enddo
+        enddo
+        
+        do i=1, N
+          w(i) = w_f32(i) 
+          e2(i) = e2_f32(i)
+        enddo
+        ret_2 = ret_2_f32
+        deallocate(w_f32, e2_f32, z_f32)
+
         ERROR_INFO = INFO
         call eigen_bisect(d, e, w, n, 1)
         deallocate( e2 )
       end if
       if (mode_ == 'A') then
-        d (1:n) = e(1:n)
-        call dc2_FS(n, ABS(nvec), w, d(2:), z, ldz, INFO, ret_2)
+         d (1:n) = e(1:n)
+        allocate(z_f32(1:ldz, 1:(ny)), stat=ierr)
+        allocate(w_f32(1:n), d_f32(1:n),  stat=ierr)
+        do i=1, ny
+            do j=1, ldz
+                z_f32(j,i) = z(j, i)
+            enddo
+        enddo
+        do i=1, N
+            w_f32(i) = w(i)
+            d_f32(i) = d(i)
+        enddo
+    
+        call dc2_FS_f32(n, ABS(nvec), w_f32, d_f32(2:),  
+     &        z_f32, ldz, INFO, ret_2_f32)
+        do i=1, ny
+            do j= 1, ldz
+                z(j, i) = z_f32(j, i)
+            enddo
+        enddo
+        do i=1, N
+            w(i) = w_f32(i) 
+            d(i) = d_f32(i) 
+        enddo
+        ret_2 = ret_2_f32
+        deallocate(w_f32, d_f32, z_f32)
         ERROR_INFO = INFO
       end if
       if (mode_ == 'S' ) then
@@ -219,7 +276,7 @@
 #if TIMER_PRINT
       s1 = eigen_get_wtime()
       if (my_rank == 0) then
-        print 10000,"D&C     ",
+        print 10000,"D&C single float",
      &  n, s1-s0, ret_2, 1D-9*ret_2/(s1-s0), "GFLOPS"
       end if
       call flush(6)
@@ -296,4 +353,4 @@
 !-
 !-------------------------------------------------------------------
 !-
-      end subroutine eigen_FS
+      end subroutine eigen_FS_single_float

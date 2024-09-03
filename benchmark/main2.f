@@ -413,9 +413,12 @@
           if (msolver == 0) then
             call eigen_sx(n, nvec, a, nm, w, z, nm,
      &                m_forward=m, m_backward=mb, mode=mode)
-          else
+          else if (msolver == 1) then
             call eigen_s (n, nvec, a, nm, w, z, nm,
 !           call eigen_s0 (n, nvec, a, nm, w, z, nm,
+     &                m_forward=m, m_backward=mb, mode=mode)
+          else if (msolver == 2) then
+            call eigen_FS_single_float (n, nvec, a, nm, w, z, nm,
      &                m_forward=m, m_backward=mb, mode=mode)
           end if
 
@@ -439,8 +442,10 @@
 
           if (msolver == 0) then
             print*,"Solver = eigen_sx / via penta-diagonal format"
-          else
-            print*,"Solver = eigen_s  / via tri-diagonal format"
+          else if (msolver == 1) then
+            print*,"Solver = eigen_FS_64  / via tri-diagonal format"
+          else if (msolver == 2) then
+            print*,"Solver = eigen_FS_32  / via tri-diagonal format"
           end if
           print*,"Block width = ", m, "/", mb
           print*,"NUM.OF.PROCESS=",nnod,"(",x_nnod,y_nnod,")"
@@ -510,7 +515,7 @@
                   if ( nvec > 0 ) then
                     call mat_set(n, a(1,1), nm, mtype)
                     call ev_test(n, nvec, 
-     &                   a(1,1), nm, w(1), z(1,1), nm, mode)
+     &                   a(1,1), nm, w(1), z(1,1), nm, mode, msolver)
                   end if
                 end if
               end if

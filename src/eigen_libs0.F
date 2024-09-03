@@ -10,7 +10,7 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       module eigen_libs0_mod
-
+      use, intrinsic :: iso_c_binding
       use comm_mod
       use eigen_blacs_mod
       use eigen_devel_mod
@@ -1572,12 +1572,14 @@
 !
 !--------*---------*---------*---------*---------*---------*---------*-*
 
-      subroutine eigen_get_procs(procs, x_procs, y_procs)
+      subroutine eigen_get_procs(procs, x_procs, y_procs) 
+     &   bind(c, name= "eigen_get_procs")
+        use, intrinsic :: iso_c_binding
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_get_procs
 
-      integer, intent(out)   ::  procs
-      integer, intent(out)   ::  x_procs
-      integer, intent(out)   ::  y_procs
+      integer(c_int), intent(out)   ::  procs
+      integer(c_int), intent(out)   ::  x_procs
+      integer(c_int), intent(out)   ::  y_procs
 
 
       procs   = TRD_nnod
@@ -1613,11 +1615,13 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       subroutine  eigen_get_id(id, x_id, y_id)
+     & bind(c, name= "eigen_get_id")
+        use, intrinsic :: iso_c_binding
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_get_id
 
-      integer, intent(out)   ::  id
-      integer, intent(out)   ::  x_id
-      integer, intent(out)   ::  y_id
+      integer(c_int), intent(out)   ::  id
+      integer(c_int), intent(out)   ::  x_id
+      integer(c_int), intent(out)   ::  y_id
 
 
       id   = TRD_inod
@@ -1653,11 +1657,12 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       subroutine eigen_get_comm(comm, x_comm, y_comm)
+     & bind(c, name= "eigen_get_comm")
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_get_comm
 
-      integer, intent(out)   ::  comm
-      integer, intent(out)   ::  x_comm
-      integer, intent(out)   ::  y_comm
+      integer(c_int), intent(out)   ::  comm
+      integer(c_int), intent(out)   ::  x_comm
+      integer(c_int), intent(out)   ::  y_comm
 
 
       comm   = TRD_COMM_WORLD
@@ -2068,12 +2073,12 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       integer function eigen_translate_g2l_(ictr, nnod, inod)
-     &     result(ret)
+     &     result(ret) 
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_translate_g2l_
 
-      integer, intent(in)    ::  ictr
-      integer, intent(in)    ::  nnod
-      integer, intent(in)    ::  inod
+        integer,value, intent(in)    ::  ictr
+        integer,value, intent(in)    ::  nnod
+        integer,value, intent(in)    ::  inod
 
       ret = (ictr-1)/nnod+1
 
@@ -2152,12 +2157,12 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       integer function eigen_owner_node_(ictr, nnod, inod)
-     &     result(ret)
+     &     result(ret) 
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_owner_node_
 
-      integer, intent(in)    ::  ictr
-      integer, intent(in)    ::  nnod
-      integer, intent(in)    ::  inod
+      integer, value, intent(in)    ::  ictr
+      integer, value, intent(in)    ::  nnod
+      integer, value, intent(in)    ::  inod
 
       ret = mod(ictr-1, nnod)+1
 
@@ -2322,7 +2327,7 @@
 
       character(1)           ::  order
 
-      call eigen_get_grid_major( order )
+      order(1:1) = eigen_get_grid_major()
       if ( order(1:1) == 'R' ) then
         ret = xinod * y_nnod + yinod
       else
@@ -2342,7 +2347,7 @@
 
       character(1)           ::  order
 
-      call eigen_get_grid_major( order )
+      order(1:1) = eigen_get_grid_major()
       if ( order(1:1) == 'R' ) then
         xinod =    (inod-1)/y_nnod +1
         yinod = mod(inod-1, y_nnod)+1
@@ -2704,6 +2709,19 @@
 
       end subroutine eigen_check_mat_NaN
 
+      subroutine FS_eigen_init0(comm, order) bind(c, name="eigen_init0")
+         use,intrinsic :: iso_c_binding
+         
+         integer(c_int),      intent(in),value :: comm
+         character(c_char),   intent(in),value :: order
+         call eigen_init0(comm = comm, order = order)
+      end subroutine
+         
+
+      subroutine FS_eigen_free0() bind(c, name="eigen_free0")
+         use, intrinsic :: iso_c_binding
+         call eigen_free0()
+      end subroutine FS_eigen_free0
 
       end module eigen_libs0_mod
 

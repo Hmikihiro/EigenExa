@@ -42,7 +42,6 @@ inst_PROGRAMS  = $(inst_LIBRARIES:.a=.so)
 endif
 
 libEigenExa_a_SOURCES = \
-	MPI_Allreduce_group.F90 \
 	CSTAB.F \
 	eigen_house.F \
 	eigen_house_h.F \
@@ -55,9 +54,7 @@ libEigenExa_a_SOURCES = \
 	comm_h.F \
 	eigen_libs0.F \
 	eigen_libs.F \
-	FS_const.F90 \
 	FS_libs.F90 \
-	FS_prof.F90 \
 	dlacpy.F \
 	lapack_eigen.F \
 	my_pdlaedz.F \
@@ -103,19 +100,11 @@ libEigenExa_a_SOURCES = \
 	eigen_identity.F \
 	eigen_sx.F \
 	eigen_s.F  \
-	FS_dividing.F90 \
-	FS_EDC.F90 \
-	FS_PDLAED0.F90 \
-	FS_PDLAED1.F90 \
-	FS_PDLAED2.F90 \
-	FS_PDLAED3.F90 \
-	FS_PDLAEDZ.F90 \
-	FS_MERGE_D.F90 \
-	FS_REDUCE_ZD.F90 \
-	FS_PDLASRT.F90 \
-	FS2eigen_PDLASRT.F90 \
+  dc2_FS_C.cpp \
+    FS_libs_C.cpp \
 	dc2_FS.F \
 	eigen_FS.F \
+	eigen_FS_single_float.F\
 	FS_memory_internal.F \
 	eigen_hrd_t1.F \
 	eigen_hrd_t2.F \
@@ -221,14 +210,10 @@ comm.o : comm.F
 	$(F77) $(AM_FFLAGS) $(FFLAGS0) -c -o $@ $<
 comm_h.o : comm_h.F
 	$(F77) $(AM_FFLAGS) $(FFLAGS0) -c -o $@ $<
-FS_dividing.o : FS_dividing.F90
-	$(F77) $(AM_FFLAGS) $(FFLAGS0) -c -o $@ $<
-FS_const.o : FS_const.F90
-	$(F77) $(AM_FFLAGS) $(FFLAGS0) -c -o $@ $<
-FS_prof.o : FS_prof.F90
-	$(F77) $(AM_FFLAGS) $(FFLAGS0) -c -o $@ $<
-miscC.o : miscC.c
-	$(CC) $(AM_CFLAGS) $(CFLAGS0) -c -o $@ $<
+dc2_FS_C.o :  eigen_FS/dc2_FS_C.cpp eigen_FS/dc2_FS.hpp eigen_FS/FS_pdlaed0.hpp eigen_FS/FS_pdlaed3.hpp eigen_FS/FS_pdlaed2.hpp eigen_FS/FS_pdlaed1.hpp eigen_FS/MPI_Allreduce_group.hpp eigen/eigen_dc.hpp eigen/eigen_libs0.hpp eigen_FS/FS2eigen_pdlasrt.hpp
+	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -c -o $@ $<
+FS_libs_C.o :  eigen_FS/FS_libs_C.cpp  eigen_FS/FS_libs.hpp
+	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -c -o $@ $<
 
 
 if !SKIP_SHARED
@@ -253,17 +238,10 @@ comm.lo : comm.F
 comm_h.lo : comm_h.F
 	$(F77) $(AM_FFLAGS) $(FFLAGS0) $(MACRO_PIC) -c -o tmp_$(@:.lo=.o) $<
 	mv tmp_$(@:.lo=.o) $@
-FS_dividing.lo : FS_dividing.F90
-	$(F77) $(AM_FFLAGS) $(FFLAGS0) $(MACRO_PIC) -c -o tmp_$(@:.lo=.o) $<
-	mv tmp_$(@:.lo=.o) $@
-FS_const.lo : FS_const.F90
-	$(F77) $(AM_FFLAGS) $(FFLAGS0) $(MACRO_PIC) -c -o tmp_$(@:.lo=.o) $<
-	mv tmp_$(@:.lo=.o) $@
-FS_prof.lo : FS_prof.F90
-	$(F77) $(AM_FFLAGS) $(FFLAGS0) $(MACRO_PIC) -c -o tmp_$(@:.lo=.o) $<
-	mv tmp_$(@:.lo=.o) $@
-miscC.lo : miscC.c
-	$(CC) $(AM_CFLAGS) $(CFLAGS0) -fPIC -c -o $@ $<
+dc2_FS_C.lo :  eigen_FS/dc2_FS_C.cpp eigen_FS/dc2_FS.hpp
+	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -fPIC -c -o $@ $<
+FS_libs_C.lo : eigen_FS/FS_libs_C.cpp  eigen_FS/FS_libs.hpp
+	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -fPIC -c -o $@ $<
 endif
 
 
@@ -276,14 +254,12 @@ $(include_HEADERS) : $(inst_LIBRARIES) $(inst_PROGRAMS)
 endif
 
 eigen_libs.o	: eigen_devel.o eigen_libs0.o FS_libs.o
-FS_libs.o	: FS_const.o eigen_libs0.o
+FS_libs.o	: eigen_libs0.o
 eigen_libs0.o	: comm.o comm_h.o eigen_blacs.o eigen_devel.o CSTAB.o
 eigen_blacs.o	: eigen_devel.o
 KMATH_EIGEN_GEV.o	: eigen_libs.o
 comm.o          : eigen_devel.o
 comm_h.o        : comm.o eigen_devel.o
-FS_prof.o       : FS_libs.o
-FS_dividing.o   : FS_prof.o
 
 libEigenExa_core_objs = \
 	eigen_devel.o \
@@ -293,10 +269,6 @@ libEigenExa_core_objs = \
 	eigen_blacs.o \
 	comm.o \
 	comm_h.o \
-	FS_prof.o \
-	FS_dividing.o \
-	FS_const.o \
-	MPI_Allreduce_group.o \
 	KMATH_EIGEN_GEV.o \
 	CSTAB.o
 libEigenExa_non_core_objs = \
@@ -312,20 +284,18 @@ $(libEigenExa_non_core_objs) : $(libEigenExa_core_objs)
 
 if !SKIP_SHARED
 eigen_libs.lo	: eigen_devel.lo eigen_libs0.lo FS_libs.lo
-FS_libs.lo	: FS_const.lo eigen_libs0.lo
+FS_libs.lo	: eigen_libs0.lo
 eigen_libs0.lo	: comm.lo comm_h.lo eigen_blacs.lo eigen_devel.lo CSTAB.lo
 eigen_blacs.lo	: eigen_devel.lo
 KMATH_EIGEN_GEV.lo	: eigen_libs.lo
 comm.lo		: eigen_devel.lo
 comm_h.lo	: comm.lo eigen_devel.lo
-FS_prof.lo	: FS_libs.lo
-FS_dividing.lo	: FS_prof.lo
 $(libEigenExa_non_core_objs:.o=.lo) : $(libEigenExa_core_objs:.o=.lo)
 endif
 
 
 
-eigen_sx.o eigen_s.o eigen_FS.o eigen_h.o: \
+eigen_sx.o eigen_s.o eigen_FS.o eigen_FS_single_float.o eigen_h.o: \
 	eigen_scaling.o eigen_scaling_h.o \
 	eigen_trd.o eigen_prd.o eigen_hrd.o \
 	bisect.o \
@@ -408,7 +378,7 @@ hrbakwy4.o: hrbakwy4_body.o eigen_hrbak.o
 hrbakwy4_body.o: eigen_hrbak.o
 
 if !SKIP_SHARED
-eigen_sx.lo eigen_s.lo eigen_FS.lo eigen_h.lo: \
+eigen_sx.lo eigen_s.lo eigen_FS.lo eigen_FS_single_float.lo eigen_h.lo: \
 	eigen_scaling.lo eigen_scaling_h.lo \
 	eigen_trd.lo eigen_prd.lo eigen_hrd.lo \
 	bisect.lo \

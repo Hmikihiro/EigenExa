@@ -1,4 +1,4 @@
-      subroutine ev_test(N, NVEC, A, lda, w, z, ldz, mode)
+      subroutine ev_test(N, NVEC, A, lda, w, z, ldz, mode, msolver)
       use MPI
 !     $    use OMP_LIB
       use eigen_libs_mod
@@ -12,6 +12,8 @@
       real(8),intent(inout) :: A(*)
       integer,intent(in) :: lda,ldz
       character(*),intent(in) :: mode
+      integer, optional  :: msolver
+      integer :: msolver_
 
       real(8),parameter :: one = 1.0D0
       real(8),parameter :: zero = 0.0D0
@@ -49,6 +51,15 @@
 
 
       m_epsilon = get_constant_eps()
+      if (present(msolver)) then
+         msolver_ = msolver
+      else 
+         msolver_ = 1
+      endif
+      
+      if (msolver == 2) then
+         m_epsilon = get_constant_eps_f32()
+      endif
 
       call eigen_get_id   ( iam, myrow, mycol )            
       call eigen_get_procs( nprocs, NPROW, NPCOL )            
@@ -265,6 +276,21 @@
 
       return
       end function Fnorm2_local
+
+      real(4) function get_constant_eps_f32()
+     &     result(r)
+!DIR$ ATTRIBUTES FORCEINLINE :: get_constant_eps_f32
+ 
+      integer(4), target :: const_eps_i4
+      real(4), pointer   :: const_eps_r4
+      data const_eps_i4 / z'34000000' /
+ 
+      call c_f_pointer( c_loc(const_eps_i4), const_eps_r4 )
+      r = const_eps_r4
+ 
+      return
+ 
+      end function get_constant_eps_f32
 
       end subroutine ev_test
 
