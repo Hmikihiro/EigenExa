@@ -344,7 +344,6 @@ for vtok in ${cc_ver_info} ; do
 
 done
 
-
 if test -z "${CC_ACT}"; then
   CC_ACT=${CC}
 fi
