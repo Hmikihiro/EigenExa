@@ -133,9 +133,11 @@ AC_ARG_ENABLE([mpi],
       if test x"${enableval}" = x"intel"; then
         if test ${CC_ACT} != icc; then
 	    CC=mpiicc
+      CXX=mpiicpc
 	fi
         if test ${CC_ACT} != icx; then
 	    CC=mpiicx
+      CXX=mpiicpx
 	fi
 	    F77=mpiifort
 	    FC=mpiifort
@@ -144,6 +146,7 @@ AC_ARG_ENABLE([mpi],
 	    LAPACK_PATH=
       else
 	    CC=mpicc
+      CXX=mpicxx
 	    F77=mpif90
 	    FC=mpif90
       fi
@@ -341,6 +344,7 @@ for vtok in ${cc_ver_info} ; do
 
 done
 
+
 if test -z "${CC_ACT}"; then
   CC_ACT=${CC}
 fi
@@ -363,6 +367,61 @@ if test ${CC} != mpiicc -a ${CC} != mpiicx -a ${F77} = mpiifort; then
 fi
 
 AC_MSG_RESULT([$CC_ACT])
+
+
+
+## C++ compiler
+#
+
+eigenexa_default_cxx="mpiFCCpx mpiicpx mpiicpc mpicxx" 
+
+# check usablility
+AC_PROG_CXX($eigenexa_default_cxx)
+
+# check actual compiler
+AC_MSG_CHECKING([for actual compiler])
+
+cxx_ver_info=$(${CXX} -E --version)
+for vtok in ${cxx_ver_info} ; do
+
+  if test x"${vtok}" = x"oneAPI"; then
+    CXX_ACT="icpx"
+    break
+
+  elif test x"${vtok}" = x"icpc"; then
+    CXX_ACT="icpc"
+    break
+
+  elif test x"${vtok}" = x"GNU"; then
+    CXX_ACT="g++"
+    break
+
+  fi
+
+done
+
+if test -z "${CXX_ACT}"; then
+  CXX_ACT=${CXX}
+fi
+
+if test ${CXX_ACT} = icpc -o ${CXX_ACT} = icpx; then
+if test ${FC_ACT} != ifort; then
+      AC_MSG_ERROR([C++ and Fortran compilers must be the same seriese])
+fi
+fi
+if test ${CXX_ACT} != icpc -a ${CXX_ACT} != icpx -a ${FC_ACT} = ifort ; then
+      AC_MSG_ERROR([C++ and Fortran compilers must be the same seriese])
+fi
+if test ${CXX} = mpiicpc -o ${CXX} = mpiicpx; then
+if test ${F77} != mpiifort; then
+      AC_MSG_ERROR([C++ and Fortran compilers must be the same seriese])
+fi
+fi
+if test ${CXX} != mpiicpc -a ${CXX} != mpiicpx -a ${F77} = mpiifort; then
+      AC_MSG_ERROR([C++ and Fortran compilers must be the same seriese])
+fi
+
+AC_MSG_RESULT([$CXX_ACT])
 
 
 ## lapack
@@ -506,7 +565,8 @@ fi
 ## For Fujitsu compiler architecture-oriented options
 if test x"${FC_ACT}" = x"mpifrtpx"; then
   F_ARCH=""
-  F_BASE=" -g -Kopenmp,openmp_ordered_reduction "
+#  F_BASE="-lstdc++ -lmpi_cxx -Kopenmp,openmp_ordered_reduction "
+  F_BASE="-Nlibomp --linkstl=libc++ -lc++ -Kopenmp,openmp_ordered_reduction "
 fi
 
 
@@ -633,10 +693,50 @@ fi
 AC_SUBST(CFLAGS0)
 
 
+# CXXFLAGS
+if test x"${ac_test_CXXFLAGS}" = x"set"; then
+  CXXFLAGS=${ac_save_CXXFLAGS}
+
+else
+
+  if   test x"${FC_ACT}" = x"ifort"; then
+    CXXFLAGS=${I_BASE}" -O3 "${I_ARCH}" -Wall"
+    
+  elif test x"${FC_ACT}" = x"gfortran"; then
+    CXXFLAGS=${G_BASE}" -O3 "${G_ARCH}" -Wall"
+    
+  elif test x"${FC_ACT}" = x"mpifrtpx"; then
+    CXXFLAGS=${F_BASE}" -Kfast,ocl,simd,swp "${F_ARCH}
+    
+  elif test x"${FC_ACT}" = x"mpixlf90_r"; then
+    CXXFLAGS="-qsmp=omp -qthreaded -O3 -qessl -qstrict -qarch=qp -qtune=qp -qsimd=auto -qassert=contig -qdirective"
+  
+  elif test x"${FC_ACT}" = x"sxmpif90"; then
+    CXXFLAGS="-Popenmp -Cvsafe"
+  
+  fi
+
+fi
+
+# CXXFLAGS0 (special flags)
+
+if   test x"${FC_ACT}" = x"ifort"; then
+  CXXFLAGS0=${I_BASE}" -Ofast -Wall -Wextra  -Wcheck -Wpointer-arith -Wuninitialized" 
+  
+elif test x"${FC_ACT}" = x"gfortran"; then
+  CXXFLAGS0=${G_BASE}" -O0 -Wall"
+  
+elif test x"${FC_ACT}" = x"mpifrtpx"; then
+  #CXXFLAGS0="-Nclang -Nlibomp -Kopenmp -Kfast,ocl,simd,swp -Wall -Wextra -Wswitch-default -stdlib=libc++ -lstdc++ "${F_ARCH}
+  CXXFLAGS0="-Nclang -Nlibomp -Kopenmp -Kfast,ocl,simd,swp -Wall -Wextra -Wswitch-default -stdlib=libc++ -lc++ "${F_ARCH}
+  
+fi
+
+
 # LDFLAGS
 if test -z "${LDFLAGS}"; then
   if   test x"${FC_ACT}" = x"ifort"; then
-    LDFLAGS=${I_BASE}" -W1"
+    LDFLAGS=${I_BASE}" -W1 -lstdc++"
   
   elif test x"${FC_ACT}" = x"gfortran"; then
     LDFLAGS=${G_BASE}
