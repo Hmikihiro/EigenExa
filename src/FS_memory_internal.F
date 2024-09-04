@@ -42,7 +42,8 @@
       integer    :: m , nv, nm, ierr
 
       integer    :: lddz, lddw
-      integer(8) :: LWORK, LIWORK
+      integer    :: LWORK, LIWORK
+      !integer(8) :: LWORK, LIWORK
       integer    :: na, nx, ny, nz, kx
       integer    :: l_array_1, l_array_2
 

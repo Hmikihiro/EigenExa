@@ -413,10 +413,14 @@
           if (msolver == 0) then
             call eigen_sx(n, nvec, a, nm, w, z, nm,
      &                m_forward=m, m_backward=mb, mode=mode)
-          else
+          else if (msolver == 1) then
             call eigen_s (n, nvec, a, nm, w, z, nm,
 !           call eigen_s0 (n, nvec, a, nm, w, z, nm,
      &                m_forward=m, m_backward=mb, mode=mode)
+          else 
+            call eigen_FS (n, nvec, a, nm, w, z, nm,
+     &                m_forward=m, m_backward=mb, mode=mode,
+     &                precision=32)
           end if
 
           flops = a(1, 1)
@@ -439,8 +443,10 @@
 
           if (msolver == 0) then
             print*,"Solver = eigen_sx / via penta-diagonal format"
+          else if (msolver == 1) then
+            print*,"Solver = eigen_FS_64  / via tri-diagonal format"
           else
-            print*,"Solver = eigen_s  / via tri-diagonal format"
+            print*,"Solver = eigen_FS_32  / via tri-diagonal format"
           end if
           print*,"Block width = ", m, "/", mb
           print*,"NUM.OF.PROCESS=",nnod,"(",x_nnod,y_nnod,")"

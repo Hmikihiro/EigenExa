@@ -1,0 +1,66 @@
+aclocal.m4
+depcomp
+install-sh
+missing
+stamp-h1
+
+# configure
+configure
+config.*
+compile
+
+
+# Makefile
+Makefile
+Makefile.in
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+*.Po
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+eigenexa_benchmark
+eigenexa_benchmark_shlib
+eigenexah_benchmark
+eigenexah_benchmark_shlib
+eigenexa_gev_benchmark
+eigenexa_gev_benchmark_shlib
+
+C/c_test
+
+autom4te.cache/*
+
+.vscode/*
+
+stdout*
+
+stderr*
