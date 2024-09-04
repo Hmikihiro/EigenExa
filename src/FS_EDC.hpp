@@ -10,12 +10,12 @@
 #include <cstdio>
 #include <type_traits>
 
-#include "../cblas_lapacke_wrapper.hpp"
-#include "../eigen/eigen_libs0.hpp"
 #include "FS_const.hpp"
 #include "FS_libs.hpp"
 #include "FS_pdlaed0.hpp"
 #include "FS_prof.hpp"
+#include "cblas_lapacke_wrapper.hpp"
+#include "eigen_libs0.hpp"
 
 namespace FS_EDC {
 using FS_const::ONE;

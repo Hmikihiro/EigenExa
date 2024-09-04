@@ -210,9 +210,9 @@ comm.o : comm.F
 	$(F77) $(AM_FFLAGS) $(FFLAGS0) -c -o $@ $<
 comm_h.o : comm_h.F
 	$(F77) $(AM_FFLAGS) $(FFLAGS0) -c -o $@ $<
-dc2_FS_C.o :  eigen_FS/dc2_FS_C.cpp eigen_FS/dc2_FS.hpp eigen_FS/FS_pdlaed0.hpp eigen_FS/FS_pdlaed3.hpp eigen_FS/FS_pdlaed2.hpp eigen_FS/FS_pdlaed1.hpp eigen_FS/MPI_Allreduce_group.hpp eigen/eigen_dc.hpp eigen/eigen_libs0.hpp eigen_FS/FS2eigen_pdlasrt.hpp
+dc2_FS_C.o :  dc2_FS_C.cpp *.hpp
 	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -c -o $@ $<
-FS_libs_C.o :  eigen_FS/FS_libs_C.cpp  eigen_FS/FS_libs.hpp
+FS_libs_C.o :  FS_libs_C.cpp  FS_libs.hpp
 	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -c -o $@ $<
 
 
@@ -238,9 +238,9 @@ comm.lo : comm.F
 comm_h.lo : comm_h.F
 	$(F77) $(AM_FFLAGS) $(FFLAGS0) $(MACRO_PIC) -c -o tmp_$(@:.lo=.o) $<
 	mv tmp_$(@:.lo=.o) $@
-dc2_FS_C.lo :  eigen_FS/dc2_FS_C.cpp eigen_FS/dc2_FS.hpp
+dc2_FS_C.lo :  dc2_FS_C.cpp *.hpp
 	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -fPIC -c -o $@ $<
-FS_libs_C.lo : eigen_FS/FS_libs_C.cpp  eigen_FS/FS_libs.hpp
+FS_libs_C.lo : FS_libs_C.cpp  *.hpp
 	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -fPIC -c -o $@ $<
 endif
 

@@ -5,11 +5,11 @@
 #include <algorithm>
 #include <cstdio>
 
-#include "../cblas_lapacke_wrapper.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
 #include "FS_prof.hpp"
+#include "cblas_lapacke_wrapper.hpp"
 
 namespace FS_pdlaedz {
 using std::printf;

@@ -4,7 +4,7 @@
 
 #include <mpi.h>
 
-#include "../eigen/eigen_libs0.hpp"
+#include "eigen_libs0.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdio>

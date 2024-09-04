@@ -8,9 +8,9 @@
 #include <memory>
 #include <numeric>
 
-#include "../eigen/eigen_libs0.hpp"
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
+#include "eigen_libs0.hpp"
 
 namespace eigen_FS {
 namespace FS2eigen {

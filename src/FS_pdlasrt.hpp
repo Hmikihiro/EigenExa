@@ -8,11 +8,11 @@
 #include <cstdio>
 #include <numeric>
 
-#include "../cblas_lapacke_wrapper.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
 #include "FS_prof.hpp"
+#include "cblas_lapacke_wrapper.hpp"
 namespace FS_pdlasrt {
 using std::printf;
 template <class Float>

@@ -7,11 +7,11 @@
 #include <cstdio>
 #include <memory>
 
-#include "../eigen/eigen_dc.hpp"
-#include "../eigen/eigen_devel.hpp"
-#include "../eigen/eigen_libs0.hpp"
 #include "FS_EDC.hpp"
 #include "FS_libs.hpp"
+#include "eigen_dc.hpp"
+#include "eigen_devel.hpp"
+#include "eigen_libs0.hpp"
 
 namespace eigen_FS {
 using eigen_devel::eigen_abort;

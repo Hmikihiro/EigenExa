@@ -9,11 +9,11 @@
 #include <limits>
 #include <numeric>
 
-#include "../cblas_lapacke_wrapper.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
 #include "FS_prof.hpp"
+#include "cblas_lapacke_wrapper.hpp"
 namespace FS_pdlaed2 {
 template <class Float>
 int get_NPA(int n, int nb, const FS_dividing::bt_node<Float> &subtree,
