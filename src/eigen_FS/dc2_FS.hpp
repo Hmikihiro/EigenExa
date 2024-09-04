@@ -54,10 +54,10 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
     lwork_ = 0;
     liwork_ = 0;
   }
-  int lwork;
-  int liwork;
-  MPI_Allreduce(&lwork_, &lwork, 1, MPI_INT, MPI_MAX, eigen_comm);
-  MPI_Allreduce(&liwork_, &liwork, 1, MPI_INT, MPI_MAX, eigen_comm);
+  long lwork;
+  long liwork;
+  MPI_Allreduce(&lwork_, &lwork, 1, MPI_LONG, MPI_MAX, eigen_comm);
+  MPI_Allreduce(&liwork_, &liwork, 1, MPI_LONG, MPI_MAX, eigen_comm);
 
   try {
     unique_ptr<Float[]> work(new Float[lwork]);
@@ -116,6 +116,6 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 
   return;
 }
-}  // namespace eigen_FS
+} // namespace eigen_FS
 
 #endif

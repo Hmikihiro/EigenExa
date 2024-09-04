@@ -76,7 +76,7 @@ using std::printf;
 
 template <class Integer, class Float>
 Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
-               Float *work, Integer lwork, Integer *iwork, const Integer liwork,
+               Float *work, long lwork, Integer *iwork, const long liwork,
                FS_prof::FS_prof *prof) {
   int nnod, x_nnod, y_nnod;
   int inod, x_inod, y_inod;
@@ -111,8 +111,8 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 #if TIMER_PRINT
     prof_tmp.start(11);
 #endif
-    info =
-        lapacke::stedc<Float>('I', n, D, E, Q, ldq, work, lwork, iwork, liwork);
+    info = lapacke::stedc<Float>('I', n, D, E, Q, ldq, work, (int)lwork, iwork,
+                                 (int)liwork);
 
 #if TIMER_PRINT
     prof_tmp.end(11);

@@ -20,7 +20,7 @@ namespace eigen_FS {
 
 template <typename Integer, typename Float>
 Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
-                   Float work[], Integer lwork, Integer iwork[], Integer liwork,
+                   Float work[], long lwork, Integer iwork[], long liwork,
                    FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
@@ -73,7 +73,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
         if (id < n - 1) {
           info = lapacke::stedc<Float>('I', mat_size, &d[id], &e[id],
                                        &q[pq.row + pq.col * ldq], ldq, work,
-                                       lwork, iwork, liwork);
+                                       (int)lwork, iwork, (int)liwork);
         } else {
           q[pq.row + pq.col * ldq] = 1.0;
           info = 0;
