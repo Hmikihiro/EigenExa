@@ -34,6 +34,8 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
   eigen_dc::p_time3 = 0;
   eigen_dc::p_times = 0;
   eigen_dc::p_timez = 0;
+
+  std::printf("dc2_FS");
   eigen_timer_reset(1, 0, 0, 0);
 
   int nprocs, nprow, npcol;
@@ -46,7 +48,7 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 
   MPI_Comm eigen_comm, eigen_x_comm, eigen_y_comm;
   eigen_get_comm(eigen_comm, eigen_x_comm, eigen_y_comm);
-  long lwork_, liwork_;
+  int lwork_, liwork_;
   FS_WorkSize(n, lwork_, liwork_);
 
   const int FS_COMM_MEMBER = FS_libs::is_comm_member();
@@ -54,10 +56,10 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
     lwork_ = 0;
     liwork_ = 0;
   }
-  long lwork;
-  long liwork;
-  MPI_Allreduce(&lwork_, &lwork, 1, MPI_LONG, MPI_MAX, eigen_comm);
-  MPI_Allreduce(&liwork_, &liwork, 1, MPI_LONG, MPI_MAX, eigen_comm);
+  int lwork;
+  int liwork;
+  MPI_Allreduce(&lwork_, &lwork, 1, MPI_INT, MPI_MAX, eigen_comm);
+  MPI_Allreduce(&liwork_, &liwork, 1, MPI_INT, MPI_MAX, eigen_comm);
 
   try {
     unique_ptr<Float[]> work(new Float[lwork]);
@@ -97,6 +99,7 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 #endif
 
   } catch (std::bad_alloc) {
+    std::printf("mistake allocate");
     eigen_abort();
   }
 

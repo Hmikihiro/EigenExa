@@ -76,7 +76,7 @@ using std::printf;
 
 template <class Integer, class Float>
 Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
-               Float *work, long lwork, Integer *iwork, const long liwork,
+               Float *work, int lwork, Integer *iwork, const int liwork,
                FS_prof::FS_prof *prof) {
   int nnod, x_nnod, y_nnod;
   int inod, x_inod, y_inod;

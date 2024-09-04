@@ -2,20 +2,19 @@
 #ifndef MPI_ALLREDUCE_GROUP_HPP
 #define MPI_ALLREDUCE_GROUP_HPP
 
-#include <mpi.h>
-
-#include <memory>
+#include <algorithm>
 #include <cmath>
 #include <memory>
-#include <algorithm>
+#include <mpi.h>
 #include <numeric>
+
+#include "FS_const.hpp"
 
 namespace eigen_FS {
 namespace {
 namespace MPI_Group_property {
-template <typename Number>
-class MPI_Group_type {
- public:
+template <typename Number> class MPI_Group_type {
+public:
   Number *sbuf;
   Number *rbuf;
   size_t count;
@@ -32,22 +31,14 @@ class MPI_Group_type {
   int comm_group_size;
   std::unique_ptr<int[]> comm_group_ranklist;
 };
-}  // namespace MPI_Group_property
+} // namespace MPI_Group_property
 namespace MPI_Allreduce_main {
 using MPI_Group_property::MPI_Group_type;
 using std::abs;
-template <typename T>
-const MPI_Datatype MPI_TYPE = 0;
-template <>
-const MPI_Datatype MPI_TYPE<int> = MPI_INT;
-template <>
-const MPI_Datatype MPI_TYPE<double> = MPI_DOUBLE;
-template <>
-const MPI_Datatype MPI_TYPE<float> = MPI_FLOAT;
 
 template <typename Number>
-void comm_op(size_t &n, size_t &head, Number sbuf[], Number rbuf[], MPI_Comm comm,
-             MPI_Op op, int myrank, int pair) {
+void comm_op(size_t &n, size_t &head, Number sbuf[], Number rbuf[],
+             MPI_Comm comm, MPI_Op op, int myrank, int pair) {
   const auto tag = 1;
   size_t head_r, head_s, count_r, count_s;
   if (myrank < pair) {
@@ -62,8 +53,9 @@ void comm_op(size_t &n, size_t &head, Number sbuf[], Number rbuf[], MPI_Comm com
     count_s = n / 2;
   }
   MPI_Request req_s, req_r;
-  MPI_Isend(&sbuf[head_s], count_s, MPI_TYPE<Number>, pair, tag, comm, &req_s);
-  MPI_Irecv(rbuf, count_r, MPI_TYPE<Number>, pair, tag, comm, &req_r);
+  MPI_Isend(&sbuf[head_s], count_s, FS_const::MPI_TYPE<Number>, pair, tag, comm,
+            &req_s);
+  MPI_Irecv(rbuf, count_r, FS_const::MPI_TYPE<Number>, pair, tag, comm, &req_r);
 
   MPI_Wait(&req_s, MPI_STATUS_IGNORE);
   MPI_Wait(&req_r, MPI_STATUS_IGNORE);
@@ -81,8 +73,8 @@ void comm_op(size_t &n, size_t &head, Number sbuf[], Number rbuf[], MPI_Comm com
   head += head_r;
 }
 template <typename Number>
-void comm_op_rev(size_t n, Number sbuf[], Number rbuf[], MPI_Comm comm, int myrank,
-                 int pair) {
+void comm_op_rev(size_t n, Number sbuf[], Number rbuf[], MPI_Comm comm,
+                 int myrank, int pair) {
   auto tag = 1;
   size_t head_r, head_s, count_r, count_s;
   if (myrank < pair) {
@@ -97,8 +89,9 @@ void comm_op_rev(size_t n, Number sbuf[], Number rbuf[], MPI_Comm comm, int myra
     count_s = n - n / 2;
   }
   MPI_Request req_s, req_r;
-  MPI_Isend(&sbuf[head_s], count_s, MPI_TYPE<Number>, pair, tag, comm, &req_s);
-  MPI_Irecv(rbuf, count_r, MPI_TYPE<Number>, pair, tag, comm, &req_r);
+  MPI_Isend(&sbuf[head_s], count_s, FS_const::MPI_TYPE<Number>, pair, tag, comm,
+            &req_s);
+  MPI_Irecv(rbuf, count_r, FS_const::MPI_TYPE<Number>, pair, tag, comm, &req_r);
 
   MPI_Wait(&req_s, MPI_STATUS_IGNORE);
   MPI_Wait(&req_r, MPI_STATUS_IGNORE);
@@ -138,7 +131,7 @@ void Group_Allreduce(MPI_Group_type<Number> &mygroup) {
     step = -step;
   }
   int step0 = 0;
-  size_t  level = 0;
+  size_t level = 0;
   size_t head = 0;
 
   while (i != 1) {
@@ -172,13 +165,13 @@ void Group_Allreduce(MPI_Group_type<Number> &mygroup) {
     auto head = head_level[level];
     auto pair = pair_level[level];
     comm_op_rev<Number>(count, &mygroup.sbuf[head], mygroup.rbuf, mygroup.comm,
-                         mygroup.comm_group_ranklist[myrank],
+                        mygroup.comm_group_ranklist[myrank],
                         mygroup.comm_group_ranklist[pair]);
     i *= 2;
   }
   std::copy_n(mygroup.sbuf, mygroup.count, mygroup.rbuf);
 }
-}  // namespace MPI_Allreduce_main
+} // namespace MPI_Allreduce_main
 namespace MPI_Allreduce_group {
 using MPI_Allreduce_main::Group_Allreduce;
 using MPI_Group_property::MPI_Group_type;
@@ -188,7 +181,7 @@ void set_group2comm_ranklist(MPI_Group_type<Number> &mygroup) {
   mygroup.err = MPI_Comm_group(mygroup.comm, &mygroup.comm_group);
   mygroup.err = MPI_Group_size(mygroup.comm_group, &mygroup.comm_group_size);
   mygroup.err = MPI_Group_rank(mygroup.comm_group, &mygroup.comm_group_rank);
-  mygroup.comm_group_ranklist.reset( new int[mygroup.group_size]);
+  mygroup.comm_group_ranklist.reset(new int[mygroup.group_size]);
 
   std::iota(group_ranks.get(), group_ranks.get() + mygroup.group_size, 0);
   std::fill_n(mygroup.comm_group_ranklist.get(), mygroup.group_size, -1);
@@ -207,8 +200,8 @@ void free_group(MPI_Group_type<Number> &mygroup, Number rbuf[], int count) {
   }
 }
 template <typename Number>
-void set_group(Number sbuf[], Number rbuf[], size_t count, MPI_Datatype datatype,
-               MPI_Op op, MPI_Comm comm, MPI_Group group,
+void set_group(Number sbuf[], Number rbuf[], size_t count,
+               MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Group group,
                MPI_Group_type<Number> &mygroup) {
   mygroup.count = count;
   mygroup.datatype = datatype;
@@ -233,8 +226,8 @@ void set_group(Number sbuf[], Number rbuf[], size_t count, MPI_Datatype datatype
     mygroup.rbuf = rbuf;
   }
 }
-}  // namespace MPI_Allreduce_group
-}  // namespace
+} // namespace MPI_Allreduce_group
+} // namespace
 using MPI_Allreduce_group::free_group;
 using MPI_Allreduce_group::set_group;
 using MPI_Allreduce_main::Group_Allreduce;
@@ -249,5 +242,5 @@ int MPI_Group_Allreduce(Number sbuf[], Number rbuf[], size_t count,
   free_group<Number>(mygroup, rbuf, count);
   return 0;
 }
-}  // namespace eigen_FS
+} // namespace eigen_FS
 #endif

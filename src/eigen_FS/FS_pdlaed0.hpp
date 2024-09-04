@@ -20,7 +20,7 @@ namespace eigen_FS {
 
 template <typename Integer, typename Float>
 Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
-                   Float work[], long lwork, Integer iwork[], long liwork,
+                   Float work[], int lwork, Integer iwork[], int liwork,
                    FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {

@@ -182,7 +182,7 @@ inline void FS_get_matdims(int n, int &nx, int &ny) {
   ny = n1 * (nnod / y_nnod);
 }
 
-inline void FS_WorkSize(int n, long &lwork, long &liwork) {
+inline void FS_WorkSize(int n, int &lwork, int &liwork) {
   int nnod, x_nnod, y_nnod;
   int np, nq;
   FS_get_procs(&nnod, &x_nnod, &y_nnod);

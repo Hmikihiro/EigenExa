@@ -1,4 +1,5 @@
-
+#undef TIMER_PRINT
+#define TIMER_PRINT 1
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     
 ! Subroutine: eigen_FS
