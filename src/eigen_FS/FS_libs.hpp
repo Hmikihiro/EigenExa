@@ -5,9 +5,9 @@
 #include <mpi.h>
 
 #include "../eigen/eigen_libs0.hpp"
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <algorithm>
 
 namespace FS_libs {
 using eigen_libs0::eigen_free0;
@@ -26,13 +26,13 @@ extern bool FS_COMM_MEMBER;
 extern MPI_Group FS_GROUP;
 
 class process_grid {
- public:
+public:
   int nnod, x_nnod, y_nnod;
   int inod, x_inod, y_inod;
 };
 extern process_grid FS_node;
 class version_t {
- public:
+public:
   int Major_Version;
   int Minor_Version;
   int Patch_Level;
@@ -44,7 +44,7 @@ constexpr version_t FS_Version = {1, 1, 0, "Mar 31, 2019", "FS proto"};
 extern char FS_GRID_major;
 
 inline void FS_get_version(int &version, char date[32] = nullptr,
-                    char vcode[32] = nullptr) {
+                           char vcode[32] = nullptr) {
   version = FS_Version.Major_Version * 100 + FS_Version.Minor_Version * 10 +
             FS_Version.Patch_Level;
   if (date != nullptr) {
@@ -55,10 +55,8 @@ inline void FS_get_version(int &version, char date[32] = nullptr,
   }
 }
 
-
 inline void FS_show_version() {
-  int id, x_id, y_id;
-  eigen_get_id(id, x_id, y_id);
+  const auto id = eigen_get_id().id;
   const auto i = min(26, FS_Version.Patch_Level);
   const auto patchlevel = " abcdefghijklmnopqrstuvwxyz*"[i + 1];
 
@@ -117,14 +115,11 @@ inline void FS_init(MPI_Comm comm = MPI_COMM_WORLD, char order = 'C') {
     FS_GRID_major = 'C';
   }
   eigen_init0(comm0, FS_GRID_major);
-  MPI_Comm eigen_comm, eigen_x_comm, eigen_y_comm;
-  eigen_get_comm(eigen_comm, eigen_x_comm, eigen_y_comm);
+  const auto eigen_comm = eigen_get_comm().eigen_comm;
 
   // FS_COMM_WORLDの設定
-  int nnod, x_nnod, y_nnod;
-  int inod, x_inod, y_inod;
-  eigen_get_procs(nnod, x_nnod, y_nnod);
-  eigen_get_id(inod, x_inod, y_inod);
+  auto nnod = eigen_get_procs().procs;
+  const auto inod = eigen_get_id().id;
 
   const auto p = static_cast<int>(log2(nnod));
   int color = 0;
@@ -160,7 +155,6 @@ inline void FS_free() {
   MPI_Comm_free(&FS_COMM_WORLD);
 }
 
-
 inline void FS_get_procs(int *nnod, int *x_nnod, int *y_nnod) {
   *nnod = FS_node.nnod;
   *x_nnod = FS_node.x_nnod;
@@ -184,7 +178,7 @@ inline void FS_get_matdims(int n, int &nx, int &ny) {
   ny = n1 * (nnod / y_nnod);
 }
 
-inline void FS_WorkSize(int n, int &lwork, int &liwork) {
+inline void FS_WorkSize(int n, long &lwork, long &liwork) {
   int nnod, x_nnod, y_nnod;
   int np, nq;
   FS_get_procs(&nnod, &x_nnod, &y_nnod);
@@ -229,5 +223,5 @@ inline char get_grid_major() {
 
 inline int get_myrank() { return FS_get_myrank(); }
 
-}  // namespace FS_libs
+} // namespace FS_libs
 #endif

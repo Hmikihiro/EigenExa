@@ -10,6 +10,8 @@ const MPI_Datatype MPI_TYPE = 0;
 template <>
 const MPI_Datatype MPI_TYPE<int> = MPI_INT;
 template <>
+const MPI_Datatype MPI_TYPE<long> = MPI_LONG;
+template <>
 const MPI_Datatype MPI_TYPE<double> = MPI_DOUBLE;
 template <>
 const MPI_Datatype MPI_TYPE<float> = MPI_FLOAT;

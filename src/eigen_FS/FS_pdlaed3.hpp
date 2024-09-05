@@ -112,13 +112,13 @@ ComputeArea get_np12(int n, int n1, int np, int myrow, const int indrow[]) {
 }
 
 template <class Float>
-int FS_pdlaed3_C(int k, int n, int n1, Float d[], Float &rho, Float dlamda[],
-                 Float w[], int ldq, Float q[],
-                 const FS_dividing::bt_node<Float> &subtree, int ldq2,
-                 Float q2[], int ldu, Float u[], int indx[], int lctot,
-                 const int ctot[], Float q2buf1[], Float q2buf2[], Float z[],
-                 Float buf[], int indrow[], int indcol[], int indxc[],
-                 int indxr[], int indxcb[], FS_prof::FS_prof &prof) {
+int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
+               Float w[], int ldq, Float q[],
+               const FS_dividing::bt_node<Float> &subtree, int ldq2, Float q2[],
+               int ldu, Float u[], int indx[], int lctot, const int ctot[],
+               Float q2buf1[], Float q2buf2[], Float z[], Float buf[],
+               int indrow[], int indcol[], int indxc[], int indxr[],
+               int indxcb[], FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     printf("FS_pdlaed3 start\n");

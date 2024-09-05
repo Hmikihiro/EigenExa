@@ -76,10 +76,8 @@ using std::printf;
 
 template <class Integer, class Float>
 Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
-               Float *work, Integer lwork, Integer *iwork, const Integer liwork,
+               Float *work, long lwork, Integer *iwork, const long liwork,
                FS_prof::FS_prof *prof) {
-  int nnod, x_nnod, y_nnod;
-  int inod, x_inod, y_inod;
 
   FS_prof::FS_prof prof_tmp = {};
 
@@ -97,8 +95,13 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
   prof_tmp.start(10);
 #endif
 
-  eigen_libs0::eigen_get_procs(nnod, x_nnod, y_nnod);
-  eigen_libs0::eigen_get_id(inod, x_inod, y_inod);
+  const auto eigen_procs = eigen_libs0::eigen_get_procs();
+  const auto x_nnod = eigen_procs.x_procs;
+  const auto y_nnod = eigen_procs.y_procs;
+
+  const auto eigen_id = eigen_libs0::eigen_get_id();
+  const auto x_inod = eigen_id.x_id;
+  const auto y_inod = eigen_id.y_id;
 
   if (n == 0) {
     // 何もしない
@@ -111,8 +114,8 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 #if TIMER_PRINT
     prof_tmp.start(11);
 #endif
-    info =
-        lapacke::stedc<Float>('I', n, D, E, Q, ldq, work, lwork, iwork, liwork);
+    info = lapacke::stedc<Float>('I', n, D, E, Q, ldq, work, (int)lwork, iwork,
+                                 (int)liwork);
 
 #if TIMER_PRINT
     prof_tmp.end(11);

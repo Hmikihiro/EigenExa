@@ -12,6 +12,8 @@
       real(8),intent(inout) :: A(*)
       integer,intent(in) :: lda,ldz
       character(*),intent(in) :: mode
+      integer, optional  :: msolver
+      integer :: msolver_
 
       real(8),parameter :: one = 1.0D0
       real(8),parameter :: zero = 0.0D0
