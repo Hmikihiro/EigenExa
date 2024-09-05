@@ -516,7 +516,7 @@
                   if ( nvec > 0 ) then
                     call mat_set(n, a(1,1), nm, mtype)
                     call ev_test(n, nvec, 
-     &                   a(1,1), nm, w(1), z(1,1), nm, mode)
+     &                   a(1,1), nm, w(1), z(1,1), nm, msolver, mode)
                   end if
                 end if
               end if
