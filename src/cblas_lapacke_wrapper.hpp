@@ -2,9 +2,11 @@
 #ifndef FS_BLAS_HPP
 #define FS_BLAS_HPP
 
-#if defined(__INTEL_COMPILER)
+#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
+
 #include <mkl.h>
 #include <mkl_cblas.h>
+
 #else
 #include <cblas.h>
 #include <plasma.h>
@@ -60,7 +62,7 @@ inline int lascl(char type, int kl, int ku, Float cfrom, Float cto, int m,
 template <>
 inline int lascl<double>(char type, int kl, int ku, double cfrom, double cto,
                          int m, int n, double *a, int lda) {
-#if defined(__INTEL_COMPILER)
+#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
   return LAPACKE_dlascl_work(FS_LAPACKE_LAYOUT, type, kl, ku, cfrom, cto, m, n, a, lda);
 #else
   if (type == 'G'){
@@ -73,7 +75,7 @@ inline int lascl<double>(char type, int kl, int ku, double cfrom, double cto,
 template <>
 inline int lascl<float>(char type, int kl, int ku, float cfrom, float cto,
                         int m, int n, float *a, int lda) {
-#if defined(__INTEL_COMPILER)
+#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
   return LAPACKE_slascl_work(FS_LAPACKE_LAYOUT, type, kl, ku, cfrom, cto, m, n, a, lda);
 #else
   if (type == 'G'){
