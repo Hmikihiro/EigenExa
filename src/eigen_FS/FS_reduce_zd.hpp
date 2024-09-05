@@ -15,9 +15,9 @@ using FS_dividing::bt_node;
 using FS_libs::FS_COMM_WORLD;
 using FS_prof::FS_prof;
 using std::printf;
-template <class Float>
-void FS_reduce_zd(int n, const bt_node<Float> &subtree, Float work[], Float z[],
-                  Float d[], FS_prof &prof) {
+template <class Integer, class Float>
+void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
+                  Float work[], Float z[], Float d[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     printf("FS_reduce_zd start.\n");
@@ -40,7 +40,7 @@ void FS_reduce_zd(int n, const bt_node<Float> &subtree, Float work[], Float z[],
                       FS_COMM_WORLD, subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
-  for (auto j = 0; j < n; j++) {
+  for (Integer j = 0; j < n; j++) {
     d[j] = z[j + n];
   }
 
@@ -61,6 +61,6 @@ void FS_reduce_zd(int n, const bt_node<Float> &subtree, Float work[], Float z[],
 #endif
 }
 
-}  // namespace eigen_FS
+} // namespace eigen_FS
 
 #endif

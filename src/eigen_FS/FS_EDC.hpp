@@ -76,7 +76,7 @@ using std::printf;
 
 template <class Integer, class Float>
 Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
-               Float *work, long lwork, Integer *iwork, const long liwork,
+               Float *work, Integer lwork, Integer *iwork, const Integer liwork,
                FS_prof::FS_prof *prof) {
 
   FS_prof::FS_prof prof_tmp = {};
@@ -114,30 +114,32 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 #if TIMER_PRINT
     prof_tmp.start(11);
 #endif
-    info = lapacke::stedc<Float>('I', n, D, E, Q, ldq, work, (int)lwork, iwork,
-                                 (int)liwork);
+    info = lapacke::stedc<Integer, Float>('I', n, D, E, Q, ldq, work, lwork,
+                                          iwork, liwork);
 
 #if TIMER_PRINT
     prof_tmp.end(11);
 #endif
   } else {
     // Scale matrix to allowable range, if necessary.
-    auto orgnrm = lapacke::lanst<Float>('M', n, D, E);
+    auto orgnrm = lapacke::lanst<Integer, Float>('M', n, D, E);
     if (std::isnan(orgnrm)) {
       orgnrm = ZERO<Float>;
     }
     if (orgnrm != ZERO<Float>) {
-      info = lapacke::lascl<Float>('G', 0, 0, orgnrm, ONE<Float>, n, 1, D, n);
+      info = lapacke::lascl<Integer, Float>('G', 0, 0, orgnrm, ONE<Float>, n, 1,
+                                            D, n);
       if (n - 1 >= 1) {
-        info = lapacke::lascl<Float>('G', 0, 0, orgnrm, ONE<Float>, n - 1, 1, E,
-                                     n - 1);
+        info = lapacke::lascl<Integer, Float>('G', 0, 0, orgnrm, ONE<Float>,
+                                              n - 1, 1, E, n - 1);
       }
     }
     info = eigen_FS::FS_pdlaed0<Integer, Float>(n, D, E, Q, ldq, work, lwork,
                                                 iwork, liwork, prof_tmp);
     // Scale back.
     if (info == 0 && orgnrm != ZERO<Float>) {
-      info = lapacke::lascl<Float>('G', 0, 0, ONE<Float>, orgnrm, n, 1, D, n);
+      info = lapacke::lascl<Integer, Float>('G', 0, 0, ONE<Float>, orgnrm, n, 1,
+                                            D, n);
     }
   }
 

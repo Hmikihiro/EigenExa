@@ -15,12 +15,12 @@
 #include "FS_prof.hpp"
 namespace FS_pdlasrt {
 using std::printf;
-template <class Float>
-void FS_pdlasrt(int n, Float d[], Float q[], int ldq,
-                const FS_dividing::bt_node<Float> &subtree, Float q2[],
-                int ldq2, Float sendq[], Float recvq[], Float buf[],
-                int indrow[], int indcol[], int indx[], int indrcv[],
-                FS_prof::FS_prof &prof) {
+template <class Integer, class Float>
+void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
+                const FS_dividing::bt_node<Integer, Float> &subtree, Float q2[],
+                Integer ldq2, Float sendq[], Float recvq[], Float buf[],
+                Integer indrow[], Integer indcol[], Integer indx[],
+                Integer indrcv[], FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
     printf("FS_pdlasrt start.");
@@ -56,7 +56,8 @@ void FS_pdlasrt(int n, Float d[], Float q[], int ldq,
   // Sort the eigenvalues in D
   //
   std::iota(indx, indx + n, 0);
-  std::sort(indx, indx + n, [&d](int i1, int i2) { return d[i1] < d[i2]; });
+  std::sort(indx, indx + n,
+            [&d](Integer i1, Integer i2) { return d[i1] < d[i2]; });
 
 #pragma omp parallel
   {
@@ -78,9 +79,9 @@ void FS_pdlasrt(int n, Float d[], Float q[], int ldq,
     const auto pjcol = (npcol - 1 - mycol - pj + npcol) % npcol;
 
     //
-    int nsend = 0;
-    int nrecv = 0;
-    for (int j = 0; j < n; j++) {
+    Integer nsend = 0;
+    Integer nrecv = 0;
+    for (Integer j = 0; j < n; j++) {
       // 元のグローバルインデクス
       const auto gi = indx[j];
 
@@ -144,9 +145,9 @@ void FS_pdlasrt(int n, Float d[], Float q[], int ldq,
     const auto pjrow = (nprow - 1 - myrow - pj + nprow) % nprow;
 
     //
-    int nsend = 0;
-    int nrecv = 0;
-    for (int i = 0; i < n; i++) {
+    Integer nsend = 0;
+    Integer nrecv = 0;
+    for (Integer i = 0; i < n; i++) {
       // 元のグローバルインデクスを保持するプロセス行
       const auto row = indrow[i];
       // 入れ替え先インデクスIを保持するプロセス行
@@ -158,7 +159,7 @@ void FS_pdlasrt(int n, Float d[], Float q[], int ldq,
         const auto il = subtree.FS_index_G2L('R', i);
 
         // 送信バッファに格納
-        lapacke::copy<Float>(nq, &q2[il], ldq2, &sendq[nsend * nq], 1);
+        lapacke::copy<Integer, Float>(nq, &q2[il], ldq2, &sendq[nsend * nq], 1);
         nsend += 1;
       }
 
@@ -192,9 +193,9 @@ void FS_pdlasrt(int n, Float d[], Float q[], int ldq,
       MPI_Wait(&req, &stat);
 
 #pragma omp parallel for
-      for (int i = 0; i < nrecv; i++) {
+      for (Integer i = 0; i < nrecv; i++) {
         const auto il = indrcv[i];
-        lapacke::copy<Float>(nq, &recvq[i * nq], 1, &q[il], ldq);
+        lapacke::copy<Integer, Float>(nq, &recvq[i * nq], 1, &q[il], ldq);
       }
     }
   }

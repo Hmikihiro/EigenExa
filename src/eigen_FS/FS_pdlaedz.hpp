@@ -13,9 +13,9 @@
 
 namespace FS_pdlaedz {
 using std::printf;
-template <class Float>
-void FS_pdlaedz(int n, int n1, const Float q[], int ldq,
-                const FS_dividing::bt_node<Float> &subtree, Float z[],
+template <class Integer, class Float>
+void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
+                const FS_dividing::bt_node<Integer, Float> &subtree, Float z[],
                 FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
@@ -46,7 +46,7 @@ void FS_pdlaedz(int n, int n1, const Float q[], int ldq,
       if (jz1.rocsrc == grid_info.mycol) {
         const auto nb1 = std::min(n1, j + nb) - j;
         const auto q_index = iz1 + jz1.l_index * ldq;
-        lapacke::copy<Float>(nb1, &q[q_index], ldq, &z[j], 1);
+        lapacke::copy<Integer, Float>(nb1, &q[q_index], ldq, &z[j], 1);
       }
     }
   }
@@ -65,7 +65,7 @@ void FS_pdlaedz(int n, int n1, const Float q[], int ldq,
       if (jz2col == grid_info.mycol) {
         const auto nb1 = std::min(n, j + nb) - j;
         const auto q_index = iz2 + jz2 * ldq;
-        lapacke::copy<Float>(nb1, &q[q_index], ldq, &z[j], 1);
+        lapacke::copy<Integer, Float>(nb1, &q[q_index], ldq, &z[j], 1);
       }
     }
   }

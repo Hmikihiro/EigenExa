@@ -23,19 +23,23 @@ using std::max;
 using std::min;
 using std::sqrt;
 
-int get_pdc(int lctot, const int ctot[], int npcol, int mycol) {
-  int pdc = 0;
-  for (auto col = 0; col != mycol; col = (col + 1) % npcol) {
+template <class Integer>
+Integer get_pdc(Integer lctot, const Integer ctot[], Integer npcol,
+                Integer mycol) {
+  Integer pdc = 0;
+  for (Integer col = 0; col != mycol; col = (col + 1) % npcol) {
     pdc +=
         ctot[0 * lctot + col] + ctot[1 * lctot + col] + ctot[2 * lctot + col];
   }
   return pdc;
 }
 
-int get_pdr(int pdc, int klr, int mykl, int nprow, int myrow) {
+template <class Integer>
+Integer get_pdr(Integer pdc, Integer klr, Integer mykl, Integer nprow,
+                Integer myrow) {
   auto pdr = pdc;
   auto kl = klr + (mykl % nprow);
-  for (auto row = 0; row != myrow; row = (row + 1) % nprow) {
+  for (Integer row = 0; row != myrow; row = (row + 1) % nprow) {
     pdr += kl;
     kl = klr;
   }
@@ -45,10 +49,11 @@ int get_pdr(int pdc, int klr, int mykl, int nprow, int myrow) {
 /**
  * \brief pjcolのrowインデックスリストを作成
  */
-int get_klr(int k, const int indx[], const int indcol[], int pjcol,
-            int indxr[]) {
-  int klr = 0;
-  for (auto i = 0; i < k; i++) {
+template <class Integer>
+Integer get_klr(Integer k, const Integer indx[], const Integer indcol[],
+                Integer pjcol, Integer indxr[]) {
+  Integer klr = 0;
+  for (Integer i = 0; i < k; i++) {
     const auto gi = indx[i];
     const auto row = indcol[gi];
     if (row == pjcol) {
@@ -62,10 +67,11 @@ int get_klr(int k, const int indx[], const int indcol[], int pjcol,
 /**
  * \brief 自身のCOLインデクスリストを作成
  */
-void set_indxc(int k, const int indx[], const int indcol[], int mycol,
-               int indxc[]) {
-  int klc = 0;
-  for (auto i = 0; i < k; i++) {
+template <class Integer>
+void set_indxc(Integer k, const Integer indx[], const Integer indcol[],
+               Integer mycol, Integer indxc[]) {
+  Integer klc = 0;
+  for (Integer i = 0; i < k; i++) {
     const auto gi = indx[i];
     const auto col = indcol[gi];
     if (col == mycol) {
@@ -75,23 +81,25 @@ void set_indxc(int k, const int indx[], const int indcol[], int mycol,
   }
 }
 
-class ComputeArea {
+template <class Integer> class ComputeArea {
 public:
-  int np1; // 行列の上側
-  int np2; // 行列の下側
+  Integer np1; // 行列の上側
+  Integer np2; // 行列の下側
 };
-ComputeArea get_np12(int n, int n1, int np, int myrow, const int indrow[]) {
-  int minrow = n - 1;
-  int maxrow = 0;
-  int npa = 0;
-  int np1 = 0;
-  int np2 = 0;
+template <class Integer>
+ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
+                              const Integer indrow[]) {
+  Integer minrow = n - 1;
+  Integer maxrow = 0;
+  Integer npa = 0;
+  Integer np1 = 0;
+  Integer np2 = 0;
 #pragma omp parallel for reduction(min : minrow) reduction(max : maxrow)       \
     reduction(+ : npa)
-  for (auto i = 0; i < n; i++) {
+  for (Integer i = 0; i < n; i++) {
     if (indrow[i] == myrow) {
-      minrow = min(minrow, i);
-      maxrow = max(maxrow, i);
+      minrow = min(minrow, (Integer)i);
+      maxrow = max(maxrow, (Integer)i);
       npa += 1;
     }
   }
@@ -108,23 +116,24 @@ ComputeArea get_np12(int n, int n1, int np, int myrow, const int indrow[]) {
     np1 = np / 2;
     np2 = npa - np / 2;
   }
-  return ComputeArea{np1, np2};
+  return ComputeArea<Integer>{np1, np2};
 }
 
-template <class Float>
-int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
-               Float w[], int ldq, Float q[],
-               const FS_dividing::bt_node<Float> &subtree, int ldq2, Float q2[],
-               int ldu, Float u[], int indx[], int lctot, const int ctot[],
-               Float q2buf1[], Float q2buf2[], Float z[], Float buf[],
-               int indrow[], int indcol[], int indxc[], int indxr[],
-               int indxcb[], FS_prof::FS_prof &prof) {
+template <class Integer, class Float>
+Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
+                   Float dlamda[], Float w[], Integer ldq, Float q[],
+                   const FS_dividing::bt_node<Integer, Float> &subtree,
+                   Integer ldq2, Float q2[], Integer ldu, Float u[],
+                   Integer indx[], Integer lctot, const Integer ctot[],
+                   Float q2buf1[], Float q2buf2[], Float z[], Float buf[],
+                   Integer indrow[], Integer indcol[], Integer indxc[],
+                   Integer indxr[], Integer indxcb[], FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     printf("FS_pdlaed3 start\n");
   }
 #endif
-  int info = 0;
+  Integer info = 0;
   { // FS_pdlaed3_end;
 #if TIMER_PRINT
     prof.start(60);
@@ -135,20 +144,20 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
     }
 
     const auto grid_info = subtree.FS_grid_info();
-    const auto nprow = grid_info.nprow;
-    const auto npcol = grid_info.npcol;
-    const auto myrow = grid_info.myrow;
-    const auto mycol = grid_info.mycol;
-    const auto nblk = subtree.FS_get_NBLK();
-    const auto nb = subtree.FS_get_NB();
-    const auto np = (nblk / nprow) * nb;
-    const auto nq = (nblk / npcol) * nb;
+    const Integer nprow = grid_info.nprow;
+    const Integer npcol = grid_info.npcol;
+    const Integer myrow = grid_info.myrow;
+    const Integer mycol = grid_info.mycol;
+    const Integer nblk = subtree.FS_get_NBLK();
+    const Integer nb = subtree.FS_get_NB();
+    const Integer np = (nblk / nprow) * nb;
+    const Integer nq = (nblk / npcol) * nb;
 
 #pragma omp parallel for schedule(static, 1)
-    for (auto i = 0; i < n; i += nb) {
-      auto row = subtree.FS_info_G1L('R', i).rocsrc;
-      auto col = subtree.FS_info_G1L('C', i).rocsrc;
-      for (auto j = 0; j < nb; j++) {
+    for (Integer i = 0; i < n; i += nb) {
+      Integer row = subtree.FS_info_G1L('R', i).rocsrc;
+      Integer col = subtree.FS_info_G1L('C', i).rocsrc;
+      for (Integer j = 0; j < nb; j++) {
         if (i + j < n) {
           indrow[i + j] = row;
           indcol[i + j] = col;
@@ -165,19 +174,19 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
     const auto pdr = get_pdr(pdc, klr, mykl, nprow, myrow);
 
 #pragma omp parallel for
-    for (auto i = 0; i < k; i++) {
+    for (Integer i = 0; i < k; i++) {
       dlamda[i] = lapacke::lamc3<Float>(dlamda[i], dlamda[i]) - dlamda[i];
     }
 
 #pragma omp parallel for
-    for (auto i = 0; i < 4 * k; i++) {
+    for (Integer i = 0; i < 4 * k; i++) {
       buf[i] = FS_const::ZERO<Float>;
     }
 
 #if TIMER_PRINT > 1
     prof.start(61);
 #endif
-    int sinfo = 0;
+    Integer sinfo = 0;
     if (myklr > 0) {
 #pragma omp parallel reduction(max : sinfo)
       {
@@ -185,12 +194,12 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
         std::fill_n(sz.get(), k, FS_const::ONE<Float>);
         std::unique_ptr<Float[]> sbuf(new Float[k]);
 #pragma omp for schedule(static, 1)
-        for (auto i = 0; i < myklr; i++) {
-          const int kk = pdr + i;
+        for (Integer i = 0; i < myklr; i++) {
+          const Integer kk = pdr + i;
           const auto buf_index = (pdr - pdc + i);
           Float aux;
-          int iinfo =
-              lapacke::laed4<Float>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
+          eigen_int iinfo = lapacke::laed4<eigen_int, Float>(
+              k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
           if (k == 1 || k == 2) {
             buf[buf_index] = FS_const::ZERO<Float>;
             buf[mykl + buf_index] = aux;
@@ -213,7 +222,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
           }
           // ..Compute part of z
 #pragma loop nofp_relaxed nofp_contract noeval
-          for (auto j = 0; j < k; j++) {
+          for (Integer j = 0; j < k; j++) {
             auto temp = dlamda[j] - dlamda[kk];
             if (j == kk) {
               temp = FS_const::ONE<Float>;
@@ -222,7 +231,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
             }
             sbuf[j] = sbuf[j] / temp;
           }
-          for (auto j = 0; j < k; j++) {
+          for (Integer j = 0; j < k; j++) {
             sz[j] *= sbuf[j];
           }
         }
@@ -233,9 +242,9 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
           eigen_dc::flops += Float(myklr) * Float(k * 3);
         }
 #pragma omp barrier
-        for (auto i = 1; i < omp_get_num_threads(); i++) {
+        for (Integer i = 1; i < omp_get_num_threads(); i++) {
           if (omp_get_thread_num() == i) {
-            for (auto i = 0; i < k; i++) {
+            for (Integer i = 0; i < k; i++) {
               z[i] *= sz[i];
             }
           }
@@ -245,7 +254,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
       info = sinfo;
     } else {
 #pragma omp parallel for
-      for (auto i = 0; i < k; i++) {
+      for (Integer i = 0; i < k; i++) {
         z[i] = FS_const::ONE<Float>;
       }
     }
@@ -258,7 +267,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
 #endif
 
 #pragma omp parallel for
-    for (auto i = 0; i < k; i++) {
+    for (Integer i = 0; i < k; i++) {
       buf[2 * k + i] = z[i];
     }
 
@@ -266,7 +275,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
                                MPI_PROD, FS_COMM_WORLD, subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
-    for (auto i = 0; i < k; i++) {
+    for (Integer i = 0; i < k; i++) {
       z[i] = abs(sqrt(-z[i])) * ((w[i] >= 0) ? 1 : -1);
     }
 
@@ -279,11 +288,11 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
 #pragma omp parallel
     {
 #pragma omp for
-      for (auto i = 0; i < 2 * mykl; i++) {
+      for (Integer i = 0; i < 2 * mykl; i++) {
         buf[i] = FS_const::ZERO<Float>;
       }
 #pragma omp for
-      for (auto i = 0; i < mykl; i++) {
+      for (Integer i = 0; i < mykl; i++) {
         buf[pdc + i] = buf[2 * k + i];
         buf[k + pdc + i] = buf[2 * k + mykl + i];
       }
@@ -298,13 +307,13 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
     Float *sbufd = &buf[2 * k];
     Float *sbufb = &buf[3 * k];
     if (k == 1 || k == 2) {
-      for (auto i = 0; i < k; i++) {
+      for (Integer i = 0; i < k; i++) {
         const auto gi = indx[i];
         d[gi] = sbufb[i];
       }
     } else {
 #pragma omp parallel for
-      for (auto i = 0; i < k; i++) {
+      for (Integer i = 0; i < k; i++) {
         const auto gi = indx[i];
         d[gi] = sbufb[i] - sbufd[i];
       }
@@ -319,7 +328,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
 #ifdef _BLOCKING_DGEMM
     // ブロッキングのために列方向昇順の逆引きリストを作成
 #pragma omp parallel for
-    for (auto j = 0; j < mykl; j++) {
+    for (Integer j = 0; j < mykl; j++) {
       const auto kk = indxc[j];
       const auto ju = indx[kk];
       const auto jju = subtree.FS_index_G2L('C', ju);
@@ -327,7 +336,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
     }
 #endif
 
-    const auto compute_area = get_np12(n, n1, np, myrow, indrow);
+    const auto compute_area = get_np12<Integer>(n, n1, np, myrow, indrow);
     const auto np1 = compute_area.np1;
     const auto np2 = compute_area.np2;
 
@@ -338,14 +347,14 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
 #endif
 #pragma omp parallel
 #pragma omp for collapse(2)
-    for (auto j = 0; j < mykl; j++) {
-      for (auto i = 0; i < np; i++) {
+    for (Integer j = 0; j < mykl; j++) {
+      for (Integer i = 0; i < np; i++) {
         q[j * ldq + i] = FS_const::ZERO<Float>;
       }
     }
 #pragma omp for collapse(2)
-    for (auto j = mykl; j < nq; j++) {
-      for (auto i = 0; i < np; i++) {
+    for (Integer j = mykl; j < nq; j++) {
+      for (Integer i = 0; i < np; i++) {
         q[j * ldq + i] = q2[j * ldq2 + i];
       }
     }
@@ -357,9 +366,9 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
 
     MPI_Status stat;
     MPI_Request req[2];
-    int nrecv = 0;
-    int nsend = 0;
-    for (auto pj = 0; pj < npcol; pj++) {
+    Integer nrecv = 0;
+    Integer nsend = 0;
+    for (Integer pj = 0; pj < npcol; pj++) {
       Float *sendq2 = nullptr;
       Float *recvq2 = nullptr;
 
@@ -382,7 +391,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
       const auto n23 = ctot[1 * lctot + pjcol] + ctot[2 * lctot + pjcol];
 
       // pjcolのrowインデックスリストを作成
-      const auto klr = get_klr(k, indx, indcol, pjcol, indxr);
+      const auto klr = get_klr<Integer>(k, indx, indcol, pjcol, indxr);
 
       // 前ループの送受信のwaitと展開
       // wait -> recvbuf -> q2
@@ -399,7 +408,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
         // 上側
         if (np1 > 0) {
 #pragma omp parallel for
-          for (auto jq2 = 0; jq2 < n12; jq2++) {
+          for (Integer jq2 = 0; jq2 < n12; jq2++) {
             const auto js = jq2 * np1;
             std::copy_n(&recvq2[js], np1, &q2[jq2 * ldq2 + 0]);
           }
@@ -407,7 +416,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
         // 下側
         if (np2 > 0) {
 #pragma omp parallel for
-          for (auto j = 0; j < n23; j++) {
+          for (Integer j = 0; j < n23; j++) {
             const auto jq2 = j + ctot[0 * lctot + pjcol];
             const auto js = n12 * np1 + j * np2;
             std::copy_n(&recvq2[js], np2, &q2[jq2 * ldq2 + np1]);
@@ -444,7 +453,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
           // 上側
           if (np1 > 0) {
 #pragma omp parallel for
-            for (auto jq2 = 0; jq2 < n12; jq2++) {
+            for (Integer jq2 = 0; jq2 < n12; jq2++) {
               const auto js = jq2 * np1;
               std::copy_n(&q2[jq2 * ldq2 + 0], np1, &sendq2[js]);
             }
@@ -452,7 +461,7 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
           // 下側
           if (np2 > 0) {
 #pragma omp parallel for
-            for (auto j = 0; j < n23; j++) {
+            for (Integer j = 0; j < n23; j++) {
               const auto jq2 = j + ctot[0 * lctot + pjcol];
               const auto js = n12 * np1 + j * np2;
               std::copy_n(&q2[jq2 * ldq2 + np1], np2, &sendq2[js]);
@@ -501,22 +510,23 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
         {
           std::unique_ptr<Float[]> sbuf(new Float[k]);
 #pragma omp for
-          for (auto j = 0; j < mykl; j++) {
+          for (Integer j = 0; j < mykl; j++) {
             const auto kk = indxc[j];
             const auto ju = indx[kk];
             const auto jju = subtree.FS_index_G2L('C', ju);
             Float aux;
             if (k == 1 || k == 2) {
-              lapacke::laed4<Float>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
+              lapacke::laed4<eigen_int, Float>(k, kk + 1, dlamda, w, sbuf.get(),
+                                               rho, aux);
             } else {
-              for (auto i = 0; i < k; i++) {
+              for (Integer i = 0; i < k; i++) {
                 sbuf[i] = dlamda[i] - sbufb[kk];
                 sbuf[i] += sbufd[kk];
               }
             }
 
             if (k == 1 || k == 2) {
-              for (auto i = 0; i < klr; i++) {
+              for (Integer i = 0; i < klr; i++) {
                 const auto kk = indxr[i];
                 const auto iu = indx[kk];
                 const auto iiu = subtree.FS_index_G2L('C', iu);
@@ -524,12 +534,12 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
               }
               continue;
             }
-            for (auto i = 0; i < k; i++) {
+            for (Integer i = 0; i < k; i++) {
               sbuf[i] = z[i] / sbuf[i];
             }
-            const auto temp = lapacke::nrm2<Float>(k, sbuf.get(), 1);
+            const auto temp = lapacke::nrm2<Integer, Float>(k, sbuf.get(), 1);
 
-            for (auto i = 0; i < klr; i++) {
+            for (Integer i = 0; i < klr; i++) {
               const auto kk = indxr[i];
               const auto iu = indx[kk];
               const auto iiu = subtree.FS_index_G2L('C', iu);
@@ -545,9 +555,9 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
 #if TIMER_PRINT > 1
           prof.start(67);
 #endif
-          lapacke::gemm<Float>(CblasNoTrans, CblasNoTrans, np1, mykl, n12,
-                               FS_const::ONE<Float>, q2, ldq2, u, ldu,
-                               FS_const::ONE<Float>, q, ldq);
+          lapacke::gemm<eigen_int, Float>(CblasNoTrans, CblasNoTrans, np1, mykl,
+                                          n12, FS_const::ONE<Float>, q2, ldq2,
+                                          u, ldu, FS_const::ONE<Float>, q, ldq);
           eigen_dc::flops += 2 * double(np1) * double(mykl) * double(n12);
 #if TIMER_PRINT > 1
           prof.end(67);
@@ -566,10 +576,10 @@ int FS_pdlaed3(int k, int n, int n1, Float d[], Float rho, Float dlamda[],
 #if TIMER_PRINT > 1
           prof.start(67);
 #endif
-          lapacke::gemm<Float>(CblasNoTrans, CblasNoTrans, np2, mykl, n23,
-                               FS_const::ONE<Float>, &q2[jq2 * ldq2 + iq2],
-                               ldq2, &u[jju * ldu + iiu], ldu,
-                               FS_const::ONE<Float>, &q[jq * ldq + iq], ldq);
+          lapacke::gemm<Integer, Float>(
+              CblasNoTrans, CblasNoTrans, np2, mykl, n23, FS_const::ONE<Float>,
+              &q2[jq2 * ldq2 + iq2], ldq2, &u[jju * ldu + iiu], ldu,
+              FS_const::ONE<Float>, &q[jq * ldq + iq], ldq);
           eigen_dc::flops += 2 * double(np2) * double(mykl) * double(n23);
 #if TIMER_PRINT > 1
           prof.end(67);

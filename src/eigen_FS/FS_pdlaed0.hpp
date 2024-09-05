@@ -27,8 +27,8 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
     printf("FS_PDLAED0 start.\n");
   }
 #endif
-  FS_dividing::bt_node<Float> root_node = {};
-  const auto info = [&]() mutable -> int {
+  FS_dividing::bt_node<Integer, Float> root_node = {};
+  const auto info = [&]() mutable -> Integer {
     auto nnod = (FS_libs::is_comm_member()) ? FS_libs::get_procs()
                                             : FS_libs::Nod{1, 1, 1};
 
@@ -69,11 +69,11 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
       const auto mat_size = leafnode->FS_get_N_active();
       if (mat_size > 0) {
         const auto pq = root_node.FS_info_G2L(id, id);
-        int info = 0;
+        Integer info = 0;
         if (id < n - 1) {
-          info = lapacke::stedc<Float>('I', mat_size, &d[id], &e[id],
-                                       &q[pq.row + pq.col * ldq], ldq, work,
-                                       (int)lwork, iwork, (int)liwork);
+          info = lapacke::stedc<Integer, Float>('I', mat_size, &d[id], &e[id],
+                                                &q[pq.row + pq.col * ldq], ldq,
+                                                work, lwork, iwork, liwork);
         } else {
           q[pq.row + pq.col * ldq] = 1.0;
           info = 0;
@@ -117,7 +117,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
 #if TIMER_PRINT
         prof_layer.init();
 #endif
-        int info_pdlaed1 = FS_pdlaed1::FS_pdlaed1<Float>(
+        Integer info_pdlaed1 = FS_pdlaed1::FS_pdlaed1<Integer, Float>(
             n0, n1, &d[id], &q[q_top.row + q_top.col * ldq], ldq, *parent_node,
             rho, work, iwork, prof_layer);
 #if TIMER_PRINT > 2
@@ -177,9 +177,9 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
                              &iwork[index], &iwork[index_recv], prof);
     } else {
       eigen_FS::FS2eigen::FS2eigen_pdlasrt(
-          n, d, ldq, q, root_node, (int *)work, work,
-          (eigen_FS::FS2eigen::GpositionValue<Float>
-               *)&work[std::max(0, (NP * NQ / 2))],
+          n, d, ldq, q, root_node, (Integer *)work, work,
+          (eigen_FS::FS2eigen::GpositionValue<Integer, Float>
+               *)&work[std::max((Integer)0, (NP * NQ / 2))],
           iwork, prof);
     }
     return 0;

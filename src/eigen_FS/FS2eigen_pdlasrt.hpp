@@ -3,12 +3,15 @@
 #define FS2EIGEN_PDLASRT_HPP
 #include <mpi.h>
 
+#define int_for_mpi int
+
 #include <algorithm>
 #include <cstdio>
 #include <memory>
 #include <numeric>
 
 #include "../eigen/eigen_libs0.hpp"
+#include "FS2eigen_pdlasrt_mpi_wrapper.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
@@ -18,42 +21,43 @@ namespace FS2eigen {
 using FS_dividing::bt_node;
 using std::printf;
 
-template <class Float> class GpositionValue {
+template <class Integer, class Float> class GpositionValue {
 public:
-  int GRow;
-  int GCol;
+  Integer GRow;
+  Integer GCol;
   Float MatrixValue;
 };
 
-template <class Float> class CommBuf {
+template <class Integer, class Float> class CommBuf {
 public:
-  int rank;
-  int Ndata;
+  Integer rank;
+  Integer Ndata;
   MPI_Request req;
   MPI_Status sta;
   bool flag;
-  GpositionValue<Float> *bufp;
+  GpositionValue<Integer, Float> *bufp;
 };
 
-class RANKLIST {
+template <class Integer> class RANKLIST {
 public:
-  int index;
-  int *lid;
+  Integer index;
+  Integer *lid;
 };
 
-class NrankMaxsize {
+template <class Integer> class NrankMaxsize {
 public:
-  int nrank;
-  int maxsize;
+  Integer nrank;
+  Integer maxsize;
 };
 
-inline NrankMaxsize get_nrank_maxsize(int eigen_np,
-                                      const int comm_send_or_recv_info[]) {
-  int send_or_recv_nrank = 0;
-  int send_or_recv_maxsize = 1;
+template <class Integer>
+NrankMaxsize<Integer>
+get_nrank_maxsize(Integer eigen_np, const Integer comm_send_or_recv_info[]) {
+  Integer send_or_recv_nrank = 0;
+  Integer send_or_recv_maxsize = 1;
 #pragma omp parallel for reduction(+ : send_or_recv_nrank)                     \
     reduction(max : send_or_recv_maxsize)
-  for (auto i = 0; i < eigen_np; i++) {
+  for (Integer i = 0; i < eigen_np; i++) {
     if (comm_send_or_recv_info[i] != 0) {
       send_or_recv_nrank += 1;
       if (send_or_recv_maxsize < comm_send_or_recv_info[i]) {
@@ -61,29 +65,31 @@ inline NrankMaxsize get_nrank_maxsize(int eigen_np,
       }
     }
   }
-  return NrankMaxsize{send_or_recv_nrank, send_or_recv_maxsize};
+  return NrankMaxsize<Integer>{send_or_recv_nrank, send_or_recv_maxsize};
 }
 
-template <class Float>
-void init_send(int np, const int comm_info[], CommBuf<Float> comm_buf[]) {
-  int nrank = 0;
-  for (auto i = 0; i < np; i++) {
+template <class Integer, class Float>
+void init_send(Integer np, const Integer comm_info[],
+               CommBuf<Integer, Float> comm_buf[]) {
+  Integer nrank = 0;
+  for (Integer i = 0; i < np; i++) {
     if (comm_info[i] != 0) {
       comm_buf[nrank].flag = true;
-      comm_buf[nrank].rank = static_cast<int>(i);
+      comm_buf[nrank].rank = static_cast<Integer>(i);
       comm_buf[nrank].Ndata = (comm_info[i]);
       comm_buf[nrank].bufp = nullptr;
       nrank += 1;
     }
   }
 }
-template <class Float>
-void init_recv(int np, const int comm_info[], CommBuf<Float> comm_buf[]) {
-  int nrank = 0;
-  for (auto i = 0; i < np; i++) {
+template <class Integer, class Float>
+void init_recv(Integer np, const Integer comm_info[],
+               CommBuf<Integer, Float> comm_buf[]) {
+  Integer nrank = 0;
+  for (Integer i = 0; i < np; i++) {
     if (comm_info[i] != 0) {
       comm_buf[nrank].flag = true;
-      comm_buf[nrank].rank = static_cast<int>(i);
+      comm_buf[nrank].rank = static_cast<Integer>(i);
       comm_buf[nrank].Ndata = comm_info[i];
       comm_buf[nrank].bufp = nullptr;
       nrank += 1;
@@ -91,27 +97,28 @@ void init_recv(int np, const int comm_info[], CommBuf<Float> comm_buf[]) {
   }
 }
 
-template <class Float>
-void send(CommBuf<Float> &comm_send_data, GpositionValue<Float> sendbuf[],
-          MPI_Comm comm) {
-  auto ncount = sizeof(GpositionValue<Float>) * comm_send_data.Ndata;
+template <class Integer, class Float>
+void send(CommBuf<Integer, Float> &comm_send_data,
+          GpositionValue<Integer, Float> sendbuf[], MPI_Comm comm) {
+  auto ncount = sizeof(GpositionValue<Integer, Float>) * comm_send_data.Ndata;
   auto srank = comm_send_data.rank;
   comm_send_data.flag = false;
   MPI_Send((void *)sendbuf, ncount, MPI_BYTE, srank, 1, comm);
 }
-template <class Float>
-void irecv(CommBuf<Float> &comm_recv_data, GpositionValue<Float> recvbuf[],
-           MPI_Comm comm) {
-  auto ncount = sizeof(GpositionValue<Float>) * comm_recv_data.Ndata;
+template <class Integer, class Float>
+void irecv(CommBuf<Integer, Float> &comm_recv_data,
+           GpositionValue<Integer, Float> recvbuf[], MPI_Comm comm) {
+  auto ncount = sizeof(GpositionValue<Integer, Float>) * comm_recv_data.Ndata;
   auto rrank = comm_recv_data.rank;
   comm_recv_data.flag = false;
   MPI_Irecv((void *)recvbuf, ncount, MPI_BYTE, rrank, 1, comm,
             &comm_recv_data.req);
 }
-template <class Float>
-int FS_nbroc_max(char comp, int n, const bt_node<Float> &subtree, int FS_nbroc,
-                 int FS_myroc) {
-  for (auto i = 0; i < FS_nbroc; i++) {
+template <class Integer, class Float>
+Integer FS_nbroc_max(char comp, Integer n,
+                     const bt_node<Integer, Float> &subtree, Integer FS_nbroc,
+                     Integer FS_myroc) {
+  for (Integer i = 0; i < FS_nbroc; i++) {
     auto lroc = i;
     auto groc = subtree.FS_index_L2G(comp, lroc, FS_myroc);
     if (n <= groc) {
@@ -120,18 +127,19 @@ int FS_nbroc_max(char comp, int n, const bt_node<Float> &subtree, int FS_nbroc,
   }
   return FS_nbroc;
 }
-template <class Float>
-int get_FS_nbrow_max(int n, const bt_node<Float> &subtree, int FS_nbrow,
-                     int FS_myrow) {
+template <class Integer, class Float>
+Integer get_FS_nbrow_max(Integer n, const bt_node<Integer, Float> &subtree,
+                         Integer FS_nbrow, Integer FS_myrow) {
   return FS_nbroc_max('R', n, subtree, FS_nbrow, FS_myrow);
 }
-template <class Float>
-int get_FS_nbcol_max(int n, const bt_node<Float> &subtree, int FS_nbcol,
-                     int FS_mycol) {
+template <class Integer, class Float>
+Integer get_FS_nbcol_max(Integer n, const bt_node<Integer, Float> &subtree,
+                         Integer FS_nbcol, Integer FS_mycol) {
   return FS_nbroc_max('C', n, subtree, FS_nbcol, FS_mycol);
 }
 
-inline int eigen_rank_xy2comm(char grid_major, int x_inod, int y_inod) {
+template <class Integer>
+Integer eigen_rank_xy2comm(char grid_major, Integer x_inod, Integer y_inod) {
   const auto procs = eigen_libs0::eigen_get_procs();
   const auto x_nnod = procs.x_procs;
   const auto y_nnod = procs.y_procs;
@@ -146,16 +154,18 @@ inline int eigen_rank_xy2comm(char grid_major, int x_inod, int y_inod) {
 /**
  * \brief 送信先が被らないように初回の通信相手を選択する
  */
-template <class Float>
-int select_first_communicater(int send_nrank, int eigen_np, int eigen_myrank,
-                              const CommBuf<Float> comm_send_data[]) {
-  int i0 = 0;
+template <class Integer, class Float>
+Integer
+select_first_communicater(Integer send_nrank, Integer eigen_np,
+                          Integer eigen_myrank,
+                          const CommBuf<Integer, Float> comm_send_data[]) {
+  Integer i0 = 0;
   if (0 < send_nrank) {
     i0 = -1;
 
-    for (auto k = 0; k < eigen_np; k++) {
+    for (Integer k = 0; k < eigen_np; k++) {
       auto k1 = (k + eigen_myrank) % eigen_np;
-      for (auto i = 0; i < send_nrank; i++) {
+      for (Integer i = 0; i < send_nrank; i++) {
         if (k1 == comm_send_data[i].rank) {
           i0 = i;
           break;
@@ -169,13 +179,14 @@ int select_first_communicater(int send_nrank, int eigen_np, int eigen_myrank,
   return i0;
 }
 
-template <class Float>
-int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
-                     const FS_dividing::bt_node<Float> &subtree, int ibuf[],
-                     Float rbuf[], GpositionValue<Float> tbuf[], int indx[],
-                     FS_prof::FS_prof &prof) {
+template <class Integer, class Float>
+Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
+                         const FS_dividing::bt_node<Integer, Float> &subtree,
+                         Integer ibuf[], Float rbuf[],
+                         GpositionValue<Integer, Float> tbuf[], Integer indx[],
+                         FS_prof::FS_prof &prof) {
   double prof_time[40];
-  for (auto i = 0; i < 40; i++) {
+  for (Integer i = 0; i < 40; i++) {
     prof_time[i] = 0;
   }
 #ifdef _DEBUGLOG
@@ -195,27 +206,28 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
   const char eigen_grid_major = eigen_libs0::eigen_get_grid_major();
   const auto eigen_comm = eigen_libs0::eigen_get_comm().eigen_comm;
 
-  int *comm_send_info = new int[eigen_np];
-  std::unique_ptr<int[]> comm_recv_info(new int[eigen_np]);
+  Integer *comm_send_info = new Integer[eigen_np];
+  std::unique_ptr<Integer[]> comm_recv_info(new Integer[eigen_np]);
 
 #pragma omp parallel for
-  for (auto i = 0; i < eigen_np; i++) {
+  for (Integer i = 0; i < eigen_np; i++) {
     comm_send_info[i] = 0;
     comm_recv_info[i] = -1;
   }
   MPI_Bcast(d, n, FS_const::MPI_TYPE<Float>, 0, eigen_comm);
 
   std::iota(indx, indx + n, 0);
-  std::sort(indx, &indx[n], [&d](int i1, int i2) { return d[i1] < d[i2]; });
+  std::sort(indx, &indx[n],
+            [&d](Integer i1, Integer i2) { return d[i1] < d[i2]; });
 
 #pragma omp parallel
   {
 #pragma omp for
-    for (auto i = 0; i < n; i++) {
+    for (Integer i = 0; i < n; i++) {
       rbuf[i] = d[indx[i]];
     }
 #pragma omp for
-    for (auto i = 0; i < n; i++) {
+    for (Integer i = 0; i < n; i++) {
       d[i] = rbuf[i];
     }
   }
@@ -224,20 +236,21 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
 
   const auto FS_comm_member = FS_libs::is_comm_member();
 
-  const auto FS_grid_info = FS_comm_member ? subtree.FS_grid_info()
-                                           : FS_dividing::GridInfo{0, 0, 0, 0};
-  const int FS_nblk = FS_comm_member ? subtree.FS_get_NBLK() : 0;
-  const int FS_nb = FS_comm_member ? subtree.FS_get_NB() : 0;
-  const int FS_nbrow =
+  const auto FS_grid_info = FS_comm_member
+                                ? subtree.FS_grid_info()
+                                : FS_dividing::GridInfo<Integer>{0, 0, 0, 0};
+  const Integer FS_nblk = FS_comm_member ? subtree.FS_get_NBLK() : 0;
+  const Integer FS_nb = FS_comm_member ? subtree.FS_get_NB() : 0;
+  const Integer FS_nbrow =
       FS_comm_member ? (FS_nblk / FS_grid_info.nprow) * FS_nb : 0;
-  const int FS_nbcol =
+  const Integer FS_nbcol =
       FS_comm_member ? (FS_nblk / FS_grid_info.npcol) * FS_nb : 0;
-  const int FS_nbrow_max =
+  const Integer FS_nbrow_max =
       FS_comm_member
           ? get_FS_nbrow_max(n, subtree, FS_nbrow, FS_grid_info.myrow)
           : 0;
   // プロセス数で割り切れない場合に拡張した領域を除いた計算領域の総数
-  const int FS_nbcol_max =
+  const Integer FS_nbcol_max =
       FS_comm_member
           ? get_FS_nbcol_max(n, subtree, FS_nbcol, FS_grid_info.mycol)
           : 0;
@@ -246,24 +259,24 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
   prof_time[0] = etime - stime;
   stime = etime;
 
-  std::unique_ptr<int[]> lcol2gcol_index;
-  std::unique_ptr<int[]> lrow2grow_index;
+  std::unique_ptr<Integer[]> lcol2gcol_index;
+  std::unique_ptr<Integer[]> lrow2grow_index;
 
   if (FS_comm_member) {
-    lcol2gcol_index.reset(new int[FS_nbcol]);
+    lcol2gcol_index.reset(new Integer[FS_nbcol]);
 #pragma omp parallel for
-    for (auto j = 0; j < FS_nbcol; j++) {
+    for (Integer j = 0; j < FS_nbcol; j++) {
       lcol2gcol_index[j] = -1;
     }
 
-    lrow2grow_index.reset(new int[FS_nbrow]);
+    lrow2grow_index.reset(new Integer[FS_nbrow]);
 #pragma omp parallel for
-    for (auto i = 0; i < FS_nbrow; i++) {
+    for (Integer i = 0; i < FS_nbrow; i++) {
       lrow2grow_index[i] = -1;
     }
 
 #pragma omp parallel for
-    for (auto lrow = 0; lrow < FS_nbrow_max; lrow++) {
+    for (Integer lrow = 0; lrow < FS_nbrow_max; lrow++) {
       const auto grow = subtree.FS_index_L2G('R', lrow, FS_grid_info.myrow);
       lrow2grow_index[lrow] = grow;
     }
@@ -275,12 +288,12 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
     // 拡張した範囲を省くために行列字数を超えたらexitする
 #pragma omp parallel for reduction(+ : comm_send_info[0 : eigen_np])           \
     schedule(dynamic, 1)
-    for (auto lcol = 0; lcol < FS_nbcol_max; lcol++) {
+    for (Integer lcol = 0; lcol < FS_nbcol_max; lcol++) {
       // 固有値を並び替える前の列番号を取得
       auto gcol = subtree.FS_index_L2G('C', lcol, FS_grid_info.mycol);
 
       // 固有値を並び替えた後の列番号に変換
-      for (auto k = 0; k < n; k++) {
+      for (Integer k = 0; k < n; k++) {
         if (indx[k] == gcol) {
           gcol = k;
           lcol2gcol_index[lcol] = k;
@@ -290,7 +303,7 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
 
       // グローバル情報から再分散後に担当するノードを求める
       const auto pcol = eigen_libs0::eigen_owner_node(gcol, eigen_npcol);
-      for (auto lrow = 0; lrow < FS_nbrow_max; lrow++) {
+      for (Integer lrow = 0; lrow < FS_nbrow_max; lrow++) {
         const auto grow = lrow2grow_index[lrow];
         const auto prow = eigen_libs0::eigen_owner_node(grow, eigen_nprow);
         const auto pn = eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
@@ -303,14 +316,16 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
   prof_time[1] = etime - stime;
   stime = etime;
 
-  MPI_Alltoall(comm_send_info, 1, MPI_INT, comm_recv_info.get(), 1, MPI_INT,
+  MPI_Alltoall(comm_send_info, 1, FS_const::MPI_TYPE<Integer>,
+               comm_recv_info.get(), 1, FS_const::MPI_TYPE<Integer>,
                eigen_comm);
 
   etime = MPI_Wtime();
   prof_time[2] = etime - stime;
   stime = etime;
 
-  const auto send_nrank_maxsize = get_nrank_maxsize(eigen_np, comm_send_info);
+  const auto send_nrank_maxsize =
+      get_nrank_maxsize<Integer>((Integer)eigen_np, comm_send_info);
   const auto send_nrank = send_nrank_maxsize.nrank;
   const auto send_maxsize = send_nrank_maxsize.maxsize;
 
@@ -318,21 +333,21 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
   prof_time[3] = etime - stime;
   stime = etime;
 
-  int pointer = 0;
-  std::unique_ptr<CommBuf<Float>[]> comm_send_data;
-  std::unique_ptr<RANKLIST[]> sendrank_list;
-  GpositionValue<Float> *sendbuf;
+  Integer pointer = 0;
+  std::unique_ptr<CommBuf<Integer, Float>[]> comm_send_data;
+  std::unique_ptr<RANKLIST<Integer>[]> sendrank_list;
+  GpositionValue<Integer, Float> *sendbuf;
 
   if (send_nrank != 0) {
-    comm_send_data.reset(new CommBuf<Float>[send_nrank]);
-    init_send(eigen_np, comm_send_info, comm_send_data.get());
+    comm_send_data.reset(new CommBuf<Integer, Float>[send_nrank]);
+    init_send<Integer, Float>(eigen_np, comm_send_info, comm_send_data.get());
 
-    sendrank_list.reset(new RANKLIST[send_nrank]);
+    sendrank_list.reset(new RANKLIST<Integer>[send_nrank]);
 
-    for (auto k = 0; k < send_nrank; k++) {
+    for (Integer k = 0; k < send_nrank; k++) {
       sendrank_list[k].lid = &ibuf[pointer];
       pointer += comm_send_data[k].Ndata;
-      for (auto j = 0; j < comm_send_data[k].Ndata; j++) {
+      for (Integer j = 0; j < comm_send_data[k].Ndata; j++) {
         sendrank_list[k].lid[j] = -1;
       }
     }
@@ -342,7 +357,7 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
 
     pointer += send_maxsize;
 #pragma omp parallel for
-    for (auto i = 0; i < send_maxsize; i++) {
+    for (Integer i = 0; i < send_maxsize; i++) {
       sendbuf[i].GRow = -1;
       sendbuf[i].GCol = -1;
       sendbuf[i].MatrixValue = 0;
@@ -354,7 +369,7 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
   stime = etime;
 
   const auto recv_nrank_maxsize =
-      get_nrank_maxsize(eigen_np, comm_recv_info.get());
+      get_nrank_maxsize<Integer>((Integer)eigen_np, comm_recv_info.get());
   const auto recv_nrank = recv_nrank_maxsize.nrank;
 
   etime = MPI_Wtime();
@@ -365,11 +380,12 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
   if (!FS_comm_member) {
     pointer = 0;
   }
-  std::unique_ptr<CommBuf<Float>[]> comm_recv_data;
+  std::unique_ptr<CommBuf<Integer, Float>[]> comm_recv_data;
   if (recv_nrank != 0) {
-    comm_recv_data.reset(new CommBuf<Float>[recv_nrank]);
-    init_recv(eigen_np, comm_recv_info.get(), comm_recv_data.get());
-    for (auto k = 0; k < recv_nrank; k++) {
+    comm_recv_data.reset(new CommBuf<Integer, Float>[recv_nrank]);
+    init_recv<Integer, Float>(eigen_np, comm_recv_info.get(),
+                              comm_recv_data.get());
+    for (Integer k = 0; k < recv_nrank; k++) {
       if (comm_recv_data[k].rank + 1 != eigen_myrank) {
         comm_recv_data[k].bufp = &tbuf[pointer];
         pointer += comm_recv_data[k].Ndata;
@@ -380,14 +396,14 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
 
   // 送信データのパック
   if (FS_comm_member) {
-    for (auto k = 0; k < send_nrank; k++) {
+    for (Integer k = 0; k < send_nrank; k++) {
       auto pn = comm_send_data[k].rank;
       comm_send_info[pn] = k;
       sendrank_list[k].index = 0;
     }
 
-    for (auto lcol = 0; lcol < FS_nbcol_max; lcol++) {
-      for (auto lrow = 0; lrow < FS_nbrow_max; lrow++) {
+    for (Integer lcol = 0; lcol < FS_nbcol_max; lcol++) {
+      for (Integer lrow = 0; lrow < FS_nbrow_max; lrow++) {
         auto gcol = lcol2gcol_index[lcol];
         auto pcol = eigen_libs0::eigen_owner_node(gcol, eigen_npcol);
 
@@ -408,12 +424,12 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
     prof_time[11] = etime - stime;
     stime = etime;
 
-    const auto i0 = select_first_communicater(
+    const auto i0 = select_first_communicater<Integer>(
         send_nrank, eigen_np, eigen_myrank, comm_send_data.get());
-    for (auto k0 = i0; k0 < send_nrank + i0; k0++) {
+    for (Integer k0 = i0; k0 < send_nrank + i0; k0++) {
       const auto k = (k0 + 1) % send_nrank;
       if (comm_send_data[k].rank + 1 != eigen_myrank) {
-        for (auto j = 0; j < comm_send_data[k].Ndata; j++) {
+        for (Integer j = 0; j < comm_send_data[k].Ndata; j++) {
           const auto lcol = sendrank_list[k].lid[j] / FS_nbrow_max;
           const auto gcol = lcol2gcol_index[lcol];
           const auto lrow = sendrank_list[k].lid[j] % FS_nbrow_max;
@@ -428,7 +444,7 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
     }
 
     // Recv側のWait
-    for (auto k0 = 0; k0 < recv_nrank; k0++) {
+    for (Integer k0 = 0; k0 < recv_nrank; k0++) {
       if (comm_recv_data[k0].rank + 1 != eigen_myrank) {
         MPI_Wait(&comm_recv_data[k0].req, MPI_STATUS_IGNORE);
       }
@@ -436,9 +452,9 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
 
     // 送信データのアンパック
     // 送信先が自分自身であればデータコピー
-    for (auto k0 = 0; k0 < send_nrank; k0++) {
+    for (Integer k0 = 0; k0 < send_nrank; k0++) {
       if (eigen_myrank == comm_send_data[k0].rank + 1) {
-        for (auto i = 0; i < comm_send_data[k0].Ndata; i++) {
+        for (Integer i = 0; i < comm_send_data[k0].Ndata; i++) {
           const auto lcol = sendrank_list[k0].lid[i] / FS_nbrow_max;
           const auto gcol = lcol2gcol_index[lcol];
           const auto lrow = sendrank_list[k0].lid[i] % FS_nbrow_max;
@@ -448,7 +464,7 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
           sendbuf[i].GCol = gcol;
           sendbuf[i].MatrixValue = q[lcol * ldq + lrow];
         }
-        for (auto i = 0; i < comm_send_data[k0].Ndata; i++) {
+        for (Integer i = 0; i < comm_send_data[k0].Ndata; i++) {
           const auto gcol = sendbuf[i].GCol;
           const auto grow = sendbuf[i].GRow;
           const auto lcol = eigen_libs0::eigen_translate_g2l(gcol, eigen_npcol);
@@ -460,10 +476,10 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
     }
 
 #pragma omp parallel for schedule(dynamic, 1)
-    for (auto k = 0; k < recv_nrank; k++) {
+    for (Integer k = 0; k < recv_nrank; k++) {
       if (comm_recv_data[k].rank + 1 != eigen_myrank) {
         const auto Ndata = comm_recv_data[k].Ndata;
-        for (auto i = 0; i < Ndata; i++) {
+        for (Integer i = 0; i < Ndata; i++) {
           const auto gcol = comm_recv_data[k].bufp[i].GCol;
           const auto grow = comm_recv_data[k].bufp[i].GRow;
           const auto lcol = eigen_libs0::eigen_translate_g2l(gcol, eigen_npcol);
@@ -474,11 +490,11 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
     }
   } else {
     if (recv_nrank != 0) {
-      for (auto k = 0; k < recv_nrank; k++) {
+      for (Integer k = 0; k < recv_nrank; k++) {
         MPI_Wait(&comm_recv_data[k].req, MPI_STATUS_IGNORE);
         const auto Ndata = comm_recv_data[k].Ndata;
 #pragma omp parallel for
-        for (auto i = 0; i < Ndata; i++) {
+        for (Integer i = 0; i < Ndata; i++) {
           const auto gcol = comm_recv_data[k].bufp[i].GCol;
           const auto grow = comm_recv_data[k].bufp[i].GRow;
           const auto lcol = eigen_libs0::eigen_translate_g2l(gcol, eigen_npcol);

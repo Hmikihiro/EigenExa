@@ -19,10 +19,11 @@
 namespace FS_pdlaed1 {
 using eigen_FS::FS_reduce_zd;
 using std::printf;
-template <class Float>
-int FS_pdlaed1(int n, int n1, Float d[], Float q[], int ldq,
-               const FS_dividing::bt_node<Float> &subtree, Float rho,
-               Float work[], int iwork[], FS_prof::FS_prof &prof) {
+template <class Integer, class Float>
+Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
+                   const FS_dividing::bt_node<Integer, Float> &subtree,
+                   Float rho, Float work[], Integer iwork[],
+                   FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
     printf("FS_pdlaed1 start.\n");
@@ -45,11 +46,11 @@ int FS_pdlaed1(int n, int n1, Float d[], Float q[], int ldq,
   const auto nb = subtree.FS_get_NB();
   const auto np = (nblk / grid_info.nprow) * nb;
   const auto nq = (nblk / grid_info.npcol) * nb;
-  const auto ldq2 = std::max(np, 1);
+  const auto ldq2 = std::max(np, (Integer)1);
   const auto ldu = nq;
   const auto lsendq2 = ldq2 * nq;
   //
-  const int iz = 0;
+  const Integer iz = 0;
   const auto z = &work[iz];
   const auto idlamda = iz + n;
   const auto dlamda = &work[idlamda];
@@ -66,7 +67,7 @@ int FS_pdlaed1(int n, int n1, Float d[], Float q[], int ldq,
   const auto irecvq2 = isendq2 + lsendq2;
   const auto recvq2 = &work[irecvq2];
   //
-  const int ictot = 0;
+  const Integer ictot = 0;
   const auto ipsm = ictot + grid_info.npcol * 4;
   const auto indx = ipsm + grid_info.npcol * 4;
   const auto indxc = indx + n;
@@ -86,7 +87,7 @@ int FS_pdlaed1(int n, int n1, Float d[], Float q[], int ldq,
 #if TIMER_PRINT
   prof.start(31);
 #endif
-  eigen_FS::FS_merge_d<Float>(n, d, subtree, &work[idwork]);
+  eigen_FS::FS_merge_d<Integer, Float>(n, d, subtree, &work[idwork]);
 #if TIMER_PRINT
   prof.end(31);
 #endif
@@ -94,15 +95,16 @@ int FS_pdlaed1(int n, int n1, Float d[], Float q[], int ldq,
   // Form the z-vector which consists of the last row of Q_1 and the
   // first row of Q_2.
   //
-  FS_pdlaedz::FS_pdlaedz<Float>(n, n1, q, ldq, subtree, &work[izwork], prof);
+  FS_pdlaedz::FS_pdlaedz<Integer, Float>(n, n1, q, ldq, subtree, &work[izwork],
+                                         prof);
   //
   // MPI_allreduce d and z
   //
-  FS_reduce_zd<Float>(n, subtree, &work[izwork], &work[iz], d, prof);
+  FS_reduce_zd<Integer, Float>(n, subtree, &work[izwork], &work[iz], d, prof);
   //
   // Deflate eigenvalues.
   //
-  const auto k = FS_pdlaed2::FS_pdlaed2(
+  const auto k = FS_pdlaed2::FS_pdlaed2<Integer, Float>(
       n, n1, d, q, ldq, subtree, rho, z, w, dlamda, ldq2, q2, &iwork[indx],
       &iwork[ictot], buf, &iwork[coltyp], &iwork[indcol], &iwork[indxc],
       &iwork[indxp], &iwork[ipsm], prof);
@@ -110,14 +112,14 @@ int FS_pdlaed1(int n, int n1, Float d[], Float q[], int ldq,
   //
   // Solve Secular Equation.
   //
-  int lctot = subtree.y_nnod_;
-  int info = 0;
+  Integer lctot = subtree.y_nnod_;
+  Integer info = 0;
   if (k != 0) {
-    info = FS_pdlaed3::FS_pdlaed3(k, n, n1, d, rho, dlamda, w, ldq, q, subtree,
-                                  ldq2, q2, ldu, u, &iwork[indx], lctot,
-                                  &iwork[ictot], sendq2, recvq2, z, buf,
-                                  &iwork[indrow], &iwork[indcol], &iwork[indxc],
-                                  &iwork[indxr], &iwork[indxcb], prof);
+    info = FS_pdlaed3::FS_pdlaed3<Integer, Float>(
+        k, n, n1, d, rho, dlamda, w, ldq, q, subtree, ldq2, q2, ldu, u,
+        &iwork[indx], lctot, &iwork[ictot], sendq2, recvq2, z, buf,
+        &iwork[indrow], &iwork[indcol], &iwork[indxc], &iwork[indxr],
+        &iwork[indxcb], prof);
   }
 #if TIMER_PRINT
   prof.end(30);

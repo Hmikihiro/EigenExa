@@ -36,31 +36,26 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
   eigen_dc::p_timez = 0;
   eigen_timer_reset(1, 0, 0, 0);
 
-  const auto np_procs = eigen_get_procs();
-  const auto nprocs = np_procs.procs;
-  const auto nprow = np_procs.x_procs;
-  const auto npcol = np_procs.y_procs;
-
-  const auto iam = eigen_get_id().id - 1;
-
   const auto eigen_comm = eigen_get_comm().eigen_comm;
 
-  long lwork_, liwork_;
-  FS_WorkSize(n, lwork_, liwork_);
+  const auto worksize = FS_WorkSize(n);
+  eigen_int64 lwork_ = worksize.lwork;
+  eigen_int64 liwork_ = worksize.liwork;
 
   const int FS_COMM_MEMBER = FS_libs::is_comm_member();
   if (!FS_COMM_MEMBER) {
     lwork_ = 0;
     liwork_ = 0;
   }
-  long lwork;
-  long liwork;
-  MPI_Allreduce(&lwork_, &lwork, 1, MPI_LONG, MPI_MAX, eigen_comm);
-  MPI_Allreduce(&liwork_, &liwork, 1, MPI_LONG, MPI_MAX, eigen_comm);
+  eigen_int64 lwork;
+  eigen_int64 liwork;
+  const auto datatype = FS_const::MPI_TYPE<eigen_int64>;
+  MPI_Allreduce(&lwork_, &lwork, 1, MPI_LONG_LONG, MPI_MAX, eigen_comm);
+  MPI_Allreduce(&liwork_, &liwork, 1, MPI_LONG_LONG, MPI_MAX, eigen_comm);
 
   try {
     unique_ptr<Float[]> work(new Float[lwork]);
-    unique_ptr<int[]> iwork(new int[liwork]);
+    unique_ptr<eigen_int64[]> iwork(new eigen_int64[liwork]);
 
 #if defined(__INTEL_COMPILER) && USE_MKL
     const auto mkl_mode = mkl_get_Dynamic();
@@ -72,8 +67,8 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 
     prof.init();
 #endif
-    *info = FS_EDC::FS_EDC<int, Float>(n, d, e, z, ldz, work.get(), lwork,
-                                       iwork.get(), liwork, &prof);
+    *info = FS_EDC::FS_EDC<eigen_int64, Float>(
+        n, d, e, z, ldz, work.get(), lwork, iwork.get(), liwork, &prof);
 #if TIMER_PRINT
     prof.finalize();
 #endif
@@ -90,6 +85,7 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 #endif
 
 #if TIMER_PRINT > 1
+    const auto iam = eigen_get_id().id - 1;
     if (iam == 0) {
       printf("FS_EDC     %f\n", prof.region_time[10]);
     }
