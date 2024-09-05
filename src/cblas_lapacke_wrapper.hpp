@@ -2,7 +2,6 @@
 #ifndef FS_BLAS_HPP
 #define FS_BLAS_HPP
 
-#define __INTEL_LLVM_COMPILER
 #if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
 
 #include <mkl.h>
