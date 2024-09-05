@@ -2,8 +2,8 @@
 #ifndef FS_PDLAED1_HPP
 #define FS_PDLAED1_HPP
 
-#include <mpi.h>
 #include <cstdio>
+#include <mpi.h>
 
 #include <algorithm>
 
@@ -19,10 +19,10 @@
 namespace FS_pdlaed1 {
 using eigen_FS::FS_reduce_zd;
 using std::printf;
-template<class Float>
+template <class Float>
 int FS_pdlaed1(int n, int n1, Float d[], Float q[], int ldq,
-               const FS_dividing::bt_node<Float> &subtree, Float rho, Float work[],
-               int iwork[], FS_prof::FS_prof &prof) {
+               const FS_dividing::bt_node<Float> &subtree, Float rho,
+               Float work[], int iwork[], FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
     printf("FS_pdlaed1 start.\n");
@@ -103,10 +103,9 @@ int FS_pdlaed1(int n, int n1, Float d[], Float q[], int ldq,
   // Deflate eigenvalues.
   //
   const auto k = FS_pdlaed2::FS_pdlaed2(
-      n, n1, d, q, ldq, subtree, rho, z, w, dlamda, ldq2, q2,
-      &iwork[indx], &iwork[ictot], buf, &iwork[coltyp], &iwork[indcol],
-      &iwork[indxc], &iwork[indxp], &iwork[ipsm], prof);
-
+      n, n1, d, q, ldq, subtree, rho, z, w, dlamda, ldq2, q2, &iwork[indx],
+      &iwork[ictot], buf, &iwork[coltyp], &iwork[indcol], &iwork[indxc],
+      &iwork[indxp], &iwork[ipsm], prof);
 
   //
   // Solve Secular Equation.
@@ -114,11 +113,11 @@ int FS_pdlaed1(int n, int n1, Float d[], Float q[], int ldq,
   int lctot = subtree.y_nnod_;
   int info = 0;
   if (k != 0) {
-    info = FS_pdlaed3::FS_pdlaed3_C(k, n, n1, d, rho, dlamda, w, ldq, q, subtree, ldq2, q2,
-                           ldu, u, &iwork[indx], lctot, &iwork[ictot],
-                           sendq2, recvq2, z, buf, &iwork[indrow],
-                           &iwork[indcol], &iwork[indxc], &iwork[indxr],
-                           &iwork[indxcb], prof);
+    info = FS_pdlaed3::FS_pdlaed3(k, n, n1, d, rho, dlamda, w, ldq, q, subtree,
+                                  ldq2, q2, ldu, u, &iwork[indx], lctot,
+                                  &iwork[ictot], sendq2, recvq2, z, buf,
+                                  &iwork[indrow], &iwork[indcol], &iwork[indxc],
+                                  &iwork[indxr], &iwork[indxcb], prof);
   }
 #if TIMER_PRINT
   prof.end(30);
@@ -130,6 +129,6 @@ int FS_pdlaed1(int n, int n1, Float d[], Float q[], int ldq,
 #endif
   return info;
 }
-}  // namespace FS_pdlaed1
+} // namespace FS_pdlaed1
 
 #endif

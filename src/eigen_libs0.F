@@ -2073,7 +2073,7 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       integer function eigen_translate_g2l_(ictr, nnod, inod)
-     &     result(ret)
+     &     result(ret) 
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_translate_g2l_
 
         integer,value, intent(in)    ::  ictr
@@ -2327,7 +2327,7 @@
 
       character(1)           ::  order
 
-      call eigen_get_grid_major( order )
+      order(1:1) = eigen_get_grid_major()
       if ( order(1:1) == 'R' ) then
         ret = xinod * y_nnod + yinod
       else
@@ -2347,7 +2347,7 @@
 
       character(1)           ::  order
 
-      call eigen_get_grid_major( order )
+      order(1:1) = eigen_get_grid_major()
       if ( order(1:1) == 'R' ) then
         xinod =    (inod-1)/y_nnod +1
         yinod = mod(inod-1, y_nnod)+1

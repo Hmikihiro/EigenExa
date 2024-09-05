@@ -104,6 +104,7 @@ libEigenExa_a_SOURCES = \
     FS_libs_C.cpp \
 	dc2_FS.F \
 	eigen_FS.F \
+	eigen_FS_single_float.F\
 	FS_memory_internal.F \
 	eigen_hrd_t1.F \
 	eigen_hrd_t2.F \
@@ -209,8 +210,6 @@ comm.o : comm.F
 	$(F77) $(AM_FFLAGS) $(FFLAGS0) -c -o $@ $<
 comm_h.o : comm_h.F
 	$(F77) $(AM_FFLAGS) $(FFLAGS0) -c -o $@ $<
-miscC.o : miscC.cpp
-	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -c -o $@ $<
 dc2_FS_C.o :  eigen_FS/dc2_FS_C.cpp eigen_FS/dc2_FS.hpp eigen_FS/FS_pdlaed0.hpp eigen_FS/FS_pdlaed3.hpp eigen_FS/FS_pdlaed2.hpp eigen_FS/FS_pdlaed1.hpp eigen_FS/MPI_Allreduce_group.hpp eigen/eigen_dc.hpp eigen/eigen_libs0.hpp eigen_FS/FS2eigen_pdlasrt.hpp
 	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -c -o $@ $<
 FS_libs_C.o :  eigen_FS/FS_libs_C.cpp  eigen_FS/FS_libs.hpp
@@ -239,8 +238,6 @@ comm.lo : comm.F
 comm_h.lo : comm_h.F
 	$(F77) $(AM_FFLAGS) $(FFLAGS0) $(MACRO_PIC) -c -o tmp_$(@:.lo=.o) $<
 	mv tmp_$(@:.lo=.o) $@
-miscC.lo : miscC.cpp
-	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -fPIC -c -o $@ $<
 dc2_FS_C.lo :  eigen_FS/dc2_FS_C.cpp eigen_FS/dc2_FS.hpp
 	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -fPIC -c -o $@ $<
 FS_libs_C.lo : eigen_FS/FS_libs_C.cpp  eigen_FS/FS_libs.hpp
@@ -298,7 +295,7 @@ endif
 
 
 
-eigen_sx.o eigen_s.o eigen_FS.o eigen_h.o: \
+eigen_sx.o eigen_s.o eigen_FS.o eigen_FS_single_float.o eigen_h.o: \
 	eigen_scaling.o eigen_scaling_h.o \
 	eigen_trd.o eigen_prd.o eigen_hrd.o \
 	bisect.o \
@@ -381,7 +378,7 @@ hrbakwy4.o: hrbakwy4_body.o eigen_hrbak.o
 hrbakwy4_body.o: eigen_hrbak.o
 
 if !SKIP_SHARED
-eigen_sx.lo eigen_s.lo eigen_FS.lo eigen_h.lo: \
+eigen_sx.lo eigen_s.lo eigen_FS.lo eigen_FS_single_float.lo eigen_h.lo: \
 	eigen_scaling.lo eigen_scaling_h.lo \
 	eigen_trd.lo eigen_prd.lo eigen_hrd.lo \
 	bisect.lo \

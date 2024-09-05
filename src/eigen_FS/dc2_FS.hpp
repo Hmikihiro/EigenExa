@@ -25,7 +25,7 @@ using std::unique_ptr;
 
 template <class Float>
 void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
-            int *info, Float *ret) {
+            long *info, Float *ret) {
   eigen_dc::flops = 0;
   eigen_dc::dgemm_time = 0;
   eigen_dc::p_time0 = 0;
@@ -46,7 +46,7 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 
   MPI_Comm eigen_comm, eigen_x_comm, eigen_y_comm;
   eigen_get_comm(eigen_comm, eigen_x_comm, eigen_y_comm);
-  int lwork_, liwork_;
+  long lwork_, liwork_;
   FS_WorkSize(n, lwork_, liwork_);
 
   const int FS_COMM_MEMBER = FS_libs::is_comm_member();
@@ -54,10 +54,10 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
     lwork_ = 0;
     liwork_ = 0;
   }
-  int lwork;
-  int liwork;
-  MPI_Allreduce(&lwork_, &lwork, 1, MPI_INT, MPI_MAX, eigen_comm);
-  MPI_Allreduce(&liwork_, &liwork, 1, MPI_INT, MPI_MAX, eigen_comm);
+  long lwork;
+  long liwork;
+  MPI_Allreduce(&lwork_, &lwork, 1, MPI_LONG, MPI_MAX, eigen_comm);
+  MPI_Allreduce(&liwork_, &liwork, 1, MPI_LONG, MPI_MAX, eigen_comm);
 
   try {
     unique_ptr<Float[]> work(new Float[lwork]);
@@ -116,6 +116,6 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 
   return;
 }
-}  // namespace eigen_FS
+} // namespace eigen_FS
 
 #endif

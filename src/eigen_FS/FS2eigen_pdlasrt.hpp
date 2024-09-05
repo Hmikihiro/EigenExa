@@ -17,17 +17,15 @@ namespace FS2eigen {
 using FS_dividing::bt_node;
 using std::printf;
 
-template <class Float>
-class GpositionValue {
- public:
+template <class Float> class GpositionValue {
+public:
   int GRow;
   int GCol;
   Float MatrixValue;
 };
 
-template <class Float>
-class CommBuf {
- public:
+template <class Float> class CommBuf {
+public:
   int rank;
   int Ndata;
   MPI_Request req;
@@ -37,22 +35,22 @@ class CommBuf {
 };
 
 class RANKLIST {
- public:
+public:
   int index;
   int *lid;
 };
 
 class NrankMaxsize {
- public:
+public:
   int nrank;
   int maxsize;
 };
 
 inline NrankMaxsize get_nrank_maxsize(int eigen_np,
-                              const int comm_send_or_recv_info[]) {
+                                      const int comm_send_or_recv_info[]) {
   int send_or_recv_nrank = 0;
   int send_or_recv_maxsize = 1;
-#pragma omp parallel for reduction(+ : send_or_recv_nrank) \
+#pragma omp parallel for reduction(+ : send_or_recv_nrank)                     \
     reduction(max : send_or_recv_maxsize)
   for (auto i = 0; i < eigen_np; i++) {
     if (comm_send_or_recv_info[i] != 0) {
@@ -145,9 +143,10 @@ inline int eigen_rank_xy2comm(char grid_major, int x_inod, int y_inod) {
 
 /**
  * \brief 送信先が被らないように初回の通信相手を選択する
-*/
+ */
 template <class Float>
-int select_first_communicater(int send_nrank, int eigen_np,int eigen_myrank, const CommBuf<Float> comm_send_data[]) {
+int select_first_communicater(int send_nrank, int eigen_np, int eigen_myrank,
+                              const CommBuf<Float> comm_send_data[]) {
   int i0 = 0;
   if (0 < send_nrank) {
     i0 = -1;
@@ -188,11 +187,10 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
 
   int eigen_np, eigen_nprow, eigen_npcol;
   int eigen_myrank, eigen_myrow, eigen_mycol;
-  char eigen_grid_major;
   MPI_Comm eigen_comm, eigen_x_comm, eigen_y_comm;
   eigen_libs0::eigen_get_procs(eigen_np, eigen_nprow, eigen_npcol);
   eigen_libs0::eigen_get_id(eigen_myrank, eigen_myrow, eigen_mycol);
-  eigen_libs0::eigen_get_grid_major(eigen_grid_major);
+  const char eigen_grid_major = eigen_libs0::eigen_get_grid_major();
   eigen_libs0::eigen_get_comm(eigen_comm, eigen_x_comm, eigen_y_comm);
 
   int *comm_send_info = new int[eigen_np];
@@ -204,7 +202,6 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
     comm_recv_info[i] = -1;
   }
   MPI_Bcast(d, n, FS_const::MPI_TYPE<Float>, 0, eigen_comm);
-
 
   std::iota(indx, indx + n, 0);
   std::sort(indx, &indx[n], [&d](int i1, int i2) { return d[i1] < d[i2]; });
@@ -229,13 +226,19 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
                                            : FS_dividing::GridInfo{0, 0, 0, 0};
   const int FS_nblk = FS_comm_member ? subtree.FS_get_NBLK() : 0;
   const int FS_nb = FS_comm_member ? subtree.FS_get_NB() : 0;
-  const int FS_nbrow = FS_comm_member ? (FS_nblk / FS_grid_info.nprow) * FS_nb : 0;
-  const int FS_nbcol = FS_comm_member ? (FS_nblk / FS_grid_info.npcol) * FS_nb : 0;
+  const int FS_nbrow =
+      FS_comm_member ? (FS_nblk / FS_grid_info.nprow) * FS_nb : 0;
+  const int FS_nbcol =
+      FS_comm_member ? (FS_nblk / FS_grid_info.npcol) * FS_nb : 0;
   const int FS_nbrow_max =
-      FS_comm_member ? get_FS_nbrow_max(n, subtree, FS_nbrow, FS_grid_info.myrow) : 0;
+      FS_comm_member
+          ? get_FS_nbrow_max(n, subtree, FS_nbrow, FS_grid_info.myrow)
+          : 0;
   // プロセス数で割り切れない場合に拡張した領域を除いた計算領域の総数
   const int FS_nbcol_max =
-      FS_comm_member ? get_FS_nbcol_max(n, subtree, FS_nbcol, FS_grid_info.mycol) : 0;
+      FS_comm_member
+          ? get_FS_nbcol_max(n, subtree, FS_nbcol, FS_grid_info.mycol)
+          : 0;
 
   auto etime = MPI_Wtime();
   prof_time[0] = etime - stime;
@@ -268,7 +271,7 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
     // grow,
     // gcolはプロセス行で行列字数を割り切れない場合に対応するために拡張した字数の行列番号を返すので，
     // 拡張した範囲を省くために行列字数を超えたらexitする
-#pragma omp parallel for reduction(+ : comm_send_info[0 : eigen_np]) \
+#pragma omp parallel for reduction(+ : comm_send_info[0 : eigen_np])           \
     schedule(dynamic, 1)
     for (auto lcol = 0; lcol < FS_nbcol_max; lcol++) {
       // 固有値を並び替える前の列番号を取得
@@ -348,7 +351,8 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
   prof_time[4] = etime - stime;
   stime = etime;
 
-  const auto recv_nrank_maxsize = get_nrank_maxsize(eigen_np, comm_recv_info.get());
+  const auto recv_nrank_maxsize =
+      get_nrank_maxsize(eigen_np, comm_recv_info.get());
   const auto recv_nrank = recv_nrank_maxsize.nrank;
 
   etime = MPI_Wtime();
@@ -402,8 +406,8 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
     prof_time[11] = etime - stime;
     stime = etime;
 
-    const auto i0 = select_first_communicater(send_nrank, eigen_np, eigen_myrank,
-                              comm_send_data.get());
+    const auto i0 = select_first_communicater(
+        send_nrank, eigen_np, eigen_myrank, comm_send_data.get());
     for (auto k0 = i0; k0 < send_nrank + i0; k0++) {
       const auto k = (k0 + 1) % send_nrank;
       if (comm_send_data[k].rank + 1 != eigen_myrank) {
@@ -502,7 +506,7 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
   return 0;
 }
 
-}  // namespace FS2eigen
-}  // namespace eigen_FS
+} // namespace FS2eigen
+} // namespace eigen_FS
 
 #endif

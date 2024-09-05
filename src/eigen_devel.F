@@ -308,7 +308,7 @@
 
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     
-! Subroutine: eigen_get_grid_major
+! Function: eigen_get_grid_major
 !
 ! Purpose
 ! =======
@@ -316,7 +316,7 @@
 ! eigen_set_grid_major returns the grid major registered.
 !
 !
-! Arguments
+! Return
 ! =========
 !
 ! Major   (output) character(*)
@@ -325,17 +325,14 @@
 !
 !--------*---------*---------*---------*---------*---------*---------*-*
 
-      subroutine eigen_get_grid_major(Major) 
+      character(c_char) function eigen_get_grid_major() result(Major)
      & bind(c, name="eigen_get_grid_major")
-     
-
-      character(c_char) , intent(out) :: Major
 
       Major = Process_Grid_Major(1:1)
 
       return
       
-      end subroutine eigen_get_grid_major
+      end function eigen_get_grid_major
 
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     
