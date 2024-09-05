@@ -178,8 +178,8 @@ int FS_pdlaed2(int n, int n1, Float d[], Float q[], int ldq,
   rho = std::abs(FS_const::TWO<Float> * rho);
 
   // Calculate the allowable deflation tolerance
-  const auto imax = lapacke::iamax<int, Float>(n, z, 1);
-  const auto jmax = lapacke::iamax<int, Float>(n, d, 1);
+  const auto imax = lapacke::iamax<Float>(n, z, 1);
+  const auto jmax = lapacke::iamax<Float>(n, d, 1);
   const auto abs_zmax = std::abs(z[imax]);
   const auto abs_dmax = std::abs(d[jmax]);
   const auto eps = std::numeric_limits<Float>::epsilon() / 2;

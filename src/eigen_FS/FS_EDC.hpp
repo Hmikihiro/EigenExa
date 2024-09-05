@@ -119,7 +119,7 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 #endif
   } else {
     // Scale matrix to allowable range, if necessary.
-    auto orgnrm = lapacke::lanst<Integer, Float>('M', n, D, E);
+    auto orgnrm = lapacke::lanst<Float>('M', n, D, E);
     if (std::isnan(orgnrm)) {
       orgnrm = ZERO<Float>;
     }
