@@ -36,16 +36,15 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
   eigen_dc::p_timez = 0;
   eigen_timer_reset(1, 0, 0, 0);
 
-  int nprocs, nprow, npcol;
-  eigen_get_procs(nprocs, nprow, npcol);
-  int iam, myrow, mycol;
-  eigen_get_id(iam, myrow, mycol);
-  iam -= 1;
-  myrow -= 1;
-  mycol -= 1;
+  const auto np_procs = eigen_get_procs();
+  const auto nprocs = np_procs.procs;
+  const auto nprow = np_procs.x_procs;
+  const auto npcol = np_procs.y_procs;
 
-  MPI_Comm eigen_comm, eigen_x_comm, eigen_y_comm;
-  eigen_get_comm(eigen_comm, eigen_x_comm, eigen_y_comm);
+  const auto iam = eigen_get_id().id - 1;
+
+  const auto eigen_comm = eigen_get_comm().eigen_comm;
+
   long lwork_, liwork_;
   FS_WorkSize(n, lwork_, liwork_);
 

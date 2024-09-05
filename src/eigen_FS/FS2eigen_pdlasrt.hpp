@@ -9,6 +9,7 @@
 #include <numeric>
 
 #include "../eigen/eigen_libs0.hpp"
+#include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
 
@@ -131,8 +132,9 @@ int get_FS_nbcol_max(int n, const bt_node<Float> &subtree, int FS_nbcol,
 }
 
 inline int eigen_rank_xy2comm(char grid_major, int x_inod, int y_inod) {
-  int nnod, x_nnod, y_nnod;
-  eigen_libs0::eigen_get_procs(nnod, x_nnod, y_nnod);
+  const auto procs = eigen_libs0::eigen_get_procs();
+  const auto x_nnod = procs.x_procs;
+  const auto y_nnod = procs.y_procs;
 
   if (grid_major == 'R') {
     return y_inod + x_inod * y_nnod;
@@ -185,13 +187,13 @@ int FS2eigen_pdlasrt(int n, Float d[], int ldq, Float q[],
   prof.start(70);
 #endif
 
-  int eigen_np, eigen_nprow, eigen_npcol;
-  int eigen_myrank, eigen_myrow, eigen_mycol;
-  MPI_Comm eigen_comm, eigen_x_comm, eigen_y_comm;
-  eigen_libs0::eigen_get_procs(eigen_np, eigen_nprow, eigen_npcol);
-  eigen_libs0::eigen_get_id(eigen_myrank, eigen_myrow, eigen_mycol);
+  const auto eigen_procs = eigen_libs0::eigen_get_procs();
+  const auto eigen_np = eigen_procs.procs;
+  const auto eigen_nprow = eigen_procs.x_procs;
+  const auto eigen_npcol = eigen_procs.y_procs;
+  const auto eigen_myrank = eigen_libs0::eigen_get_id().id;
   const char eigen_grid_major = eigen_libs0::eigen_get_grid_major();
-  eigen_libs0::eigen_get_comm(eigen_comm, eigen_x_comm, eigen_y_comm);
+  const auto eigen_comm = eigen_libs0::eigen_get_comm().eigen_comm;
 
   int *comm_send_info = new int[eigen_np];
   std::unique_ptr<int[]> comm_recv_info(new int[eigen_np]);

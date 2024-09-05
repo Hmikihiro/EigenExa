@@ -145,8 +145,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
     }
 #endif
 
-    MPI_Comm eigen_comm, x_eigen_comm, y_eigen_comm;
-    eigen_libs0::eigen_get_comm(eigen_comm, x_eigen_comm, y_eigen_comm);
+    const auto eigen_comm = eigen_libs0::eigen_get_comm().eigen_comm;
 
     // TODO MPI_INTがtemplateで書き換えるべき部分
     MPI_Bcast(&nnod.x, 1, MPI_INT, 0, eigen_comm);
@@ -169,8 +168,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
     const auto index = index_col + n;
     const auto index_recv = index + n;
 
-    int eigen_np, x_eigen_np, y_eigen_np;
-    eigen_libs0::eigen_get_procs(eigen_np, x_eigen_np, y_eigen_np);
+    const auto eigen_np = eigen_libs0::eigen_get_procs().procs;
 
     if (nnod.nod == eigen_np) {
       FS_pdlasrt::FS_pdlasrt(n, d, q, ldq, root_node, &work[ipq2], ldq2,
