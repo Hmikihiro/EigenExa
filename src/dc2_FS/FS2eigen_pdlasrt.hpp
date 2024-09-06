@@ -11,7 +11,6 @@
 #include <numeric>
 
 #include "../eigen/eigen_libs0.hpp"
-#include "FS2eigen_pdlasrt_mpi_wrapper.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
