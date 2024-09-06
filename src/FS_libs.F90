@@ -92,24 +92,24 @@ module FS_libs_mod
          character(*), intent(in), optional :: mode
       end subroutine eigen_FS_single_float
 
-       subroutine FS_init(comm,order) bind(c, name="FS_init_c")
+       subroutine FS_init(comm,order) bind(c, name="FS_init")
          use, intrinsic :: iso_c_binding
      
          integer(c_int), intent(in), value :: comm
          character(c_char), intent(in), value:: order
        end subroutine
 
-       subroutine FS_free() bind(c, name="FS_free_c")
+       subroutine FS_free() bind(c, name="FS_free")
          use, intrinsic :: iso_c_binding
        end subroutine 
 
-       subroutine FS_get_matdims(n, nx, ny) bind(c, name="FS_get_matdims_c")
+       subroutine FS_get_matdims(n, nx, ny) bind(c, name="FS_get_matdims")
          use, intrinsic :: iso_c_binding
          integer(c_int), intent(in), value :: n
          integer(c_int), intent(out)       :: nx, ny
        end subroutine
 
-       integer(c_int) function FS_get_myrank() bind(c, name="FS_get_myrank_c")
+       integer(c_int) function FS_get_myrank() bind(c, name="FS_get_myrank")
          use, intrinsic ::iso_c_binding
       end function
 

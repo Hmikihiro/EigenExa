@@ -668,16 +668,16 @@
 !$
 !$    end subroutine sync_other_than_master
 
-      subroutine eigen_abort_c_FS()
-     & bind(c, name="eigen_abort")
+      subroutine FS_eigen_abort()
+     & bind(c, name="FS_eigen_abort")
       use,intrinsic :: iso_c_binding
       
       call eigen_abort("Memory exhausted [DC-FS]", 1)
 
       end subroutine
 
-      subroutine eigen_timer_reset_c(bcast, reduce, redist, gather)
-     & bind(c, name="eigen_timer_reset")
+      subroutine FS_eigen_timer_reset(bcast, reduce, redist, gather)
+     & bind(c, name="FS_eigen_timer_reset")
       use, intrinsic :: iso_c_binding
       integer(c_int), intent(in), value :: bcast
       integer(c_int), intent(in), value :: reduce
@@ -686,11 +686,11 @@
       call eigen_timer_reset(bcast, reduce, redist, gather)
       end subroutine
 
-      real(c_double) function eigen_timer_print_c_FS()
-     & bind(c, name="eigen_timer_print")
+      real(c_double) function FS_eigen_timer_print()
+     & bind(c, name="FS_eigen_timer_print")
       use,intrinsic :: iso_c_binding
       
-      eigen_timer_print_c_FS = eigen_timer_print("")
+      FS_eigen_timer_print = eigen_timer_print("")
       end function
 
       end module eigen_devel_mod

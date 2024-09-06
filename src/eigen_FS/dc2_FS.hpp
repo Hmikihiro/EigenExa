@@ -14,18 +14,17 @@
 #include "FS_libs.hpp"
 
 namespace eigen_FS {
-using eigen_devel::eigen_abort;
-using eigen_devel::eigen_timer_print;
-using eigen_devel::eigen_timer_reset;
+using eigen_devel::FS_eigen_abort;
+using eigen_devel::FS_eigen_timer_reset;
 using eigen_libs0::eigen_get_comm;
 using eigen_libs0::eigen_get_id;
 using eigen_libs0::eigen_get_procs;
 using FS_libs::FS_WorkSize;
 using std::unique_ptr;
 
-template <class Float>
-void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
-            long *info, Float *ret) {
+template <class Integer, class Float>
+void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
+            Integer ldz, long *info, Float *ret) {
   eigen_dc::flops = 0;
   eigen_dc::dgemm_time = 0;
   eigen_dc::p_time0 = 0;
@@ -34,7 +33,7 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
   eigen_dc::p_time3 = 0;
   eigen_dc::p_times = 0;
   eigen_dc::p_timez = 0;
-  eigen_timer_reset(1, 0, 0, 0);
+  FS_eigen_timer_reset(1, 0, 0, 0);
 
   const auto eigen_comm = eigen_get_comm().eigen_comm;
 
@@ -54,7 +53,7 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 
   try {
     unique_ptr<Float[]> work(new Float[lwork]);
-    unique_ptr<eigen_int[]> iwork(new eigen_int[liwork]);
+    unique_ptr<Integer[]> iwork(new Integer[liwork]);
 
 #if defined(__INTEL_COMPILER) && USE_MKL
     const auto mkl_mode = mkl_get_Dynamic();
@@ -66,8 +65,8 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 
     prof.init();
 #endif
-    *info = FS_EDC::FS_EDC<eigen_int, Float>(n, d, e, z, ldz, work.get(), lwork,
-                                             iwork.get(), liwork, &prof);
+    *info = FS_EDC::FS_EDC<Integer, Float>(n, d, e, z, ldz, work.get(), lwork,
+                                           iwork.get(), liwork, &prof);
 #if TIMER_PRINT
     prof.finalize();
 #endif
@@ -91,7 +90,7 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 #endif
 
   } catch (std::bad_alloc) {
-    eigen_abort();
+    FS_eigen_abort();
   }
 
 #if TIMER_PRINT > 1
