@@ -24,7 +24,7 @@ Integer get_NPA(Integer n, Integer nb,
   for (Integer i = 0; i < n; i += nb) {
     const auto row = subtree.FS_info_G1L('R', i).rocsrc;
     if (row == myrow) {
-      for (auto j = 0; j < nb; j++) {
+      for (Integer j = 0; j < nb; j++) {
         if (i + j < n) {
           npa += 1;
         }
@@ -38,11 +38,11 @@ template <class Integer>
 void init_ctot(Integer n, const Integer coltyp[], const Integer indcol[],
                Integer lctot, Integer ctot[], Integer npcol) {
 #pragma omp parallel for
-  for (auto j = 0; j < 4; j++) {
+  for (Integer j = 0; j < 4; j++) {
     std::fill_n(&ctot[j * lctot], npcol, 0);
   }
 
-  for (auto j = 0; j < n; j++) {
+  for (Integer j = 0; j < n; j++) {
     auto ct = coltyp[j];
     auto col = indcol[j];
     ctot[ct * lctot + col] += 1;
@@ -56,7 +56,7 @@ template <class Integer>
 void set_psm(Integer lctot, Integer psm[], const Integer ctot[],
              Integer npcol) {
 #pragma omp parallel for
-  for (auto col = 0; col < npcol; col++) {
+  for (Integer col = 0; col < npcol; col++) {
     psm[0 * lctot + col] = 1;
     psm[1 * lctot + col] = 1 + ctot[0 * lctot + col];
     psm[2 * lctot + col] = psm[1 * lctot + col] + ctot[1 * lctot + col];
@@ -213,17 +213,17 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 #pragma omp parallel
   {
 #pragma omp for
-    for (auto i = 0; i < n1; i++) {
+    for (Integer i = 0; i < n1; i++) {
       coltyp[i] = 0;
     }
 #pragma omp for
-    for (auto i = n1; i < n; i++) {
+    for (Integer i = n1; i < n; i++) {
       coltyp[i] = 2;
     }
 #pragma omp for
-    for (auto i = 0; i < n; i += nb) {
+    for (Integer i = 0; i < n; i += nb) {
       const auto col = subtree.FS_info_G1L('C', i).rocsrc;
-      for (auto j = 0; j < nb; j++) {
+      for (Integer j = 0; j < nb; j++) {
         if (i + j < n) {
           indcol[i + j] = col;
         }
@@ -305,7 +305,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
   // Fill out the INDXC array so that the permutation which it induces
   // will place all type-1 columns first, all type-2 columns next,
   // then all type-3's, and finally all type-4's.
-  for (auto j = 0; j < n; j++) {
+  for (Integer j = 0; j < n; j++) {
     auto js = indxp[j];
     auto col = indcol[js];
     auto ct = coltyp[js];
@@ -316,7 +316,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     ptt[ct] += 1;
   }
 #pragma omp parallel for
-  for (auto j = 0; j < n; j++) {
+  for (Integer j = 0; j < n; j++) {
     const auto js = indxp[j];
     const auto col = indcol[js];
     if (col == mycol) {
@@ -329,7 +329,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 
   std::copy_n(d, n, z);
 #pragma omp parallel for
-  for (auto j = k; j < n; j++) {
+  for (Integer j = k; j < n; j++) {
     const auto js = indxp[j];
     const auto i = indx[j];
     d[i] = z[js];

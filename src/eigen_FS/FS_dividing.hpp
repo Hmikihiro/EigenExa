@@ -416,13 +416,13 @@ void bt_node<Integer, Float>::FS_create_mergeXY_group() {
       Integer ii_incl_nrank = 0;
       if (order == 'R') {
         const auto jj = inod.y - 1;
-        for (auto ii = proc_istart; ii < proc_iend; ii++) {
+        for (Integer ii = proc_istart; ii < proc_iend; ii++) {
           ranklist_group[ii_incl_nrank] = (ii)*nnod.y + (jj);
           ii_incl_nrank += 1;
         }
       } else {
         const auto jj = inod.y - 1;
-        for (auto ii = proc_istart; ii < proc_iend; ii++) {
+        for (Integer ii = proc_istart; ii < proc_iend; ii++) {
           ranklist_group[ii_incl_nrank] = (jj)*nnod.x + (ii);
           ii_incl_nrank += 1;
         }
@@ -449,13 +449,13 @@ void bt_node<Integer, Float>::FS_create_mergeXY_group() {
       Integer jj_incl_nrank = 0;
       if (order == 'R') {
         const auto ii = inod.x - 1;
-        for (auto jj = proc_jstart; jj < proc_jend; jj++) {
+        for (Integer jj = proc_jstart; jj < proc_jend; jj++) {
           ranklist_group[jj_incl_nrank] = (ii)*nnod.y + (jj);
           jj_incl_nrank += 1;
         }
       } else {
         const auto ii = inod.x - 1;
-        for (auto jj = proc_jstart; jj < proc_jend; jj++) {
+        for (Integer jj = proc_jstart; jj < proc_jend; jj++) {
           ranklist_group[jj_incl_nrank] = (jj)*nnod.x + (ii);
           jj_incl_nrank += 1;
         }
@@ -529,8 +529,8 @@ void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
     const auto nrank = [&]() mutable {
       Integer incl_nrank = 0;
       if (order == 'R') {
-        for (auto ii = node.proc_istart_; ii < node.proc_iend_; ii++) {
-          for (auto jj = node.proc_jstart_; jj < node.proc_jend_; jj++) {
+        for (Integer ii = node.proc_istart_; ii < node.proc_iend_; ii++) {
+          for (Integer jj = node.proc_jstart_; jj < node.proc_jend_; jj++) {
             const auto i = ii - this->proc_istart_;
             const auto j = jj - this->proc_jstart_;
             ranklist[incl_nrank] = i * this->y_nnod_ + j;
@@ -539,8 +539,8 @@ void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
           }
         }
       } else {
-        for (auto jj = node.proc_jstart_; jj < node.proc_jend_; jj++) {
-          for (auto ii = node.proc_istart_; ii < node.proc_iend_; ii++) {
+        for (Integer jj = node.proc_jstart_; jj < node.proc_jend_; jj++) {
+          for (Integer ii = node.proc_istart_; ii < node.proc_iend_; ii++) {
             const auto i = ii - this->proc_istart_;
             const auto j = jj - this->proc_jstart_;
             ranklist[incl_nrank] = j * this->x_nnod_ + i;
@@ -637,7 +637,7 @@ g1l<Integer> bt_node<Integer, Float>::FS_info_G1L(char comp,
   Integer i_bit0 = 0;
   Integer i_bit1 = 0;
   if (this->div_nbit_ > 0) {
-    for (auto i = this->div_nbit_; i > 0; i--) {
+    for (Integer i = this->div_nbit_; i > 0; i--) {
       const auto b = i - 1;
       if (!(this->div_bit_ & (1 << b))) {
         i_bit0 <<= 1;

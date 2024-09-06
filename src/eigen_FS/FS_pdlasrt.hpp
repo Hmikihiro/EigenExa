@@ -42,10 +42,10 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
   const auto nq = (nblk / npcol) * nb;
 //
 #pragma omp parallel for schedule(static, 1)
-  for (auto i = 0; i < n; i += nb) {
+  for (Integer i = 0; i < n; i += nb) {
     const auto row = subtree.FS_info_G1L('R', i).rocsrc;
     const auto col = subtree.FS_info_G1L('C', i).rocsrc;
-    for (auto j = 0; j < nb; j++) {
+    for (Integer j = 0; j < nb; j++) {
       if (i + j < n) {
         indrow[i + j] = row;
         indcol[i + j] = col;
@@ -62,18 +62,18 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
 #pragma omp parallel
   {
 #pragma omp for
-    for (auto i = 0; i < n; i++) {
+    for (Integer i = 0; i < n; i++) {
       buf[i] = d[indx[i]];
     }
 #pragma omp for
-    for (auto i = 0; i < n; i++) {
+    for (Integer i = 0; i < n; i++) {
       d[i] = buf[i];
     }
   }
 
   // 列方向の入れ替え
   // 固有値昇順に合わせたソートと非ブロックサイクリック化
-  for (auto pj = 0; pj < npcol; pj++) {
+  for (Integer pj = 0; pj < npcol; pj++) {
     // 入れ替え対象のプロセス列
     // デッドロックしないように逆順に回す
     const auto pjcol = (npcol - 1 - mycol - pj + npcol) % npcol;
@@ -130,7 +130,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
     if (nrecv > 0) {
       MPI_Wait(&req, &stat);
 #pragma omp parallel for
-      for (auto j = 0; j < nrecv; j++) {
+      for (Integer j = 0; j < nrecv; j++) {
         const auto jl = indrcv[j];
         std::copy_n(&recvq[j * np], np, &q2[jl * ldq2]);
       }
@@ -139,7 +139,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
   //======================================================================
   // 列方向の入れ替え
   // 非ブロックサイクリック化
-  for (auto pj = 0; pj < nprow; pj++) {
+  for (Integer pj = 0; pj < nprow; pj++) {
     // 入れ替え対象のプロセス行
     // デッドロックしないように逆順に回す
     const auto pjrow = (nprow - 1 - myrow - pj + nprow) % nprow;

@@ -41,7 +41,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
   if (iz1row == grid_info.myrow) {
     // z1を含むプロセス例
 #pragma omp parallel for
-    for (auto j = 0; j < n1; j += nb) {
+    for (Integer j = 0; j < n1; j += nb) {
       const auto jz1 = subtree.FS_info_G1L('C', j);
       if (jz1.rocsrc == grid_info.mycol) {
         const auto nb1 = std::min(n1, j + nb) - j;
@@ -58,7 +58,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
   if (iz2row == grid_info.myrow) {
     // z2を含むプロセス例
 #pragma omp parallel for
-    for (auto j = n1; j < n; j += nb) {
+    for (Integer j = n1; j < n; j += nb) {
       const auto jz2_info = subtree.FS_info_G1L('C', j);
       const auto &jz2 = jz2_info.l_index;
       const auto &jz2col = jz2_info.rocsrc;
