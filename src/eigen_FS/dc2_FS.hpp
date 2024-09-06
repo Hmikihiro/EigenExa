@@ -106,7 +106,7 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
   }
 #endif
 
-  MPI_Allreduce(&eigen_dc::flops, ret, 1, FS_const::MPI_TYPE<double>, MPI_SUM,
+  MPI_Allreduce(&eigen_dc::flops, ret, 1, FS_const::MPI_TYPE<Float>, MPI_SUM,
                 eigen_comm);
 
   return;
