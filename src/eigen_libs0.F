@@ -2709,7 +2709,7 @@
 
       end subroutine eigen_check_mat_NaN
 
-      subroutine FS_eigen_init0(comm, order) bind(c, name="eigen_init0")
+      subroutine FS_eigen_init0(comm, order) bind(c, name="FS_eigen_init0")
          use,intrinsic :: iso_c_binding
          
          integer(c_int),      intent(in),value :: comm
@@ -2718,7 +2718,7 @@
       end subroutine
          
 
-      subroutine FS_eigen_free0() bind(c, name="eigen_free0")
+      subroutine FS_eigen_free0() bind(c, name="FS_eigen_free0")
          use, intrinsic :: iso_c_binding
          call eigen_free0()
       end subroutine FS_eigen_free0
