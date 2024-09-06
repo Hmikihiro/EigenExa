@@ -39,23 +39,22 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
   const auto eigen_comm = eigen_get_comm().eigen_comm;
 
   const auto worksize = FS_WorkSize(n);
-  eigen_int64 lwork_ = worksize.lwork;
-  eigen_int64 liwork_ = worksize.liwork;
+  long long lwork_ = worksize.lwork;
+  long long liwork_ = worksize.liwork;
 
   const int FS_COMM_MEMBER = FS_libs::is_comm_member();
   if (!FS_COMM_MEMBER) {
     lwork_ = 0;
     liwork_ = 0;
   }
-  eigen_int64 lwork;
-  eigen_int64 liwork;
-  const auto datatype = FS_const::MPI_TYPE<eigen_int64>;
+  long long lwork;
+  long long liwork;
   MPI_Allreduce(&lwork_, &lwork, 1, MPI_LONG_LONG, MPI_MAX, eigen_comm);
   MPI_Allreduce(&liwork_, &liwork, 1, MPI_LONG_LONG, MPI_MAX, eigen_comm);
 
   try {
     unique_ptr<Float[]> work(new Float[lwork]);
-    unique_ptr<eigen_int64[]> iwork(new eigen_int64[liwork]);
+    unique_ptr<eigen_int[]> iwork(new eigen_int[liwork]);
 
 #if defined(__INTEL_COMPILER) && USE_MKL
     const auto mkl_mode = mkl_get_Dynamic();
@@ -67,8 +66,8 @@ void dc2_FS(int n, int nvec, Float d[], Float e[], Float z[], int ldz,
 
     prof.init();
 #endif
-    *info = FS_EDC::FS_EDC<eigen_int64, Float>(
-        n, d, e, z, ldz, work.get(), lwork, iwork.get(), liwork, &prof);
+    *info = FS_EDC::FS_EDC<eigen_int, Float>(n, d, e, z, ldz, work.get(), lwork,
+                                             iwork.get(), liwork, &prof);
 #if TIMER_PRINT
     prof.finalize();
 #endif
