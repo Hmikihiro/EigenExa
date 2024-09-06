@@ -12,10 +12,6 @@ typedef MKL_INT64 eigen_int64;
 
 #else
 #include <cblas.h>
-#include <plasma.h>
-
-#include <core_dblas.h>
-#include <core_sblas.h>
 #include <lapacke.h>
 
 typedef int eigen_int;
@@ -31,6 +27,16 @@ float slanst_(char *norn, eigen_int *n, const float *D, const float *E);
 
 double dlamc3_(double *x, double *y);
 float slamc3_(float *x, float *y);
+
+void dlascl_(const char *type, const eigen_int *kl, const eigen_int *ku,
+             const double *cfrom, const double *cto, const eigen_int *m,
+             const eigen_int *n, double *a, const eigen_int *lda,
+             eigen_int *info);
+
+void slascl_(const char *type, const eigen_int *kl, const eigen_int *ku,
+             const float *cfrom, const float *cto, const eigen_int *m,
+             const eigen_int *n, float *a, const eigen_int *lda,
+             eigen_int *info);
 }
 
 #endif
@@ -71,30 +77,18 @@ inline eigen_int lascl<eigen_int, double>(char type, eigen_int kl, eigen_int ku,
                                           double cfrom, double cto, eigen_int m,
                                           eigen_int n, double *a,
                                           eigen_int lda) {
-#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
-  return LAPACKE_dlascl_work(FS_LAPACKE_LAYOUT, type, kl, ku, cfrom, cto, m, n,
-                             a, lda);
-#else
-  if (type == 'G') {
-    return CORE_dlascl(PlasmaGeneral, kl, ku, cfrom, cto, m, n, a, lda);
-  }
-  return -1;
-#endif
+  eigen_int info = 0;
+  dlascl_(&type, &kl, &ku, &cfrom, &cto, &m, &n, a, &lda, &info);
+  return info;
 }
 
 template <>
 inline eigen_int lascl<eigen_int, float>(char type, eigen_int kl, eigen_int ku,
                                          float cfrom, float cto, eigen_int m,
                                          eigen_int n, float *a, eigen_int lda) {
-#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
-  return LAPACKE_slascl_work(FS_LAPACKE_LAYOUT, type, kl, ku, cfrom, cto, m, n,
-                             a, lda);
-#else
-  if (type == 'G') {
-    return CORE_slascl(PlasmaGeneral, kl, ku, cfrom, cto, m, n, a, lda);
-  }
-  return -1;
-#endif
+  eigen_int info = 0;
+  slascl_(&type, &kl, &ku, &cfrom, &cto, &m, &n, a, &lda, &info);
+  return info;
 }
 
 template <class Integer, class Float>
