@@ -111,7 +111,13 @@ module FS_libs_mod
 
        integer(c_int) function FS_get_myrank() bind(c, name="FS_get_myrank")
          use, intrinsic ::iso_c_binding
-      end function
+       end function
+
+      subroutine FS_WorkSize(N, LWORK, LIWORK) bind(c, name="FS_WorkSize")
+        use, intrinsic :: iso_c_binding
+        integer(c_int), intent(in), value :: N
+        integer(c_long), intent(out) :: LWORK, LIWORK
+      end subroutine
 
   end interface
 
@@ -173,53 +179,5 @@ contains
     end if
 
     return
-
   end subroutine FS_show_version
-  !--------*---------*---------*---------*---------*---------*---------*-*
-  ! calculate work array size
-  !--------*---------*---------*---------*---------*---------*---------*-*
-  !> subroutine FS_WorkSize
-  !> @brief calculate work array size for FS_PDSTEDC
-  !> @param[in]  N       The order of the tridiagonal matrix T.
-  !> @param[out] LWORK   work array size for real
-  !> @param[out] LIWORK  work array size for integer
-  subroutine FS_WorkSize(N, LWORK, LIWORK) bind(c, name="FS_WorkSize")
-    use, intrinsic :: iso_c_binding
-    implicit none
-
-    integer(c_int), intent(in),value  :: N
-    integer(c_long), intent(out) :: LWORK, LIWORK
-
-    integer :: nnod, x_nnod, y_nnod
-    integer :: NP, NQ
-
-    call FS_get_procs(nnod, x_nnod, y_nnod)
-    call FS_get_matdims(N, NP, NQ)
-
-    LWORK  = 1 + 7*N + 3*NP*NQ + NQ*NQ
-    LIWORK = 1 + 8*N + 2*4*y_nnod
-
-    return
-  end subroutine FS_WorkSize
-
-  !--------*---------*---------*---------*---------*---------*---------*-*
-  ! get procs
-  !--------*---------*---------*---------*---------*---------*---------*-*
-  !> subroutine FS_get_procs
-  !> @brief get number of process and process grid size
-  !> @param[out] nnod    number of process
-  !> @param[out] x_nnod  number of row of process grid
-  !> @param[out] y_nnod  number of column of process grid
-  subroutine FS_get_procs(nnod, x_nnod, y_nnod) bind(c, name="FS_get_procs")
-    use, intrinsic :: iso_c_binding
-    implicit none
-
-    integer(c_int), intent(out) :: nnod, x_nnod, y_nnod
-
-    !      call eigen_get_procs(nnod,x_nnod,y_nnod)
-    nnod   = FS_node%nnod 
-    x_nnod = FS_node%x_nnod 
-    y_nnod = FS_node%y_nnod 
-    return
-  end subroutine FS_get_procs
 end module FS_libs_mod
