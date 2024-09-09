@@ -5,7 +5,6 @@
 #include "../eigen/eigen_libs0.hpp"
 #include <algorithm>
 #include <cmath>
-#include <cstdio>
 
 namespace FS_libs {
 using eigen_libs0::eigen_get_comm;
@@ -27,44 +26,8 @@ public:
   int inod, x_inod, y_inod;
 };
 extern process_grid FS_node;
-class version_t {
-public:
-  int Major_Version;
-  int Minor_Version;
-  int Patch_Level;
-  char date[32];
-  char vcode[32];
-};
-constexpr version_t FS_Version = {1, 1, 0, "Mar 31, 2019", "FS proto"};
 
 extern char FS_GRID_major;
-
-inline void FS_get_version(int &version, char date[32] = nullptr,
-                           char vcode[32] = nullptr) {
-  version = FS_Version.Major_Version * 100 + FS_Version.Minor_Version * 10 +
-            FS_Version.Patch_Level;
-  if (date != nullptr) {
-    std::snprintf(date, 32, "%s\n", FS_Version.date);
-  }
-  if (vcode != nullptr) {
-    std::snprintf(vcode, 32, "%s\n", FS_Version.vcode);
-  }
-}
-
-inline void FS_show_version() {
-  const auto id = eigen_get_id().id;
-  const auto i = min(26, FS_Version.Patch_Level);
-  const auto patchlevel = " abcdefghijklmnopqrstuvwxyz*"[i + 1];
-
-  char version[256];
-  std::snprintf(version, 256, "%d.%d%c", FS_Version.Major_Version,
-                FS_Version.Minor_Version, patchlevel);
-
-  if (id == 1) {
-    std::printf("## FS version (%s) / (%s) / (%s)\n", version, FS_Version.date,
-                FS_Version.vcode);
-  }
-}
 
 inline void FS_init_cartesian(char GRID_major, int nnod, int inod) {
   auto x_nnod = int(sqrt(double(nnod)));
@@ -190,6 +153,7 @@ struct fs_worksize {
   long lwork;
   long liwork;
 };
+
 inline fs_worksize FS_WorkSize(int n) {
   int np, nq;
   const auto y_nnod = FS_get_procs().y;
