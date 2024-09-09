@@ -18,7 +18,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
                 const FS_dividing::bt_node<Integer, Float> &subtree, Float z[],
                 FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
-  if (FS_libs::get_myrank() == 0) {
+  if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_pdlaedz start.\n");
   }
 #endif
@@ -74,7 +74,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
   prof.end(40);
 #endif
 #ifdef _DEBUGLOG
-  if (FS_libs::get_myrank() == 0) {
+  if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_pdlaedz end.\n");
   }
 #endif

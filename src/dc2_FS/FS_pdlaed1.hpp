@@ -23,7 +23,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
                    Float rho, Float work[], Integer iwork[],
                    FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
-  if (FS_libs::get_myrank() == 0) {
+  if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_pdlaed1 start.\n");
   }
 #endif
@@ -126,7 +126,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
   prof.end(30);
 #endif
 #ifdef _DEBUGLOG
-  if (FS_libs::get_myrank() == 0) {
+  if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_pdlaed1 end. INFO=%lld\n", info);
   }
 #endif

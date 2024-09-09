@@ -23,7 +23,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
                    Float work[], long lwork, Integer iwork[], long liwork,
                    FS_prof &prof) {
 #ifdef _DEBUGLOG
-  if (FS_libs::get_myrank() == 0) {
+  if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_PDLAED0 start.\n");
   }
 #endif
@@ -104,7 +104,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
 
 #ifdef _DEBUGLOG
         const auto nb = parent_node->FS_get_NB();
-        if (FS_libs::get_myrank() == 0) {
+        if (FS_libs::FS_get_myrank() == 0) {
           std::printf("+---------------------\n");
           std::printf("FS_PDLAED0 merge loop\n");
           std::printf(" layer = %d\n", parent_node->layer_);
@@ -133,14 +133,14 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
       }
 
 #ifdef _DEBUGLOG
-      if (FS_libs::get_myrank() == 0) {
+      if (FS_libs::FS_get_myrank() == 0) {
         std::printf("+---------------------\n");
       }
 #endif
     }
 
 #ifdef _DEBUGLOG
-    if (FS_libs::get_myrank() == 0) {
+    if (FS_libs::FS_get_myrank() == 0) {
       std::printf("START Bcast\n");
     }
 #endif
@@ -193,7 +193,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
   prof.end(20);
 #endif
 #ifdef _DEBUGLOG
-  if (FS_libs::get_myrank() == 0) {
+  if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_PDLAED0 end. info = %d\n", info);
   }
 #endif

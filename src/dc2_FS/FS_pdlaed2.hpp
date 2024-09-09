@@ -153,7 +153,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
                    Integer indxc[], Integer indxp[], Integer psm[],
                    FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
-  if (FS_libs::get_myrank() == 0) {
+  if (FS_libs::FS_get_myrank() == 0) {
     printf("FS_PDLAED2 start.\n");
   }
 #endif
@@ -344,7 +344,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 #endif
 
 #ifdef _DEBUGLOG
-  if (FS_libs::get_myrank() == 0) {
+  if (FS_libs::FS_get_myrank() == 0) {
     printf("FS_PDLAED2 end.\n");
   }
 #endif
