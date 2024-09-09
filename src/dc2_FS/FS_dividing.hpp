@@ -78,7 +78,7 @@ public:
   void dividing_setBitStream();
 
   inline bool FS_node_included() const {
-    const FS_libs::Nod inod = FS_libs::get_id();
+    const FS_libs::Nod inod = FS_libs::FS_get_id();
     if (inod.x < this->proc_istart_ || inod.x > this->proc_iend_) {
       return false;
     }
@@ -90,7 +90,7 @@ public:
 
   std::pair<const bt_node<Integer, Float> *, Integer>
   FS_dividing_getleaf(Integer info) const {
-    const FS_libs::Nod inod = FS_libs::get_id();
+    const FS_libs::Nod inod = FS_libs::FS_get_id();
     if (inod.x - 1 == this->proc_istart_ && inod.x == this->proc_iend_ &&
         inod.y - 1 == this->proc_jstart_ && inod.y == this->proc_jend_) {
       return std::make_pair(this, info);
@@ -172,7 +172,7 @@ using std::max;
 using std::min;
 
 inline void FS_create_hint(bool hint[]) {
-  FS_libs::Nod nnod = FS_libs::get_procs();
+  FS_libs::Nod nnod = FS_libs::FS_get_procs();
 
 #if _TREEDIV == 1
   for (size_t layer = 0; nnod.x * nnod.y >= 1; layer++) {
@@ -236,7 +236,7 @@ Integer bt_node<Integer, Float>::FS_dividing(Integer n, Float d[],
 #if TIMER_PRINT
   prof.start(21);
 #endif
-  const FS_libs::Nod nnod = FS_libs::get_procs();
+  const FS_libs::Nod nnod = FS_libs::FS_get_procs();
 
   const auto Next = ((n % nnod.nod) == 0) ? n : ((n / nnod.nod + 1) * nnod.nod);
 
@@ -288,7 +288,7 @@ template <class Integer, class Float>
 Integer bt_node<Integer, Float>::FS_dividing_recursive(
     const Integer n, Float d[], const Float e[], std::unique_ptr<bool[]> &hint,
     FS_prof::FS_prof &prof, Integer bt_id) {
-  const FS_libs::Nod nnod = FS_libs::get_procs();
+  const FS_libs::Nod nnod = FS_libs::FS_get_procs();
   const auto x_lnod = this->proc_iend_ - this->proc_istart_;
   const auto y_lnod = this->proc_jend_ - this->proc_jstart_;
   const auto lnod = x_lnod * y_lnod;
@@ -398,9 +398,9 @@ void bt_node<Integer, Float>::dividing_setBitStream() {
  */
 template <class Integer, class Float>
 void bt_node<Integer, Float>::FS_create_mergeXY_group() {
-  const char order = FS_libs::get_grid_major();
-  const FS_libs::Nod inod = FS_libs::get_id();
-  const FS_libs::Nod nnod = FS_libs::get_procs();
+  const char order = FS_libs::FS_get_grid_major();
+  const FS_libs::Nod inod = FS_libs::FS_get_id();
+  const FS_libs::Nod nnod = FS_libs::FS_get_procs();
   std::unique_ptr<int_for_mpi[]> ranklist_group(new int_for_mpi[nnod.nod]);
 
   {
@@ -472,8 +472,8 @@ void bt_node<Integer, Float>::FS_create_mergeXY_group() {
 
 template <class Integer, class Float>
 void bt_node<Integer, Float>::FS_create_merge_comm(FS_prof::FS_prof &prof) {
-  const FS_libs::Nod inod = FS_libs::get_id();
-  const FS_libs::Nod nnod = FS_libs::get_procs();
+  const FS_libs::Nod inod = FS_libs::FS_get_id();
+  const FS_libs::Nod nnod = FS_libs::FS_get_procs();
 
   this->MERGE_GROUP_ = FS_libs::FS_get_group();
 
@@ -504,8 +504,8 @@ void bt_node<Integer, Float>::FS_create_merge_comm(FS_prof::FS_prof &prof) {
 
 template <class Integer, class Float>
 void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
-  const FS_libs::Nod nnod = FS_libs::get_procs();
-  const char order = FS_libs::get_grid_major();
+  const FS_libs::Nod nnod = FS_libs::FS_get_procs();
+  const char order = FS_libs::FS_get_grid_major();
 
   if (this->sub_bt_node_ == nullptr) {
     return;
@@ -734,8 +734,8 @@ Integer bt_node<Integer, Float>::FS_index_L2G(char comp, Integer l_index,
 
 template <class Integer, class Float>
 void bt_node<Integer, Float>::print_tree() const {
-  const auto nnod = FS_libs::get_procs();
-  const auto inod = FS_libs::get_id();
+  const auto nnod = FS_libs::FS_get_procs();
+  const auto inod = FS_libs::FS_get_id();
 
   if (this->layer_ == 0) {
     std::printf("nnod, (x_nnod, y_nnod) = %d (%d, %d)\n", nnod.nod, nnod.x,
@@ -756,7 +756,7 @@ void bt_node<Integer, Float>::print_tree() const {
 
 template <class Integer, class Float>
 void bt_node<Integer, Float>::print_node() const {
-  FS_libs::Nod nnod = FS_libs::get_procs();
+  FS_libs::Nod nnod = FS_libs::FS_get_procs();
   std::printf("******************************\n");
   std::printf("layer               = %d\n", this->layer_);
   std::printf("direction_horizontal= %d\n", this->direction_horizontal_);

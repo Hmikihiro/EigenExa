@@ -233,7 +233,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
 
   auto stime = MPI_Wtime();
 
-  const auto FS_comm_member = FS_libs::is_comm_member();
+  const auto FS_comm_member = FS_libs::is_FS_comm_member();
 
   const auto FS_grid_info = FS_comm_member
                                 ? subtree.FS_grid_info()

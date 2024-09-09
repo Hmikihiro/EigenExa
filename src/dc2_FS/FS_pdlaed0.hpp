@@ -29,10 +29,10 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
 #endif
   FS_dividing::bt_node<Integer, Float> root_node = {};
   const auto info = [&]() mutable -> Integer {
-    auto nnod = (FS_libs::is_comm_member()) ? FS_libs::get_procs()
-                                            : FS_libs::Nod{1, 1, 1};
+    auto nnod = (FS_libs::is_FS_comm_member()) ? FS_libs::FS_get_procs()
+                                               : FS_libs::Nod{1, 1, 1};
 
-    if (FS_libs::is_comm_member()) {
+    if (FS_libs::is_FS_comm_member()) {
 #if TIMER_PRINT
       prof.start(20);
 #endif
@@ -185,7 +185,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
     return 0;
   }();
 
-  if (FS_libs::is_comm_member()) {
+  if (FS_libs::is_FS_comm_member()) {
     root_node.FS_dividing_free();
   }
 

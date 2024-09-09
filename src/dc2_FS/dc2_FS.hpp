@@ -40,7 +40,7 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
   long long lwork_ = worksize.lwork;
   long long liwork_ = worksize.liwork;
 
-  const int FS_COMM_MEMBER = FS_libs::is_comm_member();
+  const int FS_COMM_MEMBER = FS_libs::is_FS_comm_member();
   if (!FS_COMM_MEMBER) {
     lwork_ = 0;
     liwork_ = 0;

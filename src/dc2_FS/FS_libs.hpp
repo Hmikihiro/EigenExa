@@ -151,78 +151,59 @@ inline void FS_free() {
   MPI_Comm_free(&FS_COMM_WORLD);
 }
 
-inline void FS_get_procs(int *nnod, int *x_nnod, int *y_nnod) {
-  *nnod = FS_node.nnod;
-  *x_nnod = FS_node.x_nnod;
-  *y_nnod = FS_node.y_nnod;
-}
-
-inline void FS_get_id(int *inod, int *x_inod, int *y_inod) {
-  *inod = FS_node.inod;
-  *x_inod = FS_node.x_inod;
-  *y_inod = FS_node.y_inod;
-}
-
-inline void FS_get_matdims(int n, int &nx, int &ny) {
-  int nnod, x_nnod, y_nnod;
-  FS_get_procs(&nnod, &x_nnod, &y_nnod);
-  int n1 = n / nnod;
-  if (n % nnod != 0) {
-    n1 += 1;
-  }
-  nx = n1 * (nnod / x_nnod);
-  ny = n1 * (nnod / y_nnod);
-}
-
-struct fs_worksize {
-  long lwork;
-  long liwork;
-};
-
-inline fs_worksize FS_WorkSize(int n) {
-  int nnod, x_nnod, y_nnod;
-  int np, nq;
-  FS_get_procs(&nnod, &x_nnod, &y_nnod);
-  FS_get_matdims(n, np, nq);
-
-  const long lwork = 1 + 7 * n + 3 * np * nq + nq * nq;
-  const long liwork = 1 + 8 * n + 2 * 4 * y_nnod;
-  return {lwork, liwork};
-}
-inline void FS_get_grid_major(char *Major) {
-  *Major = FS_GRID_major;
-  return;
-}
-inline int FS_get_myrank() { return FS_MYRANK; }
-
-inline MPI_Group FS_get_group() { return FS_GROUP; }
-
-inline bool is_comm_member() { return FS_COMM_MEMBER; }
-
 struct Nod {
   int nod;
   int x;
   int y;
 };
 
-inline Nod get_procs() {
+inline Nod FS_get_procs() {
   Nod nnod = {};
-  FS_get_procs(&nnod.nod, &nnod.x, &nnod.y);
+  nnod.nod = FS_node.nnod;
+  nnod.x = FS_node.x_nnod;
+  nnod.y = FS_node.y_nnod;
   return nnod;
 }
 
-inline Nod get_id() {
+inline Nod FS_get_id() {
   Nod inod = {};
-  FS_get_id(&inod.nod, &inod.x, &inod.y);
+  inod.nod = FS_node.inod;
+  inod.x = FS_node.x_inod;
+  inod.y = FS_node.y_inod;
   return inod;
 }
 
-inline char get_grid_major() {
-  char major = 0;
-  FS_get_grid_major(&major);
-  return major;
+inline void FS_get_matdims(int n, int &nx, int &ny) {
+
+  const auto nnod = FS_get_procs();
+  int n1 = n / nnod.nod;
+  if (n % nnod.nod != 0) {
+    n1 += 1;
+  }
+  nx = n1 * (nnod.nod / nnod.x);
+  ny = n1 * (nnod.nod / nnod.y);
 }
 
-inline int get_myrank() { return FS_get_myrank(); }
+inline char FS_get_grid_major() { return FS_GRID_major; }
+
+struct fs_worksize {
+  long lwork;
+  long liwork;
+};
+inline fs_worksize FS_WorkSize(int n) {
+  int np, nq;
+  const auto y_nnod = FS_get_procs().y;
+  FS_get_matdims(n, np, nq);
+
+  const long lwork = 1 + 7 * n + 3 * np * nq + nq * nq;
+  const long liwork = 1 + 8 * n + 2 * 4 * y_nnod;
+  return {lwork, liwork};
+}
+
+inline int FS_get_myrank() { return FS_MYRANK; }
+
+inline MPI_Group FS_get_group() { return FS_GROUP; }
+
+inline bool is_FS_comm_member() { return FS_COMM_MEMBER; }
 
 } // namespace FS_libs
