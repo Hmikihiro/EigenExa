@@ -4,8 +4,8 @@
 
 #include "../FS_libs/FS_libs.hpp"
 #include "../MPI_Datatype_wrapper.hpp"
-#include "../eigen/eigen_dc_interface.hpp"
-#include "../eigen/eigen_libs0.hpp"
+#include "../eigen_dc_interface.hpp"
+#include "../eigen_libs0.hpp"
 #include "FS_EDC.hpp"
 #include "eigen_devel_FS_wrapper.hpp"
 

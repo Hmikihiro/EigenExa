@@ -9,7 +9,7 @@
 
 #include "../FS_libs/FS_libs.hpp"
 #include "../MPI_Datatype_wrapper.hpp"
-#include "../eigen/eigen_libs0.hpp"
+#include "../eigen_libs0.hpp"
 #include "FS_dividing.hpp"
 
 #if defined(_DEBUGLOG)

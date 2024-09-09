@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <new>
 
-#include "../eigen/eigen_libs0.hpp"
+#include "../eigen_libs0.hpp"
 template <class Float>
 void eigen_FS(int n, int nvec, int a[], int lda, int w[], int z[], int ldz,
               int m_forward = eigen_libs0::eigen_NB_f,

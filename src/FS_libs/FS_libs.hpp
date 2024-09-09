@@ -2,7 +2,7 @@
 
 #include <mpi.h>
 
-#include "../eigen/eigen_libs0.hpp"
+#include "../eigen_libs0.hpp"
 #include "eigen_libs_FS_wrapper.hpp"
 #include <algorithm>
 #include <cmath>

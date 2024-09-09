@@ -240,7 +240,7 @@ comm_h.lo : comm_h.F
 	mv tmp_$(@:.lo=.o) $@
 dc2_FS_C_Interface.lo :  dc2_FS/dc2_FS_C_Interface.cpp dc2_FS/*
 	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -fPIC -c -o $@ $<
-FS_libs_C.lo : dc2_FS/FS_libs_C.cpp  dc2_FS/FS_libs.hpp
+FS_libs_C.lo : FS_libs/FS_libs_C.cpp  FS_libs/FS_libs.hpp
 	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -fPIC -c -o $@ $<
 endif
 

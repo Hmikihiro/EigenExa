@@ -8,7 +8,7 @@
 #include "../MPI_Allreduce_group.hpp"
 #include "../MPI_Datatype_wrapper.hpp"
 #include "../cblas_lapacke_wrapper.hpp"
-#include "../eigen/eigen_dc_interface.hpp"
+#include "../eigen_dc_interface.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"

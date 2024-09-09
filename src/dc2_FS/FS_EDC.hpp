@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "../cblas_lapacke_wrapper.hpp"
-#include "../eigen/eigen_libs0.hpp"
+#include "../eigen_libs0.hpp"
 #include "FS_const.hpp"
 #include "FS_pdlaed0.hpp"
 #include "FS_prof.hpp"
