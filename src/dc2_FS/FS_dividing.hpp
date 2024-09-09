@@ -10,7 +10,7 @@
 
 #define int_for_mpi int
 
-#include "FS_libs.hpp"
+#include "../FS_libs/FS_libs.hpp"
 #include "FS_prof.hpp"
 
 namespace FS_dividing {

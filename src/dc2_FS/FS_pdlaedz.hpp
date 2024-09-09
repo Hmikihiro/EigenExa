@@ -8,7 +8,7 @@
 #include "FS_prof.hpp"
 
 #if defined(_DEBUGLOG)
-#include "FS_libs.hpp"
+#include "../FS_libs/FS_libs.hpp"
 #include <cstdio>
 #endif
 

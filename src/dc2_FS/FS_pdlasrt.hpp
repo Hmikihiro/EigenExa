@@ -5,10 +5,10 @@
 #include <algorithm>
 #include <numeric>
 
+#include "../FS_libs/FS_libs.hpp"
 #include "../MPI_Datatype_wrapper.hpp"
 #include "../cblas_lapacke_wrapper.hpp"
 #include "FS_dividing.hpp"
-#include "FS_libs.hpp"
 #include "FS_prof.hpp"
 
 #if defined(_DEBUGLOG)

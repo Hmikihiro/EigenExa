@@ -28,4 +28,4 @@ extern "C" void FS_WorkSize(int n, int64_t &lwork, int64_t &liwork) {
   lwork = work.lwork;
   liwork = work.liwork;
 }
-} // namespace FS_libs_C_interface
+} // namespace FS_libs_interface
