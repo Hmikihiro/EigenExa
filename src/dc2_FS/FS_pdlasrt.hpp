@@ -3,7 +3,6 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <cstdio>
 #include <numeric>
 
 #include "../cblas_lapacke_wrapper.hpp"
@@ -11,8 +10,12 @@
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
 #include "FS_prof.hpp"
+
+#if defined(_DEBUGLOG)
+#include <cstdio>
+#endif
+
 namespace FS_pdlasrt {
-using std::printf;
 template <class Integer, class Float>
 void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
                 const FS_dividing::bt_node<Integer, Float> &subtree, Float q2[],
@@ -21,7 +24,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
                 Integer indrcv[], FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
-    printf("FS_pdlasrt start.");
+    std::printf("FS_pdlasrt start.");
   }
 #endif
 #if TIMER_PRINT
@@ -204,7 +207,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
 
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
-    printf("FS_pdlasrt end.");
+    std::printf("FS_pdlasrt end.");
   }
 #endif
 }

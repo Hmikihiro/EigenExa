@@ -1,7 +1,6 @@
 #pragma once
-#include <mpi.h>
-
 #include <memory>
+#include <mpi.h>
 
 #include "../eigen/eigen_dc_interface.hpp"
 #include "../eigen/eigen_devel.hpp"
@@ -19,7 +18,6 @@ using eigen_devel::FS_eigen_timer_reset;
 using eigen_libs0::eigen_get_comm;
 using eigen_libs0::eigen_get_id;
 using eigen_libs0::eigen_get_procs;
-using FS_libs::FS_WorkSize;
 using std::unique_ptr;
 
 template <class Integer, class Float>
@@ -37,7 +35,7 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 
   const auto eigen_comm = eigen_get_comm().eigen_comm;
 
-  const auto worksize = FS_WorkSize(n);
+  const auto worksize = FS_libs::FS_WorkSize(n);
   long long lwork_ = worksize.lwork;
   long long liwork_ = worksize.liwork;
 

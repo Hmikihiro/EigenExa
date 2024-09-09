@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdio>
 
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
@@ -7,17 +6,20 @@
 #include "FS_prof.hpp"
 #include "MPI_Allreduce_group.hpp"
 
+#if defined(_DEBUGLOG)
+#include <cstdio>
+#endif
+
 namespace eigen_FS {
 using FS_dividing::bt_node;
 using FS_libs::FS_COMM_WORLD;
 using FS_prof::FS_prof;
-using std::printf;
 template <class Integer, class Float>
 void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
                   Float work[], Float z[], Float d[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    printf("FS_reduce_zd start.\n");
+    std::printf("FS_reduce_zd start.\n");
   }
 #endif
 #if TIMER_PRINT
@@ -53,7 +55,7 @@ void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    printf("FS_reduce_zd end.\n");
+    std::printf("FS_reduce_zd end.\n");
   }
 #endif
 }

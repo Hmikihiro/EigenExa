@@ -2,8 +2,6 @@
 
 #include <mpi.h>
 
-#include <cstdio>
-
 #include "../cblas_lapacke_wrapper.hpp"
 #include "../eigen/eigen_libs0.hpp"
 #include "FS2eigen_pdlasrt.hpp"
@@ -14,6 +12,10 @@
 #include "FS_pdlasrt.hpp"
 #include "FS_prof.hpp"
 
+#if defined(_DEBUGLOG)
+#include <cstdio>
+#endif
+
 namespace eigen_FS {
 
 template <typename Integer, typename Float>
@@ -22,7 +24,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
                    FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
-    printf("FS_PDLAED0 start.\n");
+    std::printf("FS_PDLAED0 start.\n");
   }
 #endif
   FS_dividing::bt_node<Integer, Float> root_node = {};
@@ -103,11 +105,11 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
 #ifdef _DEBUGLOG
         const auto nb = parent_node->FS_get_NB();
         if (FS_libs::get_myrank() == 0) {
-          printf("+---------------------\n");
-          printf("FS_PDLAED0 merge loop\n");
-          printf(" layer = %d\n", parent_node->layer_);
-          printf(" N     = %d\n", n0);
-          printf(" NB    = %d\n", nb);
+          std::printf("+---------------------\n");
+          std::printf("FS_PDLAED0 merge loop\n");
+          std::printf(" layer = %d\n", parent_node->layer_);
+          std::printf(" N     = %d\n", n0);
+          std::printf(" NB    = %d\n", nb);
         }
 #endif
 
@@ -132,14 +134,14 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
 
 #ifdef _DEBUGLOG
       if (FS_libs::get_myrank() == 0) {
-        printf("+---------------------\n");
+        std::printf("+---------------------\n");
       }
 #endif
     }
 
 #ifdef _DEBUGLOG
     if (FS_libs::get_myrank() == 0) {
-      printf("START Bcast\n");
+      std::printf("START Bcast\n");
     }
 #endif
 
@@ -192,7 +194,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
 #endif
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
-    printf("FS_PDLAED0 end. info = %d\n", info);
+    std::printf("FS_PDLAED0 end. info = %d\n", info);
   }
 #endif
   return info;

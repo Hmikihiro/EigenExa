@@ -4,7 +4,6 @@
 #define int_for_mpi int
 
 #include <algorithm>
-#include <cstdio>
 #include <memory>
 #include <numeric>
 
@@ -13,10 +12,13 @@
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
 
+#if defined(_DEBUGLOG)
+#include <cstdio>
+#endif
+
 namespace eigen_FS {
 namespace FS2eigen {
 using FS_dividing::bt_node;
-using std::printf;
 
 template <class Integer, class Float> class GpositionValue {
 public:
@@ -188,7 +190,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   }
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    printf("FS2eigen_PDLASRT start.");
+    std::printf("FS2eigen_PDLASRT start.");
   }
 #endif
 #if TIMER_PRINT
@@ -515,7 +517,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
 #endif
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    printf("FS_pdlasrt end.");
+    std::printf("FS_pdlasrt end.");
   }
 #endif
   return 0;

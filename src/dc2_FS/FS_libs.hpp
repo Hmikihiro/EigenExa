@@ -15,7 +15,6 @@ using eigen_libs0::eigen_init0;
 using std::log2;
 using std::min;
 using std::pow;
-using std::printf;
 
 extern MPI_Comm FS_COMM_WORLD;
 extern int FS_MYRANK;
@@ -58,12 +57,12 @@ inline void FS_show_version() {
   const auto patchlevel = " abcdefghijklmnopqrstuvwxyz*"[i + 1];
 
   char version[256];
-  snprintf(version, 256, "%d.%d%c", FS_Version.Major_Version,
-           FS_Version.Minor_Version, patchlevel);
+  std::snprintf(version, 256, "%d.%d%c", FS_Version.Major_Version,
+                FS_Version.Minor_Version, patchlevel);
 
   if (id == 1) {
-    printf("## FS version (%s) / (%s) / (%s)\n", version, FS_Version.date,
-           FS_Version.vcode);
+    std::printf("## FS version (%s) / (%s) / (%s)\n", version, FS_Version.date,
+                FS_Version.vcode);
   }
 }
 

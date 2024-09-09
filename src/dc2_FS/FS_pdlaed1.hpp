@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdio>
 #include <mpi.h>
 
 #include <algorithm>
@@ -12,9 +11,12 @@
 #include "FS_pdlaedz.hpp"
 #include "FS_prof.hpp"
 #include "FS_reduce_zd.hpp"
+
+#if defined(_DEBUGLOG)
+#include <cstdio>
+#endif
 namespace FS_pdlaed1 {
 using eigen_FS::FS_reduce_zd;
-using std::printf;
 template <class Integer, class Float>
 Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
                    const FS_dividing::bt_node<Integer, Float> &subtree,
@@ -22,7 +24,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
                    FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
-    printf("FS_pdlaed1 start.\n");
+    std::printf("FS_pdlaed1 start.\n");
   }
 #endif
 #if TIMER_PRINT
@@ -122,7 +124,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 #endif
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
-    printf("FS_pdlaed1 end. INFO=%d\n", info);
+    std::printf("FS_pdlaed1 end. INFO=%d\n", info);
   }
 #endif
   return info;

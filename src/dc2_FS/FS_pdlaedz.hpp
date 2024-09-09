@@ -1,23 +1,25 @@
 #pragma once
 
 #include <algorithm>
-#include <cstdio>
 
 #include "../cblas_lapacke_wrapper.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
-#include "FS_libs.hpp"
 #include "FS_prof.hpp"
 
+#if defined(_DEBUGLOG)
+#include "FS_libs.hpp"
+#include <cstdio>
+#endif
+
 namespace FS_pdlaedz {
-using std::printf;
 template <class Integer, class Float>
 void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
                 const FS_dividing::bt_node<Integer, Float> &subtree, Float z[],
                 FS_prof::FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
-    printf("FS_pdlaedz start.\n");
+    std::printf("FS_pdlaedz start.\n");
   }
 #endif
 #if TIMER_PRINT
@@ -73,7 +75,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
 #endif
 #ifdef _DEBUGLOG
   if (FS_libs::get_myrank() == 0) {
-    printf("FS_pdlaedz end.\n");
+    std::printf("FS_pdlaedz end.\n");
   }
 #endif
 }

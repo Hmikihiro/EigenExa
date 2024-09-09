@@ -5,20 +5,20 @@
  */
 
 #include <cmath>
-#include <cstdio>
-#include <type_traits>
 
 #include "../cblas_lapacke_wrapper.hpp"
 #include "../eigen/eigen_libs0.hpp"
 #include "FS_const.hpp"
-#include "FS_libs.hpp"
 #include "FS_pdlaed0.hpp"
 #include "FS_prof.hpp"
+
+#if defined(_DEBUGLOG)
+#include <cstdio>
+#endif
 
 namespace FS_EDC {
 using FS_const::ONE;
 using FS_const::ZERO;
-using std::printf;
 /**
  * @brief @n
  *   Purpose @n
@@ -81,7 +81,7 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 
   Integer info = 0;
 #ifdef _DEBUGLOG
-  printf("FS_EDC start\n");
+  std::printf("FS_EDC start\n");
 #endif
 
 #if TIMER_PRINT
@@ -142,7 +142,7 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
   }
 
 #ifdef _DEBUGLOG
-  printf("FS_EDC end. INFO=%d\n", info);
+  std::printf("FS_EDC end. INFO=%d\n", info);
 #endif
 
 #if TIMER_PRINT
@@ -156,4 +156,3 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
   return info;
 }
 } // namespace FS_EDC
-

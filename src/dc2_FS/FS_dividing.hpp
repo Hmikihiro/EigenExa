@@ -13,8 +13,6 @@
 #include "FS_prof.hpp"
 
 namespace FS_dividing {
-using std::printf;
-
 template <class Integer> struct g1l {
   Integer l_index;
   Integer rocsrc;
@@ -172,7 +170,6 @@ namespace FS_dividing {
 using std::abs;
 using std::max;
 using std::min;
-using std::printf;
 
 inline void FS_create_hint(bool hint[]) {
   FS_libs::Nod nnod = FS_libs::get_procs();
@@ -741,8 +738,10 @@ void bt_node<Integer, Float>::print_tree() const {
   const auto inod = FS_libs::get_id();
 
   if (this->layer_ == 0) {
-    printf("nnod, (x_nnod, y_nnod) = %d (%d, %d)\n", nnod.nod, nnod.x, nnod.y);
-    printf("inod, (x_inod, y_inod) = %d (%d, %d)\n", inod.nod, inod.x, inod.y);
+    std::printf("nnod, (x_nnod, y_nnod) = %d (%d, %d)\n", nnod.nod, nnod.x,
+                nnod.y);
+    std::printf("inod, (x_inod, y_inod) = %d (%d, %d)\n", inod.nod, inod.x,
+                inod.y);
   }
 
   this->print_node();
@@ -758,35 +757,35 @@ void bt_node<Integer, Float>::print_tree() const {
 template <class Integer, class Float>
 void bt_node<Integer, Float>::print_node() const {
   FS_libs::Nod nnod = FS_libs::get_procs();
-  printf("******************************\n");
-  printf("layer               = %d\n", this->layer_);
-  printf("direction_horizontal= %d\n", this->direction_horizontal_);
-  printf("nstart              = %d\n", this->nstart_);
-  printf("nend                = %d\n", this->nend_);
-  printf("nend_active         = %d\n", this->nend_active_);
-  printf("proc_istart         = %d\n", this->proc_istart_);
-  printf("proc_iend           = %d\n", this->proc_iend_);
-  printf("proc_jstart         = %d\n", this->proc_jstart_);
-  printf("proc_jend           = %d\n", this->proc_jend_);
-  printf("block_start         = %d\n", this->block_start_);
-  printf("block_end           = %d\n", this->block_end_);
-  printf("parent_node = %p\n", this->parent_node_);
-  printf("child_node  = %p\n", this->sub_bt_node_);
-  printf("procs_i = ");
+  std::printf("******************************\n");
+  std::printf("layer               = %d\n", this->layer_);
+  std::printf("direction_horizontal= %d\n", this->direction_horizontal_);
+  std::printf("nstart              = %d\n", this->nstart_);
+  std::printf("nend                = %d\n", this->nend_);
+  std::printf("nend_active         = %d\n", this->nend_active_);
+  std::printf("proc_istart         = %d\n", this->proc_istart_);
+  std::printf("proc_iend           = %d\n", this->proc_iend_);
+  std::printf("proc_jstart         = %d\n", this->proc_jstart_);
+  std::printf("proc_jend           = %d\n", this->proc_jend_);
+  std::printf("block_start         = %d\n", this->block_start_);
+  std::printf("block_end           = %d\n", this->block_end_);
+  std::printf("parent_node = %p\n", this->parent_node_);
+  std::printf("child_node  = %p\n", this->sub_bt_node_);
+  std::printf("procs_i = ");
   for (Integer i = 0; i < nnod.nod; i++) {
-    printf("%d ", this->procs_i_[i]);
+    std::printf("%d ", this->procs_i_[i]);
   }
-  printf("\nprocs_j = ");
+  std::printf("\nprocs_j = ");
   for (Integer j = 0; j < nnod.nod; j++) {
-    printf("%d ", this->procs_j_[j]);
+    std::printf("%d ", this->procs_j_[j]);
   }
-  printf("\nmerge procs    = %d\n ", this->nnod_);
-  printf("merge procs X  = %d\n ", this->x_nnod_);
-  printf("merge procs Y  = %d\n ", this->y_nnod_);
-  printf("merge rankid   = %d\n ", this->inod_);
-  printf("merge rankid X = %d\n ", this->x_inod_);
-  printf("merge rankid Y = %d\n ", this->y_inod_);
-  printf("bit stream     = %d\n ", this->div_bit_);
-  printf("#dights of bit = %d\n ", this->div_nbit_);
+  std::printf("\nmerge procs    = %d\n ", this->nnod_);
+  std::printf("merge procs X  = %d\n ", this->x_nnod_);
+  std::printf("merge procs Y  = %d\n ", this->y_nnod_);
+  std::printf("merge rankid   = %d\n ", this->inod_);
+  std::printf("merge rankid X = %d\n ", this->x_inod_);
+  std::printf("merge rankid Y = %d\n ", this->y_inod_);
+  std::printf("bit stream     = %d\n ", this->div_bit_);
+  std::printf("#dights of bit = %d\n ", this->div_nbit_);
 }
 } // namespace FS_dividing
