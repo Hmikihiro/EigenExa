@@ -228,18 +228,16 @@ void set_group(Number sbuf[], Number rbuf[], size_t count,
 }
 } // namespace MPI_Allreduce_group
 } // namespace
-using MPI_Allreduce_group::free_group;
-using MPI_Allreduce_group::set_group;
-using MPI_Allreduce_main::Group_Allreduce;
-using MPI_Group_property::MPI_Group_type;
+
 template <typename Number>
 int MPI_Group_Allreduce(Number sbuf[], Number rbuf[], size_t count,
                         MPI_Datatype datatype, MPI_Op op, MPI_Comm comm,
                         MPI_Group group) {
-  MPI_Group_type<Number> mygroup;
-  set_group<Number>(sbuf, rbuf, count, datatype, op, comm, group, mygroup);
-  Group_Allreduce<Number>(mygroup);
-  free_group<Number>(mygroup, rbuf, count);
+  MPI_Group_property::MPI_Group_type<Number> mygroup;
+  MPI_Allreduce_group::set_group<Number>(sbuf, rbuf, count, datatype, op, comm,
+                                         group, mygroup);
+  MPI_Allreduce_main::Group_Allreduce<Number>(mygroup);
+  MPI_Allreduce_group::free_group<Number>(mygroup, rbuf, count);
   return 0;
 }
 } // namespace eigen_FS
