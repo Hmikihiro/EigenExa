@@ -236,7 +236,8 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
         {
           std::copy_n(sz.get(), k, z);
           // count up the flops on the Loewner law's update
-          eigen_dc_interface::flops += Float(myklr) * Float(k * 3);
+          eigen_dc_interface::flops +=
+              static_cast<double>(myklr) * static_cast<double>(k * 3);
         }
 #pragma omp barrier
         for (Integer i = 1; i < omp_get_num_threads(); i++) {
@@ -556,8 +557,9 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
           lapacke::gemm<eigen_int, Float>(CblasNoTrans, CblasNoTrans, np1, mykl,
                                           n12, FS_const::ONE<Float>, q2, ldq2,
                                           u, ldu, FS_const::ONE<Float>, q, ldq);
-          eigen_dc_interface::flops +=
-              2 * double(np1) * double(mykl) * double(n12);
+          eigen_dc_interface::flops += 2 * static_cast<double>(np1) *
+                                       static_cast<double>(mykl) *
+                                       static_cast<double>(n12);
 #if TIMER_PRINT > 1
           prof.end(67);
 #endif
@@ -579,8 +581,9 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
               CblasNoTrans, CblasNoTrans, np2, mykl, n23, FS_const::ONE<Float>,
               &q2[jq2 * ldq2 + iq2], ldq2, &u[jju * ldu + iiu], ldu,
               FS_const::ONE<Float>, &q[jq * ldq + iq], ldq);
-          eigen_dc_interface::flops +=
-              2 * double(np2) * double(mykl) * double(n23);
+          eigen_dc_interface::flops += 2 * static_cast<double>(np2) *
+                                       static_cast<double>(mykl) *
+                                       static_cast<double>(n23);
 #if TIMER_PRINT > 1
           prof.end(67);
 #endif
