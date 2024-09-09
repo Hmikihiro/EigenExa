@@ -28,7 +28,7 @@ inline void FS_get_version(int &version, char date[32] = nullptr,
 }
 
 inline void FS_show_version() {
-  const auto id = eigen_libs0::eigen_get_id().id;
+  const auto id = eigen_libs0_wrapper::eigen_get_id().id;
   const auto i = std::min(26, FS_Version.Patch_Level);
   const auto patchlevel = " abcdefghijklmnopqrstuvwxyz*"[i + 1];
 

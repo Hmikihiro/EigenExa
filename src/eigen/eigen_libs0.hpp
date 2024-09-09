@@ -1,20 +1,18 @@
 #pragma once
 #include <mpi.h>
 
-namespace eigen_libs0_fortran_interface {
+namespace eigen_libs0_interface {
 
 extern "C" {
-void FS_eigen_init0(int comm, char order);
 void eigen_get_comm(int &eigen_comm, int &eigen_x_comm, int &eigen_y_comm);
 void eigen_get_procs(int &procs, int &x_procs, int &y_procs);
 void eigen_get_id(int &id, int &x_id, int &y_id);
-void FS_eigen_free0();
 char eigen_get_grid_major();
 }
 
-} // namespace eigen_libs0_fortran_interface
+} // namespace eigen_libs0_interface
 
-namespace eigen_libs0 {
+namespace eigen_libs0_wrapper {
 struct eigen_comm {
   MPI_Comm eigen_comm;
   MPI_Comm eigen_x_comm;
@@ -35,14 +33,14 @@ struct eigen_id {
 
 inline eigen_procs eigen_get_procs() {
   eigen_procs procs = {};
-  eigen_libs0_fortran_interface::eigen_get_procs(procs.procs, procs.x_procs,
-                                                 procs.y_procs);
+  eigen_libs0_interface::eigen_get_procs(procs.procs, procs.x_procs,
+                                         procs.y_procs);
   return procs;
 }
 
 inline eigen_comm eigen_get_comm() {
   int icomm, ix_comm, iy_comm;
-  eigen_libs0_fortran_interface::eigen_get_comm(icomm, ix_comm, iy_comm);
+  eigen_libs0_interface::eigen_get_comm(icomm, ix_comm, iy_comm);
   eigen_comm comm = {};
   comm.eigen_comm = MPI_Comm_f2c(icomm);
   comm.eigen_x_comm = MPI_Comm_f2c(ix_comm);
@@ -52,21 +50,15 @@ inline eigen_comm eigen_get_comm() {
 
 inline eigen_id eigen_get_id() {
   eigen_id id = {};
-  eigen_libs0_fortran_interface::eigen_get_id(id.id, id.x_id, id.y_id);
+  eigen_libs0_interface::eigen_get_id(id.id, id.x_id, id.y_id);
   return id;
 }
 
-inline void eigen_free0() { eigen_libs0_fortran_interface::FS_eigen_free0(); }
-
-inline void eigen_init0(MPI_Comm comm, char order) {
-  eigen_libs0_fortran_interface::FS_eigen_init0(MPI_Comm_c2f(comm), order);
-}
-
 inline char eigen_get_grid_major() {
-  return eigen_libs0_fortran_interface::eigen_get_grid_major();
+  return eigen_libs0_interface::eigen_get_grid_major();
 }
 
 inline int eigen_translate_g2l(int ictr, int nnod) { return ictr / nnod; }
 inline int eigen_owner_node(int ictr, int nnod) { return ictr % nnod; }
 
-} // namespace eigen_libs0
+} // namespace eigen_libs0_wrapper

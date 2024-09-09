@@ -139,7 +139,7 @@ Integer get_FS_nbcol_max(Integer n, const bt_node<Integer, Float> &subtree,
 
 template <class Integer>
 Integer eigen_rank_xy2comm(char grid_major, Integer x_inod, Integer y_inod) {
-  const auto procs = eigen_libs0::eigen_get_procs();
+  const auto procs = eigen_libs0_wrapper::eigen_get_procs();
   const auto x_nnod = procs.x_procs;
   const auto y_nnod = procs.y_procs;
 
@@ -197,13 +197,13 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   prof.start(70);
 #endif
 
-  const auto eigen_procs = eigen_libs0::eigen_get_procs();
+  const auto eigen_procs = eigen_libs0_wrapper::eigen_get_procs();
   const auto eigen_np = eigen_procs.procs;
   const auto eigen_nprow = eigen_procs.x_procs;
   const auto eigen_npcol = eigen_procs.y_procs;
-  const auto eigen_myrank = eigen_libs0::eigen_get_id().id;
-  const char eigen_grid_major = eigen_libs0::eigen_get_grid_major();
-  const auto eigen_comm = eigen_libs0::eigen_get_comm().eigen_comm;
+  const auto eigen_myrank = eigen_libs0_wrapper::eigen_get_id().id;
+  const char eigen_grid_major = eigen_libs0_wrapper::eigen_get_grid_major();
+  const auto eigen_comm = eigen_libs0_wrapper::eigen_get_comm().eigen_comm;
 
   Integer *comm_send_info = new Integer[eigen_np];
   std::unique_ptr<Integer[]> comm_recv_info(new Integer[eigen_np]);
@@ -301,10 +301,12 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
       }
 
       // グローバル情報から再分散後に担当するノードを求める
-      const auto pcol = eigen_libs0::eigen_owner_node(gcol, eigen_npcol);
+      const auto pcol =
+          eigen_libs0_wrapper::eigen_owner_node(gcol, eigen_npcol);
       for (Integer lrow = 0; lrow < FS_nbrow_max; lrow++) {
         const auto grow = lrow2grow_index[lrow];
-        const auto prow = eigen_libs0::eigen_owner_node(grow, eigen_nprow);
+        const auto prow =
+            eigen_libs0_wrapper::eigen_owner_node(grow, eigen_nprow);
         const auto pn = eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
         comm_send_info[pn] += 1;
       }
@@ -404,10 +406,10 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
     for (Integer lcol = 0; lcol < FS_nbcol_max; lcol++) {
       for (Integer lrow = 0; lrow < FS_nbrow_max; lrow++) {
         auto gcol = lcol2gcol_index[lcol];
-        auto pcol = eigen_libs0::eigen_owner_node(gcol, eigen_npcol);
+        auto pcol = eigen_libs0_wrapper::eigen_owner_node(gcol, eigen_npcol);
 
         auto grow = lrow2grow_index[lrow];
-        auto prow = eigen_libs0::eigen_owner_node(grow, eigen_nprow);
+        auto prow = eigen_libs0_wrapper::eigen_owner_node(grow, eigen_nprow);
 
         auto pn = eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
 
@@ -466,8 +468,10 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
         for (Integer i = 0; i < comm_send_data[k0].Ndata; i++) {
           const auto gcol = sendbuf[i].GCol;
           const auto grow = sendbuf[i].GRow;
-          const auto lcol = eigen_libs0::eigen_translate_g2l(gcol, eigen_npcol);
-          const auto lrow = eigen_libs0::eigen_translate_g2l(grow, eigen_nprow);
+          const auto lcol =
+              eigen_libs0_wrapper::eigen_translate_g2l(gcol, eigen_npcol);
+          const auto lrow =
+              eigen_libs0_wrapper::eigen_translate_g2l(grow, eigen_nprow);
           q[lcol * ldq + lrow] = sendbuf[i].MatrixValue;
         }
         break;
@@ -481,8 +485,10 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
         for (Integer i = 0; i < Ndata; i++) {
           const auto gcol = comm_recv_data[k].bufp[i].GCol;
           const auto grow = comm_recv_data[k].bufp[i].GRow;
-          const auto lcol = eigen_libs0::eigen_translate_g2l(gcol, eigen_npcol);
-          const auto lrow = eigen_libs0::eigen_translate_g2l(grow, eigen_nprow);
+          const auto lcol =
+              eigen_libs0_wrapper::eigen_translate_g2l(gcol, eigen_npcol);
+          const auto lrow =
+              eigen_libs0_wrapper::eigen_translate_g2l(grow, eigen_nprow);
           q[lcol * ldq + lrow] = comm_recv_data[k].bufp[i].MatrixValue;
         }
       }
@@ -496,8 +502,10 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
         for (Integer i = 0; i < Ndata; i++) {
           const auto gcol = comm_recv_data[k].bufp[i].GCol;
           const auto grow = comm_recv_data[k].bufp[i].GRow;
-          const auto lcol = eigen_libs0::eigen_translate_g2l(gcol, eigen_npcol);
-          const auto lrow = eigen_libs0::eigen_translate_g2l(grow, eigen_nprow);
+          const auto lcol =
+              eigen_libs0_wrapper::eigen_translate_g2l(gcol, eigen_npcol);
+          const auto lrow =
+              eigen_libs0_wrapper::eigen_translate_g2l(grow, eigen_nprow);
           q[lcol * ldq + lrow] = comm_recv_data[k].bufp[i].MatrixValue;
         }
       }

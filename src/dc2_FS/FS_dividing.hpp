@@ -1,9 +1,10 @@
 #pragma once
 
+#include <mpi.h>
+
 #include <algorithm>
 #include <cstdio>
 #include <memory>
-#include <mpi.h>
 #include <numeric>
 #include <utility>
 

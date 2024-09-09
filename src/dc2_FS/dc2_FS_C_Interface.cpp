@@ -1,5 +1,6 @@
 #include <mpi.h>
 
+#define _DEBUGLOG
 #include "dc2_FS.hpp"
 
 #if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)

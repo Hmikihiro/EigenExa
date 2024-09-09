@@ -4,7 +4,7 @@
 
 #include "../MPI_Datatype_wrapper.hpp"
 #include "../eigen/eigen_dc_interface.hpp"
-#include "../eigen/eigen_devel.hpp"
+#include "../eigen/eigen_devel_FS_wrapper.hpp"
 #include "../eigen/eigen_libs0.hpp"
 #include "FS_EDC.hpp"
 #include "FS_libs.hpp"
@@ -14,11 +14,11 @@
 #endif
 
 namespace eigen_FS {
-using eigen_devel::FS_eigen_abort;
-using eigen_devel::FS_eigen_timer_reset;
-using eigen_libs0::eigen_get_comm;
-using eigen_libs0::eigen_get_id;
-using eigen_libs0::eigen_get_procs;
+using eigen_devel_FS_wrapper::FS_eigen_abort;
+using eigen_devel_FS_wrapper::FS_eigen_timer_reset;
+using eigen_libs0_wrapper::eigen_get_comm;
+using eigen_libs0_wrapper::eigen_get_id;
+using eigen_libs0_wrapper::eigen_get_procs;
 using std::unique_ptr;
 
 template <class Integer, class Float>

@@ -3,14 +3,14 @@
 #include <mpi.h>
 
 #include "../eigen/eigen_libs0.hpp"
+#include "../eigen/eigen_libs_FS_wrapper.hpp"
 #include <algorithm>
 #include <cmath>
 
 namespace FS_libs {
-using eigen_libs0::eigen_get_comm;
-using eigen_libs0::eigen_get_id;
-using eigen_libs0::eigen_get_procs;
-using eigen_libs0::eigen_init0;
+using eigen_libs0_wrapper::eigen_get_comm;
+using eigen_libs0_wrapper::eigen_get_id;
+using eigen_libs0_wrapper::eigen_get_procs;
 using std::log2;
 using std::min;
 using std::pow;
@@ -73,7 +73,7 @@ inline void FS_init(MPI_Comm comm = MPI_COMM_WORLD, char order = 'C') {
   } else {
     FS_GRID_major = 'C';
   }
-  eigen_init0(comm0, FS_GRID_major);
+  eigen_libs_FS_wrapper::eigen_init0(comm0, FS_GRID_major);
   const auto eigen_comm = eigen_get_comm().eigen_comm;
 
   // FS_COMM_WORLDの設定
@@ -110,7 +110,7 @@ inline void FS_init(MPI_Comm comm = MPI_COMM_WORLD, char order = 'C') {
 }
 
 inline void FS_free() {
-  eigen_libs0::eigen_free0();
+  eigen_libs_FS_wrapper::eigen_free0();
   MPI_Comm_free(&FS_COMM_WORLD);
 }
 

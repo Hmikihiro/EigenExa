@@ -95,11 +95,11 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
   prof_tmp.start(10);
 #endif
 
-  const auto eigen_procs = eigen_libs0::eigen_get_procs();
+  const auto eigen_procs = eigen_libs0_wrapper::eigen_get_procs();
   const auto x_nnod = eigen_procs.x_procs;
   const auto y_nnod = eigen_procs.y_procs;
 
-  const auto eigen_id = eigen_libs0::eigen_get_id();
+  const auto eigen_id = eigen_libs0_wrapper::eigen_get_id();
   const auto x_inod = eigen_id.x_id;
   const auto y_inod = eigen_id.y_id;
 
