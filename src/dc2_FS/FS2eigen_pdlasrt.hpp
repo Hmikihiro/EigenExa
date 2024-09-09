@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FS2EIGEN_PDLASRT_HPP
-#define FS2EIGEN_PDLASRT_HPP
 #include <mpi.h>
 
 #define int_for_mpi int
@@ -525,5 +523,3 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
 
 } // namespace FS2eigen
 } // namespace eigen_FS
-
-#endif

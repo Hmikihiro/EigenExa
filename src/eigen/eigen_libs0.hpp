@@ -1,6 +1,4 @@
 #pragma once
-#ifndef EIGEN_LIBS_HPP
-#define EIGEN_LIBS_HPP
 #include <mpi.h>
 
 namespace eigen_libs0_fortran_interface {
@@ -72,4 +70,3 @@ inline int eigen_translate_g2l(int ictr, int nnod) { return ictr / nnod; }
 inline int eigen_owner_node(int ictr, int nnod) { return ictr % nnod; }
 
 } // namespace eigen_libs0
-#endif

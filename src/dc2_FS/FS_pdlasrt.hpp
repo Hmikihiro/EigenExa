@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FS_PDLASRT_HPP
-#define FS_PDLASRT_HPP
 
 #include <mpi.h>
 
@@ -211,5 +209,3 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
 #endif
 }
 } // namespace FS_pdlasrt
-
-#endif

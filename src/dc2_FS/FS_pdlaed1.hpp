@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FS_PDLAED1_HPP
-#define FS_PDLAED1_HPP
 
 #include <cstdio>
 #include <mpi.h>
@@ -130,5 +128,3 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
   return info;
 }
 } // namespace FS_pdlaed1
-
-#endif

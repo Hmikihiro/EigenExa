@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FS_PROF_HPP
-#define FS_PROF_HPP
 #include <mpi.h>
 
 #include <algorithm>
@@ -15,7 +13,7 @@ namespace FS_prof {
 constexpr int FS_max_region = 70 + 1;
 
 class FS_prof {
- public:
+public:
   char region_name[FS_max_region][64];
   double region_time[FS_max_region];
   double region_start[FS_max_region];
@@ -23,7 +21,7 @@ class FS_prof {
 #ifdef COUNT_CHECK
   int region_scount[FS_max_region];
 #endif
- public:
+public:
   void init();
   void start(int id);
   void end(int id);
@@ -31,7 +29,7 @@ class FS_prof {
   void finalize();
 };
 
-}  // namespace FS_prof
+} // namespace FS_prof
 
 namespace FS_prof {
 inline void FS_prof::init() {
@@ -143,9 +141,8 @@ inline void FS_prof::finalize() {
       }
 
       printf("  RANK = %d\n", n);
-      printf(
-          " -ID-+----region name ----------------+----time [s] "
-          "---------+-count-\n");
+      printf(" -ID-+----region name ----------------+----time [s] "
+             "---------+-count-\n");
       for (auto i = 0; i < FS_max_region; i++) {
         if (tmp_region_ecount[i] > 0) {
           printf("%d %-30s %f %d\n", i, region_name[i], tmp_region_time[i],
@@ -179,6 +176,4 @@ inline void FS_prof::finalize() {
 #endif
   }
 }
-}  // namespace FS_prof
-
-#endif
+} // namespace FS_prof

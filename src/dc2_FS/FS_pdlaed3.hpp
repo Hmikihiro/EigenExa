@@ -1,7 +1,4 @@
 #pragma once
-#ifndef FS_PDLAED3_HPP
-#define FS_PDLAED3_HPP
-
 #include <mpi.h>
 #include <omp.h>
 
@@ -607,5 +604,3 @@ FS_pdlead3_end:
   return info;
 }
 } // namespace FS_pdlaed3
-
-#endif

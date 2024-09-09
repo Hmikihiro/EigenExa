@@ -1,10 +1,8 @@
+#pragma once
 /**
  * @file FS_EDC.hpp
  * @brief template int FS_EDC
  */
-#pragma once
-#ifndef FS_EDC_HPP
-#define FS_EDC_HPP
 
 #include <cmath>
 #include <cstdio>
@@ -159,4 +157,3 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 }
 } // namespace FS_EDC
 
-#endif

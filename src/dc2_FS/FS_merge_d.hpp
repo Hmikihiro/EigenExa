@@ -1,10 +1,6 @@
 #pragma once
-#ifndef FS_MERGE_D_HPP
-#define FS_MERGE_D_HPP
-
 #include <algorithm>
 
-#include "../cblas_lapacke_wrapper.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 
@@ -44,5 +40,3 @@ void FS_merge_d(Integer n, const Float d[],
   }
 }
 } // namespace eigen_FS
-
-#endif

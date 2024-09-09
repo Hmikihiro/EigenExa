@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FS_LIBS_HPP
-#define FS_LIBS_HPP
 
 #include <mpi.h>
 
@@ -229,4 +227,3 @@ inline char get_grid_major() {
 inline int get_myrank() { return FS_get_myrank(); }
 
 } // namespace FS_libs
-#endif

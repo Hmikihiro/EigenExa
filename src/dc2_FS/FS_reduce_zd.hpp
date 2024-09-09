@@ -1,7 +1,4 @@
 #pragma once
-#ifndef FS_REDUCE_ZD_HPP
-#define FS_REDUCE_ZD_HPP
-
 #include <cstdio>
 
 #include "FS_const.hpp"
@@ -62,5 +59,3 @@ void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
 }
 
 } // namespace eigen_FS
-
-#endif

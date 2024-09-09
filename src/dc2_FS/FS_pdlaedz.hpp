@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FS_PDLAEDZ_HPP
-#define FS_PDLAEDZ_HPP
 
 #include <algorithm>
 #include <cstdio>
@@ -80,5 +78,3 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
 #endif
 }
 } // namespace FS_pdlaedz
-
-#endif

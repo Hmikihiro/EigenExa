@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FS_BLAS_HPP
-#define FS_BLAS_HPP
 
 #if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
 
@@ -384,4 +382,3 @@ template <> inline float nrm2(eigen_int64 n, float X[], eigen_int64 incX) {
 #endif // defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
 
 } // namespace lapacke
-#endif

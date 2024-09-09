@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FS_PDLAED0_HPP
-#define FS_PDLAED0_HPP
 
 #include <mpi.h>
 
@@ -201,5 +199,3 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
 }
 
 } // namespace eigen_FS
-
-#endif

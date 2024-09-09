@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FS_DIVIDING
-#define FS_DIVIDING
 
 #include <algorithm>
 #include <cstdio>
@@ -792,5 +790,3 @@ void bt_node<Integer, Float>::print_node() const {
   printf("#dights of bit = %d\n ", this->div_nbit_);
 }
 } // namespace FS_dividing
-
-#endif

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FS_CONST_HPP
-#define FS_CONST_HPP
 
 #include <mpi.h>
 
@@ -28,5 +26,3 @@ template <class Float> constexpr Float MHALF = -0.5e0;
 template <class Float> constexpr Float MONE = -1.0e0;
 template <class Float> constexpr Float MTWO = -2.0e0;
 } // namespace FS_const
-
-#endif

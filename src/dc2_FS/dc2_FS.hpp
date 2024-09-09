@@ -1,7 +1,4 @@
 #pragma once
-#ifndef DC2_FS_HPP
-#define DC2_FS_HPP
-
 #include <mpi.h>
 
 #include <memory>
@@ -113,5 +110,3 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
   return;
 }
 } // namespace eigen_FS
-
-#endif
