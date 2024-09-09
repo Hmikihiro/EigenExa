@@ -81,7 +81,9 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 
   Integer info = 0;
 #ifdef _DEBUGLOG
-  std::printf("FS_EDC start\n");
+  if (FS_libs::FS_get_myrank() == 0) {
+    std::printf("FS_EDC start\n");
+  }
 #endif
 
 #if TIMER_PRINT
@@ -142,7 +144,9 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
   }
 
 #ifdef _DEBUGLOG
-  std::printf("FS_EDC end. INFO=%d\n", info);
+  if (FS_libs::FS_get_myrank() == 0) {
+    std::printf("FS_EDC end. INFO=%d\n", info);
+  }
 #endif
 
 #if TIMER_PRINT
