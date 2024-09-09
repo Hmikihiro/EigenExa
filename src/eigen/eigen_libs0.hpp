@@ -62,3 +62,8 @@ inline int eigen_translate_g2l(int ictr, int nnod) { return ictr / nnod; }
 inline int eigen_owner_node(int ictr, int nnod) { return ictr % nnod; }
 
 } // namespace eigen_libs0_wrapper
+
+namespace eigen_libs0 {
+static int eigen_NB_f = 48;
+static int eigen_NB_b = 128;
+} // namespace eigen_libs0
