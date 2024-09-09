@@ -4,14 +4,17 @@
 
 #include <mpi.h>
 
-#include <cstdio>
 #include <memory>
 
-#include "../eigen/eigen_dc.hpp"
+#include "../eigen/eigen_dc_interface.hpp"
 #include "../eigen/eigen_devel.hpp"
 #include "../eigen/eigen_libs0.hpp"
 #include "FS_EDC.hpp"
 #include "FS_libs.hpp"
+
+#if TIMER_PRINT > 1
+#include <cstdio>
+#endif
 
 namespace eigen_FS {
 using eigen_devel::FS_eigen_abort;
@@ -25,14 +28,14 @@ using std::unique_ptr;
 template <class Integer, class Float>
 void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
             Integer ldz, long *info, Float *ret) {
-  eigen_dc::flops = 0;
-  eigen_dc::dgemm_time = 0;
-  eigen_dc::p_time0 = 0;
-  eigen_dc::p_timer = 0;
-  eigen_dc::p_time2 = 0;
-  eigen_dc::p_time3 = 0;
-  eigen_dc::p_times = 0;
-  eigen_dc::p_timez = 0;
+  eigen_dc_interface::flops = 0;
+  eigen_dc_interface::dgemm_time = 0;
+  eigen_dc_interface::p_time0 = 0;
+  eigen_dc_interface::p_timer = 0;
+  eigen_dc_interface::p_time2 = 0;
+  eigen_dc_interface::p_time3 = 0;
+  eigen_dc_interface::p_times = 0;
+  eigen_dc_interface::p_timez = 0;
   FS_eigen_timer_reset(1, 0, 0, 0);
 
   const auto eigen_comm = eigen_get_comm().eigen_comm;
@@ -71,12 +74,12 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
     prof.finalize();
 #endif
 #if TIMER_PRINT > 1
-    eigen_dc::p_time0 = prof.region_time[21];
-    eigen_dc::p_timer = prof.region_time[70];
-    eigen_dc::p_time2 = prof.region_time[50];
-    eigen_dc::p_time3 = prof.region_time[60];
-    eigen_dc::dgemm_time = prof.region_time[67];
-    eigen_dc::p_timez = prof.region_time[40];
+    eigen_dc_interface::p_time0 = prof.region_time[21];
+    eigen_dc_interface::p_timer = prof.region_time[70];
+    eigen_dc_interface::p_time2 = prof.region_time[50];
+    eigen_dc_interface::p_time3 = prof.region_time[60];
+    eigen_dc_interface::dgemm_time = prof.region_time[67];
+    eigen_dc_interface::p_timez = prof.region_time[40];
 #endif
 #if defined(__INTEL_COMPILER) && USE_MKL
     MKL_Set_Dynamic(mkl_mode);
@@ -95,17 +98,17 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 
 #if TIMER_PRINT > 1
   if (iam == 0) {
-    printf("FS_dividing %f\n", eigen_dc::p_time0);
-    printf("FS_pdlasrt  %f\n", eigen_dc::p_timer);
-    printf("FS_pdlaed2  %f\n", eigen_dc::p_time2);
-    printf("FS_pdlaed3  %f\n", eigen_dc::p_time3);
-    printf("FS_pdlaedz  %f\n", eigen_dc::p_timez);
-    printf("DGEMM       %f\n", eigen_dc::dgemm_time);
+    printf("FS_dividing %f\n", eigen_dc_interface::p_time0);
+    printf("FS_pdlasrt  %f\n", eigen_dc_interface::p_timer);
+    printf("FS_pdlaed2  %f\n", eigen_dc_interface::p_time2);
+    printf("FS_pdlaed3  %f\n", eigen_dc_interface::p_time3);
+    printf("FS_pdlaedz  %f\n", eigen_dc_interface::p_timez);
+    printf("DGEMM       %f\n", eigen_dc_interface::dgemm_time);
   }
 #endif
 
-  MPI_Allreduce(&eigen_dc::flops, ret, 1, FS_const::MPI_TYPE<Float>, MPI_SUM,
-                eigen_comm);
+  MPI_Allreduce(&eigen_dc_interface::flops, ret, 1, FS_const::MPI_TYPE<Float>,
+                MPI_SUM, eigen_comm);
 
   return;
 }
