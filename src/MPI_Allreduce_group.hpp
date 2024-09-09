@@ -6,7 +6,7 @@
 #include <memory>
 #include <numeric>
 
-#include "../MPI_Datatype_wrapper.hpp"
+#include "MPI_Datatype_wrapper.hpp"
 
 namespace {
 namespace MPI_Group_property {

@@ -5,16 +5,15 @@
 #include <cmath>
 #include <memory>
 
+#include "../MPI_Allreduce_group.hpp"
 #include "../MPI_Datatype_wrapper.hpp"
 #include "../cblas_lapacke_wrapper.hpp"
 #include "../eigen/eigen_dc_interface.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
-#include "MPI_Allreduce_group.hpp"
 
 namespace FS_pdlaed3 {
-using eigen_FS::MPI_Group_Allreduce;
 using FS_libs::FS_COMM_WORLD;
 using std::abs;
 using std::max;
