@@ -6,6 +6,8 @@
 #include <memory>
 #include <numeric>
 
+#include "../MPI_Datatype_wrapper.hpp"
+
 namespace eigen_FS {
 namespace {
 namespace MPI_Group_property {
@@ -31,10 +33,6 @@ public:
 namespace MPI_Allreduce_main {
 using MPI_Group_property::MPI_Group_type;
 using std::abs;
-template <typename T> const MPI_Datatype MPI_TYPE = 0;
-template <> const MPI_Datatype MPI_TYPE<int> = MPI_INT;
-template <> const MPI_Datatype MPI_TYPE<double> = MPI_DOUBLE;
-template <> const MPI_Datatype MPI_TYPE<float> = MPI_FLOAT;
 
 template <typename Number>
 void comm_op(size_t &n, size_t &head, Number sbuf[], Number rbuf[],
@@ -53,8 +51,10 @@ void comm_op(size_t &n, size_t &head, Number sbuf[], Number rbuf[],
     count_s = n / 2;
   }
   MPI_Request req_s, req_r;
-  MPI_Isend(&sbuf[head_s], count_s, MPI_TYPE<Number>, pair, tag, comm, &req_s);
-  MPI_Irecv(rbuf, count_r, MPI_TYPE<Number>, pair, tag, comm, &req_r);
+  MPI_Isend(&sbuf[head_s], count_s, MPI_Datatype_wrapper::MPI_TYPE<Number>,
+            pair, tag, comm, &req_s);
+  MPI_Irecv(rbuf, count_r, MPI_Datatype_wrapper::MPI_TYPE<Number>, pair, tag,
+            comm, &req_r);
 
   MPI_Wait(&req_s, MPI_STATUS_IGNORE);
   MPI_Wait(&req_r, MPI_STATUS_IGNORE);
@@ -88,8 +88,10 @@ void comm_op_rev(size_t n, Number sbuf[], Number rbuf[], MPI_Comm comm,
     count_s = n - n / 2;
   }
   MPI_Request req_s, req_r;
-  MPI_Isend(&sbuf[head_s], count_s, MPI_TYPE<Number>, pair, tag, comm, &req_s);
-  MPI_Irecv(rbuf, count_r, MPI_TYPE<Number>, pair, tag, comm, &req_r);
+  MPI_Isend(&sbuf[head_s], count_s, MPI_Datatype_wrapper::MPI_TYPE<Number>,
+            pair, tag, comm, &req_s);
+  MPI_Irecv(rbuf, count_r, MPI_Datatype_wrapper::MPI_TYPE<Number>, pair, tag,
+            comm, &req_r);
 
   MPI_Wait(&req_s, MPI_STATUS_IGNORE);
   MPI_Wait(&req_r, MPI_STATUS_IGNORE);

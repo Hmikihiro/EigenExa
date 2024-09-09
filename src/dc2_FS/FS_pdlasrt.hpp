@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <numeric>
 
+#include "../MPI_Datatype_wrapper.hpp"
 #include "../cblas_lapacke_wrapper.hpp"
-#include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
 #include "FS_prof.hpp"
@@ -114,14 +114,14 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
     // irecv
     MPI_Request req;
     if (nrecv > 0) {
-      MPI_Irecv(recvq, np * nrecv, FS_const::MPI_TYPE<Float>,
+      MPI_Irecv(recvq, np * nrecv, MPI_Datatype_wrapper::MPI_TYPE<Float>,
                 subtree.group_Y_processranklist_[pjcol], 1,
                 FS_libs::FS_COMM_WORLD, &req);
     }
 
     // send
     if (nsend > 0) {
-      MPI_Send(sendq, np * nsend, FS_const::MPI_TYPE<Float>,
+      MPI_Send(sendq, np * nsend, MPI_Datatype_wrapper::MPI_TYPE<Float>,
                subtree.group_Y_processranklist_[pjcol], 1,
                FS_libs::FS_COMM_WORLD);
     }
@@ -176,14 +176,14 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
     MPI_Request req;
     // irecv
     if (nrecv > 0) {
-      MPI_Irecv(recvq, nrecv * nq, FS_const::MPI_TYPE<Float>,
+      MPI_Irecv(recvq, nrecv * nq, MPI_Datatype_wrapper::MPI_TYPE<Float>,
                 subtree.group_X_processranklist_[pjrow], 1,
                 FS_libs::FS_COMM_WORLD, &req);
     }
 
     // send
     if (nsend > 0) {
-      MPI_Send(sendq, nsend * nq, FS_const::MPI_TYPE<Float>,
+      MPI_Send(sendq, nsend * nq, MPI_Datatype_wrapper::MPI_TYPE<Float>,
                subtree.group_X_processranklist_[pjrow], 1,
                FS_libs::FS_COMM_WORLD);
     }

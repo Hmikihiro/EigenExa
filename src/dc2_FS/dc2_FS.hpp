@@ -2,6 +2,7 @@
 #include <memory>
 #include <mpi.h>
 
+#include "../MPI_Datatype_wrapper.hpp"
 #include "../eigen/eigen_dc_interface.hpp"
 #include "../eigen/eigen_devel.hpp"
 #include "../eigen/eigen_libs0.hpp"
@@ -102,8 +103,8 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
   }
 #endif
 
-  MPI_Allreduce(&eigen_dc_interface::flops, ret, 1, FS_const::MPI_TYPE<Float>,
-                MPI_SUM, eigen_comm);
+  MPI_Allreduce(&eigen_dc_interface::flops, ret, 1,
+                MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_SUM, eigen_comm);
 
   return;
 }

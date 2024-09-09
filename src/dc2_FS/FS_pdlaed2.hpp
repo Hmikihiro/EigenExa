@@ -7,6 +7,7 @@
 #include <limits>
 #include <numeric>
 
+#include "../MPI_Datatype_wrapper.hpp"
 #include "../cblas_lapacke_wrapper.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
@@ -120,22 +121,22 @@ void pdlaed2_comm(Integer mycol, Integer ldq, Float q[], Integer npa,
                                  1, c, s);
   } else if (mycol == pjcol) {
     MPI_Request req[2];
-    MPI_Irecv(qbuf, npa, FS_const::MPI_TYPE<Float>,
+    MPI_Irecv(qbuf, npa, MPI_Datatype_wrapper::MPI_TYPE<Float>,
               subtree.group_Y_processranklist_[njcol], 1,
               FS_libs::FS_COMM_WORLD, &req[1]);
 
-    MPI_Isend(&q[pjj * ldq + 0], npa, FS_const::MPI_TYPE<Float>,
+    MPI_Isend(&q[pjj * ldq + 0], npa, MPI_Datatype_wrapper::MPI_TYPE<Float>,
               subtree.group_Y_processranklist_[njcol], 1,
               FS_libs::FS_COMM_WORLD, &req[0]);
     MPI_Waitall(2, req, MPI_STATUS_IGNORE);
     lapacke::rot<Integer, Float>(npa, &q[pjj * ldq + 0], 1, qbuf, 1, c, s);
   } else if (mycol == njcol) {
     MPI_Request req[2];
-    MPI_Irecv(qbuf, npa, FS_const::MPI_TYPE<Float>,
+    MPI_Irecv(qbuf, npa, MPI_Datatype_wrapper::MPI_TYPE<Float>,
               subtree.group_Y_processranklist_[pjcol], 1,
               FS_libs::FS_COMM_WORLD, &req[1]);
 
-    MPI_Isend(&q[njj * ldq + 0], npa, FS_const::MPI_TYPE<Float>,
+    MPI_Isend(&q[njj * ldq + 0], npa, MPI_Datatype_wrapper::MPI_TYPE<Float>,
               subtree.group_Y_processranklist_[pjcol], 1,
               FS_libs::FS_COMM_WORLD, &req[0]);
     MPI_Waitall(2, req, MPI_STATUS_IGNORE);

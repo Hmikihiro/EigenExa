@@ -1,14 +1,6 @@
 #pragma once
 
-#include <mpi.h>
-
 namespace FS_const {
-template <typename T> const MPI_Datatype MPI_TYPE = 0;
-template <> const MPI_Datatype MPI_TYPE<int> = MPI_INT;
-template <> const MPI_Datatype MPI_TYPE<long> = MPI_LONG;
-template <> const MPI_Datatype MPI_TYPE<long long> = MPI_LONG_LONG;
-template <> const MPI_Datatype MPI_TYPE<double> = MPI_DOUBLE;
-template <> const MPI_Datatype MPI_TYPE<float> = MPI_FLOAT;
 template <class Float> constexpr Float ZERO = 0.0e0;
 template <class Float> constexpr Float HALF = 0.5e0;
 template <class Float> constexpr Float ONE = 1.0e0;

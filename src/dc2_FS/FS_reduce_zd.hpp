@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FS_const.hpp"
+#include "../MPI_Datatype_wrapper.hpp"
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
 #include "FS_prof.hpp"
@@ -35,8 +35,8 @@ void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
 #endif
 
   // reduce
-  MPI_Group_Allreduce(work, z, n * 2, FS_const::MPI_TYPE<Float>, MPI_SUM,
-                      FS_COMM_WORLD, subtree.MERGE_GROUP_);
+  MPI_Group_Allreduce(work, z, n * 2, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+                      MPI_SUM, FS_COMM_WORLD, subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
   for (Integer j = 0; j < n; j++) {

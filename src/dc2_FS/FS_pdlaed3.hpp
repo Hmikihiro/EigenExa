@@ -5,6 +5,7 @@
 #include <cmath>
 #include <memory>
 
+#include "../MPI_Datatype_wrapper.hpp"
 #include "../cblas_lapacke_wrapper.hpp"
 #include "../eigen/eigen_dc_interface.hpp"
 #include "FS_const.hpp"
@@ -268,8 +269,9 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
       buf[2 * k + i] = z[i];
     }
 
-    MPI_Group_Allreduce<Float>(&buf[2 * k], z, k, FS_const::MPI_TYPE<Float>,
-                               MPI_PROD, FS_COMM_WORLD, subtree.MERGE_GROUP_);
+    MPI_Group_Allreduce<Float>(&buf[2 * k], z, k,
+                               MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_PROD,
+                               FS_COMM_WORLD, subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
     for (Integer i = 0; i < k; i++) {
@@ -278,7 +280,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
 
     if (mykl > 0) {
       MPI_Group_Allreduce<Float>(buf, &buf[2 * k], 2 * mykl,
-                                 FS_const::MPI_TYPE<Float>, MPI_SUM,
+                                 MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_SUM,
                                  FS_COMM_WORLD, subtree.MERGE_GROUP_X_);
     }
 
@@ -296,7 +298,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
     }
 
     MPI_Group_Allreduce<Float>(buf, &buf[2 * k], 2 * k,
-                               FS_const::MPI_TYPE<Float>, MPI_SUM,
+                               MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_SUM,
                                FS_COMM_WORLD, subtree.MERGE_GROUP_Y_);
 
     // Copy of D at the good place
@@ -470,8 +472,8 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
         if (nsend > 0) {
           const auto dstcol = (mycol + npcol - 1) % npcol; // 左側に送信
           const auto dest = subtree.group_Y_processranklist_[dstcol];
-          MPI_Isend(sendq2, nsend, FS_const::MPI_TYPE<Float>, dest, 1,
-                    FS_libs::FS_COMM_WORLD, &req[0]);
+          MPI_Isend(sendq2, nsend, MPI_Datatype_wrapper::MPI_TYPE<Float>, dest,
+                    1, FS_libs::FS_COMM_WORLD, &req[0]);
         }
 
         // irecv
@@ -481,8 +483,8 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
         if (nrecv > 0) {
           const auto srccol = (mycol + npcol + 1) % npcol; // 右側から受信
           const auto source = subtree.group_Y_processranklist_[srccol];
-          MPI_Irecv(recvq2, nrecv, FS_const::MPI_TYPE<Float>, source, 1,
-                    FS_libs::FS_COMM_WORLD, &req[1]);
+          MPI_Irecv(recvq2, nrecv, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+                    source, 1, FS_libs::FS_COMM_WORLD, &req[1]);
         }
 #ifdef _MPITEST
         bool flag;

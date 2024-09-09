@@ -7,8 +7,8 @@
 #include <memory>
 #include <numeric>
 
+#include "../MPI_Datatype_wrapper.hpp"
 #include "../eigen/eigen_libs0.hpp"
-#include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_libs.hpp"
 
@@ -213,7 +213,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
     comm_send_info[i] = 0;
     comm_recv_info[i] = -1;
   }
-  MPI_Bcast(d, n, FS_const::MPI_TYPE<Float>, 0, eigen_comm);
+  MPI_Bcast(d, n, MPI_Datatype_wrapper::MPI_TYPE<Float>, 0, eigen_comm);
 
   std::iota(indx, indx + n, 0);
   std::sort(indx, &indx[n],
@@ -315,8 +315,8 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   prof_time[1] = etime - stime;
   stime = etime;
 
-  MPI_Alltoall(comm_send_info, 1, FS_const::MPI_TYPE<Integer>,
-               comm_recv_info.get(), 1, FS_const::MPI_TYPE<Integer>,
+  MPI_Alltoall(comm_send_info, 1, MPI_Datatype_wrapper::MPI_TYPE<Integer>,
+               comm_recv_info.get(), 1, MPI_Datatype_wrapper::MPI_TYPE<Integer>,
                eigen_comm);
 
   etime = MPI_Wtime();
