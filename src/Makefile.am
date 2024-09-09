@@ -212,7 +212,7 @@ comm_h.o : comm_h.F
 	$(F77) $(AM_FFLAGS) $(FFLAGS0) -c -o $@ $<
 dc2_FS_C_Interface.o :  dc2_FS/dc2_FS_C_Interface.cpp dc2_FS/*
 	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -c -o $@ $<
-FS_libs_C.o :  dc2_FS/FS_libs_C.cpp  dc2_FS/FS_libs.hpp
+FS_libs_C.o :  FS_libs/FS_libs_C.cpp  FS_libs/FS_libs.hpp
 	$(CXX) $(AM_CXXFLAGS) $(CXXFLAGS0) -c -o $@ $<
 
 
