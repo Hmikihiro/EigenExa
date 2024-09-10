@@ -22,6 +22,12 @@ using eigen_libs0_wrapper::eigen_get_procs;
 using std::unique_ptr;
 
 template <class Integer, class Float>
+static long long buffer_for_gposition_value = 1;
+template <>
+static long long buffer_for_gposition_value<long, float> =
+    2; // Gposition_valueが64bit整数2つと32bit小数1つで20バイトだがpaddingで24バイトになるため多めに確保する必要がある。
+
+template <class Integer, class Float>
 void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
             Integer ldz, long *info, Float *ret) {
   eigen_dc_interface::flops = 0;
@@ -37,7 +43,8 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
   const auto eigen_comm = eigen_get_comm().eigen_comm;
 
   const auto worksize = FS_libs::FS_WorkSize(n);
-  long long lwork_ = worksize.lwork;
+  long long lwork_ =
+      worksize.lwork * buffer_for_gposition_value<Integer, Float>;
   long long liwork_ = worksize.liwork;
 
   const int FS_COMM_MEMBER = FS_libs::is_FS_comm_member();
