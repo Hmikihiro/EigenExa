@@ -21,19 +21,18 @@ extern int FS_MYRANK;
 extern bool FS_COMM_MEMBER;
 extern MPI_Group FS_GROUP;
 
-class process_grid {
-public:
-  int nnod, x_nnod, y_nnod;
-  int inod, x_inod, y_inod;
+struct process_grid {
+  long nnod, x_nnod, y_nnod;
+  long inod, x_inod, y_inod;
 };
 extern process_grid FS_node;
 
 extern char FS_GRID_major;
 
 namespace {
-inline void FS_init_cartesian(char GRID_major, int nnod, int inod) {
-  auto x_nnod = int(sqrt(double(nnod)));
-  int i = 1;
+inline void FS_init_cartesian(char GRID_major, long nnod, long inod) {
+  auto x_nnod = long(sqrt(double(nnod)));
+  long i = 1;
   const auto k = (nnod % i == 0) ? i : 1;
 
   while (true) {
@@ -48,7 +47,7 @@ inline void FS_init_cartesian(char GRID_major, int nnod, int inod) {
 
   const auto y_nnod = nnod / x_nnod;
 
-  int x_inod, y_inod;
+  long x_inod, y_inod;
   if (GRID_major == 'R') {
     // row-major
     x_inod = (inod - 1) / y_nnod + 1;
@@ -82,8 +81,8 @@ inline void FS_init(MPI_Comm comm = MPI_COMM_WORLD, char order = 'C') {
   auto nnod = eigen_get_procs().procs;
   const auto inod = eigen_get_id().id;
 
-  const auto p = static_cast<int>(log2(nnod));
-  int color = 0;
+  const auto p = static_cast<long>(log2(nnod));
+  long color = 0;
   if (inod <= pow(2, p)) {
     color = 0;
     FS_COMM_MEMBER = true;
@@ -117,9 +116,9 @@ inline void FS_free() {
 }
 
 struct Nod {
-  int nod;
-  int x;
-  int y;
+  long nod;
+  long x;
+  long y;
 };
 
 inline Nod FS_get_procs() {
@@ -139,13 +138,13 @@ inline Nod FS_get_id() {
 }
 
 struct matdims {
-  int nx;
-  int ny;
+  long nx;
+  long ny;
 };
 
-inline matdims FS_get_matdims(int n) {
+inline matdims FS_get_matdims(long n) {
   const auto nnod = FS_get_procs();
-  int n1 = n / nnod.nod;
+  long n1 = n / nnod.nod;
   if (n % nnod.nod != 0) {
     n1 += 1;
   }
@@ -161,7 +160,7 @@ struct fs_worksize {
   long liwork;
 };
 
-inline fs_worksize FS_WorkSize(int n) {
+inline fs_worksize FS_WorkSize(long n) {
   const auto y_nnod = FS_get_procs().y;
   const auto dims = FS_get_matdims(n);
   const auto np = dims.nx;
@@ -172,7 +171,7 @@ inline fs_worksize FS_WorkSize(int n) {
   return {lwork, liwork};
 }
 
-inline int FS_get_myrank() { return FS_MYRANK; }
+inline long FS_get_myrank() { return FS_MYRANK; }
 
 inline MPI_Group FS_get_group() { return FS_GROUP; }
 
