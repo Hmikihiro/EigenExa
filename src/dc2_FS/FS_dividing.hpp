@@ -174,6 +174,7 @@ using std::min;
 
 inline void FS_create_hint(bool hint[]) {
   FS_libs::Nod nnod = FS_libs::FS_get_procs();
+  size_t layer_debug;
 
 #if _TREEDIV == 1
   for (size_t layer = 0; nnod.x * nnod.y >= 1; layer++) {
@@ -184,6 +185,7 @@ inline void FS_create_hint(bool hint[]) {
       hint[layer] = true;
       nnod.x = nnod.x / 2;
     }
+    layer_debug = layer;
   }
 
 #elif _TREEDIV == 2
@@ -195,6 +197,7 @@ inline void FS_create_hint(bool hint[]) {
       hint[layer] = false;
       nnod.y = nnod.y / 2;
     }
+    layer_debug = layer;
   }
 #elif _TREEDIV == 3
   for (size_t layer = 0; nnod.x * nnod.y >= 1; layer++) {
@@ -205,6 +208,7 @@ inline void FS_create_hint(bool hint[]) {
       hint[layer] = true;
       nnod.x = nnod.x / 2;
     }
+    layer_debug = layer;
   }
 #else
   for (size_t layer = 0; nnod.x * nnod.y >= 1; layer++) {
@@ -215,12 +219,13 @@ inline void FS_create_hint(bool hint[]) {
       hint[layer] = false;
       nnod.y = nnod.y / 2;
     }
+    layer_debug = layer;
   }
 #endif
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    for (size_t i = 0; i < layer; i++) {
+    for (size_t i = 0; i < layer_debug; i++) {
       const char hint_char = hint[i] ? 'T' : 'F';
       std::printf("%c ", hint_char);
     }
