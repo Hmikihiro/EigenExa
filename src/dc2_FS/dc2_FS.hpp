@@ -97,6 +97,7 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 
   } catch (std::bad_alloc) {
     FS_eigen_abort();
+    throw;
   }
 
 #if TIMER_PRINT > 1
