@@ -267,15 +267,13 @@
 !
 !--------*---------*---------*---------*---------*---------*---------*-*
 
-      subroutine eigen_get_initialized(flag)
+      logical function  eigen_get_initialized() 
 
-      logical, intent(out) :: flag
-
-      flag = Eigen_initialized_flag
+      eigen_get_initialized = Eigen_initialized_flag
 
       return
 
-      end subroutine eigen_get_initialized
+      end function eigen_get_initialized
 
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     
@@ -679,10 +677,10 @@
       subroutine FS_eigen_timer_reset(bcast, reduce, redist, gather)
      & bind(c, name="FS_eigen_timer_reset")
       use, intrinsic :: iso_c_binding
-      integer(c_int), intent(in), value :: bcast
-      integer(c_int), intent(in), value :: reduce
-      integer(c_int), intent(in), value :: redist
-      integer(c_int), intent(in), value :: gather
+      integer(c_int64_t), intent(in), value :: bcast
+      integer(c_int64_t), intent(in), value :: reduce
+      integer(c_int64_t), intent(in), value :: redist
+      integer(c_int64_t), intent(in), value :: gather
       call eigen_timer_reset(bcast, reduce, redist, gather)
       end subroutine
 

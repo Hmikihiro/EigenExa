@@ -58,8 +58,8 @@
       integer            :: n, nvec, m, mb, nall, mtype, msolver, merror
       integer            :: nm, nx, ny
       integer(8)         :: imem
-      integer            :: new_comm, color, key, n_comms
-      integer            :: new_dim_x, new_dim_y, dims(2), coords(2)
+      integer(4)            :: new_comm, color, key, n_comms
+      integer(4)         :: new_dim_x, new_dim_y, dims(2), coords(2)
       logical            :: periods(2), reorder
       character*1        :: mode = ' ', grid = ' '
       character*256      :: input_file = ' '

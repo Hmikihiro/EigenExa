@@ -52,7 +52,7 @@ c_test_LDADD = $(c_test_OBJS) \
 		-lEigenExa \
 		$(OPT_LD_LAPACK)
 
-AM_FFLAGS = -g $(MACRO_FPP) \
+AM_FFLAGS = -g -i8 -ilp64 $(MACRO_FPP) \
 		$(TEST_FLAG) -I./ \
 		$(MACRO_MODULE_PATH)./ \
 		$(TEST_FLAG) -I../src \

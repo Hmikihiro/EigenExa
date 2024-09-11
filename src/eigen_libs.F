@@ -79,6 +79,7 @@
 
       character :: order0
       integer     :: comm0
+      integer(c_long):: c_comm0
 
       if (present(comm)) then
          comm0=comm
@@ -98,7 +99,9 @@
 #if CODE_AKASHI
       call eigen_init0(comm=comm0, order=order0)
 #else
-      call FS_init(comm0,order0)
+      c_comm0 = comm0
+      call FS_init(c_comm0,order0)
+      comm0 = c_comm0
 #endif
 
       end subroutine eigen_init
@@ -118,6 +121,7 @@
 
       integer    nx0, ny0
       integer    m_f, m_b
+      integer(c_long):: cn, cnx, cny, cnx0, cny0
       character              :: mode_
 
       if (present(m_forward)) then
@@ -139,8 +143,13 @@
 #if CODE_AKASHI
       call eigen_get_matdims0(n, nx, ny, m_f, m_b, mode_)
 #else
-      call eigen_get_matdims0(n, nx, ny, m_f, m_b, mode_)
-      call FS_get_matdims(n, nx0, ny0)
+      cn = n
+      call eigen_get_matdims0(cn, cnx, cny, m_f, m_b, mode_)
+      call FS_get_matdims(cn, cnx0, cny0)
+      nx = cnx
+      ny = cny
+      nx0 = cnx0
+      ny0 = cny0
       nx=max(nx,nx0)
       ny=max(ny,ny0)
 #endif

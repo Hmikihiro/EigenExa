@@ -4,7 +4,7 @@
 #include "dc2_FS.hpp"
 
 #if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
-#define int_type eigen_int64
+#define int_type eigen_int
 #else
 #define int_type eigen_int
 #endif
@@ -12,6 +12,7 @@
 extern "C" {
 void dc2_FS_f64(int n, int nvec, double d[], double e[], double z[], int ldz,
                 long *info, double *ret) {
+  std::printf("%lu", sizeof(int_type));
   eigen_FS::dc2_FS<int_type, double>(n, nvec, d, e, z, ldz, info, ret);
 }
 

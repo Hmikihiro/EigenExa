@@ -470,13 +470,13 @@ if test -n "${LAPACK_LIBS}"; then
     fi
   fi
   if test x${F77} = xmpiifort -a  x"${with_mkl_scalapack}" != x; then
-    OPT_LD_LAPACK+=" -lmkl_scalapack_lp64 "
+    OPT_LD_LAPACK+=" -lmkl_scalapack_ilp64 "
   fi
   if test x"${with_mkl}" != x -o x"${with_mkl_scalapack}" != x; then
     if test x"${OS_MACOS}" = x"yes"; then
-      OPT_LD_LAPACK+=" -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_mpich_lp64 -liomp5 -lpthread -lm -ldl "
+      OPT_LD_LAPACK+=" -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_mpich_ilp64 -liomp5 -lpthread -lm -ldl "
     else
-      OPT_LD_LAPACK+=" -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_lp64 -liomp5 -lpthread -lm -ldl "
+      OPT_LD_LAPACK+=" -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_ilp64 -liomp5 -lpthread -lm -ldl "
     fi
     USE_MKL=1
   fi
@@ -489,12 +489,12 @@ elif test x"${FC_ACT}" = x"ifort"; then
     OPT_LD_LAPACK+=" -I${MKLROOT}/include -L${MKLROOT}/lib/intel64 "
   fi
   if test x${F77} = xmpiifort -o  x"${with_mkl_scalapack}" = x; then
-    OPT_LD_LAPACK+=" -lmkl_scalapack_lp64 "
+    OPT_LD_LAPACK+=" -lmkl_scalapack_ilp64 "
   fi
   if test x"${OS_MACOS}" = x"yes"; then
-    OPT_LD_LAPACK+=" -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_mpich_lp64 -liomp5 -lpthread -lm -ldl "
+    OPT_LD_LAPACK+=" -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_mpich_ilp64 -liomp5 -lpthread -lm -ldl "
   else
-    OPT_LD_LAPACK+=" -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_lp64 -liomp5 -lpthread -lm -ldl "
+    OPT_LD_LAPACK+=" -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_ilp64 -liomp5 -lpthread -lm -ldl "
   fi
   USE_MKL=1
 
@@ -506,7 +506,7 @@ elif test x"${FC_ACT}" = x"gfortran"; then
     OPT_LD_LAPACK+=" -lscalapack"
   fi
   if test x"${with_mkl}" != x -o x"${with_mkl_scalapack}" != x; then
-    OPT_LD_LAPACK+=" -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_lp64 -liomp5 -lpthread -lm -ldl "
+    OPT_LD_LAPACK+=" -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_ilp64 -liomp5 -lpthread -lm -ldl "
     USE_MKL=1
   else
     OPT_LD_LAPACK+=" -llapack -lblas "
@@ -542,7 +542,7 @@ if test x"${FC_ACT}" = x"ifort"; then
 #    I_ARCH=" -xHOST "
     I_ARCH=" "
   fi
-  I_BASE=${OMP}" -g -fp-model strict -inline-level=1 "
+  I_BASE=${OMP}" -DMKL_ILP64 -g -fp-model strict -traceback -inline-level=1 "
 fi
 
 ## For GNU compiler architecture-oriented options
@@ -579,7 +579,7 @@ if test x"${ac_test_FFLAGS}" = x"set"; then
 else
 
   if   test x"${FC_ACT}" = x"ifort"; then
-    FFLAGS=${I_BASE}" -Ofast "${I_ARCH}" -W1 -Winline"
+    FFLAGS=" -i8 -ilp64 "${I_BASE}" -Ofast "${I_ARCH}" -W1 -Winline"
     
   elif test x"${FC_ACT}" = x"gfortran"; then
     FFLAGS=${G_BASE}" -O3 "${G_ARCH}
@@ -604,7 +604,7 @@ if test x"${ac_test_FCFLAGS}" = x"set"; then
 else
 
   if   test x"${FC_ACT}" = x"ifort"; then
-    FCFLAGS=${I_BASE}" -Ofast "${I_ARCH}" -W1 -Winline"
+    FCFLAGS=" -i8 -ilp64 "${I_BASE}" -Ofast "${I_ARCH}" -W1 -Winline"
     
   elif test x"${FC_ACT}" = x"gfortran"; then
     FCFLAGS=${G_BASE}" -O3 "${G_ARCH}
@@ -625,7 +625,7 @@ fi
 # FFLAGS0 (special flags)
 
 if   test x"${FC_ACT}" = x"ifort"; then
-  FFLAGS0=${I_BASE}" -O0 -W1 -Winline"
+  FFLAGS0="-i8 -ilp64 "${I_BASE}" -O0 -W1 -Winline"
   
 elif test x"${FC_ACT}" = x"gfortran"; then
   FFLAGS0=${G_BASE}" -O0"
@@ -699,7 +699,7 @@ if test x"${ac_test_CXXFLAGS}" = x"set"; then
 else
 
   if   test x"${FC_ACT}" = x"ifort"; then
-    CXXFLAGS=${I_BASE}" -O3 "${I_ARCH}" -Wall"
+    CXXFLAGS=${I_BASE}" -g -O3 "${I_ARCH}" -Wall"
     
   elif test x"${FC_ACT}" = x"gfortran"; then
     CXXFLAGS=${G_BASE}" -O3 "${G_ARCH}" -Wall"
@@ -720,7 +720,7 @@ fi
 # CXXFLAGS0 (special flags)
 
 if   test x"${FC_ACT}" = x"ifort"; then
-  CXXFLAGS0=${I_BASE}" -Ofast -Wall -Wextra  -Wcheck -Wpointer-arith -Wuninitialized" 
+  CXXFLAGS0=${I_BASE}" -g -Ofast -Wall -Wextra  -Wcheck -Wpointer-arith -Wuninitialized" 
   
 elif test x"${FC_ACT}" = x"gfortran"; then
   CXXFLAGS0=${G_BASE}" -O0 -Wall"
@@ -760,7 +760,7 @@ if   test x"${FC_ACT}" = x"ifort"; then
   if test x"${OS_MACOS}" = x"yes"; then
     SHARED_LDFLAGS=" -shared"
   else
-    SHARED_LDFLAGS=" -shared -rdynamic -Wl,-soname,libEigenExa.$SUFFIX_DYLIB -W1"
+    SHARED_LDFLAGS=" -ilp64 -shared -rdynamic -Wl,-soname,libEigenExa.$SUFFIX_DYLIB -W1"
   fi
   
 elif test x"${FC_ACT}" = x"gfortran"; then

@@ -93,7 +93,7 @@
 !-
 !-------------------------------------------------------------------
 !-
-      call eigen_get_initialized(flag)
+      flag = eigen_get_initialized()
       if (.not. flag) then
         return
       end if

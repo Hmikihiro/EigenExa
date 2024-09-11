@@ -2,6 +2,8 @@
 
 #include <mpi.h>
 
+#include "../fortran_c_glue_int.hpp"
+
 namespace eigen_libs_interface {
 extern "C" void FS_eigen_init0(int comm, char order);
 extern "C" void FS_eigen_free0();

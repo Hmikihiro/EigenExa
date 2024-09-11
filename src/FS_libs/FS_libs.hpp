@@ -77,7 +77,7 @@ inline void FS_init(MPI_Comm comm = MPI_COMM_WORLD, char order = 'C') {
   const auto eigen_comm = eigen_get_comm().eigen_comm;
 
   // FS_COMM_WORLDの設定
-  auto nnod = eigen_get_procs().procs;
+  int nnod = eigen_get_procs().procs;
   const auto inod = eigen_get_id().id;
 
   const auto p = static_cast<int>(log2(nnod));
@@ -136,15 +136,22 @@ inline Nod FS_get_id() {
   return inod;
 }
 
-inline void FS_get_matdims(int n, int &nx, int &ny) {
+struct matdims {
+  int nx;
+  int ny;
+};
+
+inline matdims FS_get_matdims(int n) {
 
   const auto nnod = FS_get_procs();
   int n1 = n / nnod.nod;
   if (n % nnod.nod != 0) {
     n1 += 1;
   }
-  nx = n1 * (nnod.nod / nnod.x);
-  ny = n1 * (nnod.nod / nnod.y);
+
+  const auto nx = n1 * (nnod.nod / nnod.x);
+  const auto ny = n1 * (nnod.nod / nnod.y);
+  return matdims{nx, ny};
 }
 
 inline char FS_get_grid_major() { return FS_GRID_major; }
@@ -157,7 +164,9 @@ struct fs_worksize {
 inline fs_worksize FS_WorkSize(int n) {
   int np, nq;
   const auto y_nnod = FS_get_procs().y;
-  FS_get_matdims(n, np, nq);
+  const auto dims = FS_get_matdims(n);
+  np = dims.nx;
+  nq = dims.ny;
 
   const long lwork = 1 + 7 * n + 3 * np * nq + nq * nq;
   const long liwork = 1 + 8 * n + 2 * 4 * y_nnod;

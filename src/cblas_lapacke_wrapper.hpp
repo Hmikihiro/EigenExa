@@ -6,7 +6,7 @@
 
 typedef MKL_INT eigen_int;
 
-typedef MKL_INT64 eigen_int64;
+// typedef MKL_INT64 eigen_int64;
 
 #else
 #include <cblas.h>
@@ -238,6 +238,7 @@ inline void rot(eigen_int N, float *X, eigen_int incX, float *Y, eigen_int incY,
 }
 
 #if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
+#if 0
 template <>
 inline eigen_int64 stedc<eigen_int64, double>(
     char compz, eigen_int64 n, double *d, double *e, double *z, eigen_int64 ldz,
@@ -378,7 +379,7 @@ template <> inline double nrm2(eigen_int64 n, double X[], eigen_int64 incX) {
 template <> inline float nrm2(eigen_int64 n, float X[], eigen_int64 incX) {
   return cblas_snrm2_64(n, X, incX);
 }
-
+#endif
 #endif // defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
 
 } // namespace lapacke

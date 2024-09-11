@@ -43,6 +43,7 @@
       integer :: i_1,i_2,i_3
       integer :: j_1,j_2,j_3
       integer :: iam, myrow, mycol      
+      integer(c_long) :: cn, cnm, cnx
 
 !     for pdsygvx
       call eigen_get_id   ( iam, myrow, mycol )            
@@ -59,7 +60,10 @@
       inod=inod-1; myrow1=myrow1-1; mycol1=mycol1-1
       ictxt = eigen_get_blacs_context()
 
-      call eigen_get_matdims( n, nm, nx )
+      cn = n
+      call eigen_get_matdims( cn, cnm, cnx )
+      nm = cnm
+      nx = cnx
 
       larray = nm * nx
 

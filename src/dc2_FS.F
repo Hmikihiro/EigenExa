@@ -24,7 +24,7 @@
      &      bind(c, name="dc2_FS_f64")
 
             use, intrinsic :: iso_c_binding
-            integer(c_int), intent(in),value :: n, nvec, ldz
+            integer(c_long), intent(in),value :: n, nvec, ldz
             real(c_double), intent(inout) :: d(1:n)
             real(c_double), intent(inout) :: e(1:n-1)
             real(c_double), intent(out)   :: z(1:ldz,*)
@@ -36,7 +36,7 @@
      &      bind(c, name="dc2_FS_f32")
        
             use, intrinsic :: iso_c_binding
-            integer(c_int), intent(in),value :: n, nvec, ldz
+            integer(c_long), intent(in),value :: n, nvec, ldz
             real(c_float), intent(inout) :: d(1:n)
             real(c_float), intent(inout) :: e(1:n-1)
             real(c_float), intent(out)   :: z(1:ldz,*)

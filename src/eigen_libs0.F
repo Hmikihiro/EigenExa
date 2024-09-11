@@ -258,7 +258,7 @@
       logical, intent(out) :: flag
 
 
-      call eigen_get_initialized(flag)
+      flag = eigen_get_initialized()
 
       return
 
@@ -1176,7 +1176,7 @@
       real(8)                ::  tmp
 
 
-      call eigen_get_initialized(local_flag)
+      local_flag =  eigen_get_initialized()
 
       if (.not. local_flag) then
         return
@@ -1577,9 +1577,9 @@
         use, intrinsic :: iso_c_binding
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_get_procs
 
-      integer(c_int), intent(out)   ::  procs
-      integer(c_int), intent(out)   ::  x_procs
-      integer(c_int), intent(out)   ::  y_procs
+      integer(c_long), intent(out)   ::  procs
+      integer(c_long), intent(out)   ::  x_procs
+      integer(c_long), intent(out)   ::  y_procs
 
 
       procs   = TRD_nnod
@@ -1619,9 +1619,9 @@
         use, intrinsic :: iso_c_binding
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_get_id
 
-      integer(c_int), intent(out)   ::  id
-      integer(c_int), intent(out)   ::  x_id
-      integer(c_int), intent(out)   ::  y_id
+      integer(c_long), intent(out)   ::  id
+      integer(c_long), intent(out)   ::  x_id
+      integer(c_long), intent(out)   ::  y_id
 
 
       id   = TRD_inod
@@ -1660,9 +1660,9 @@
      & bind(c, name= "eigen_get_comm")
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_get_comm
 
-      integer(c_int), intent(out)   ::  comm
-      integer(c_int), intent(out)   ::  x_comm
-      integer(c_int), intent(out)   ::  y_comm
+      integer(c_long), intent(out)   ::  comm
+      integer(c_long), intent(out)   ::  x_comm
+      integer(c_long), intent(out)   ::  y_comm
 
 
       comm   = TRD_COMM_WORLD
@@ -2713,7 +2713,7 @@
      &  bind(c, name="FS_eigen_init0")
          use,intrinsic :: iso_c_binding
          
-         integer(c_int),      intent(in),value :: comm
+         integer(c_long),      intent(in),value :: comm
          character(c_char),   intent(in),value :: order
          call eigen_init0(comm = comm, order = order)
       end subroutine

@@ -95,7 +95,7 @@ module FS_libs_mod
        subroutine FS_init(comm,order) bind(c, name="FS_init")
          use, intrinsic :: iso_c_binding
      
-         integer(c_int), intent(in), value :: comm
+         integer(c_long), intent(in), value :: comm
          character(c_char), intent(in), value:: order
        end subroutine
 
@@ -105,17 +105,17 @@ module FS_libs_mod
 
        subroutine FS_get_matdims(n, nx, ny) bind(c, name="FS_get_matdims")
          use, intrinsic :: iso_c_binding
-         integer(c_int), intent(in), value :: n
-         integer(c_int), intent(out)       :: nx, ny
+         integer(c_long), intent(in), value :: n
+         integer(c_long), intent(out)       :: nx, ny
        end subroutine
 
-       integer(c_int) function FS_get_myrank() bind(c, name="FS_get_myrank")
+       integer(c_long) function FS_get_myrank() bind(c, name="FS_get_myrank")
          use, intrinsic ::iso_c_binding
        end function
 
       subroutine FS_WorkSize(N, LWORK, LIWORK) bind(c, name="FS_WorkSize")
         use, intrinsic :: iso_c_binding
-        integer(c_int), intent(in), value :: N
+        integer(c_long), intent(in), value :: N
         integer(c_long), intent(out) :: LWORK, LIWORK
       end subroutine
 
@@ -161,7 +161,7 @@ contains
     character(256) :: version
     character(1  ) :: patchlevel
     integer         :: i
-    integer         :: id, x_id, y_id
+    integer(c_long)         :: id, x_id, y_id
 
     call eigen_get_id(id, x_id, y_id)
 

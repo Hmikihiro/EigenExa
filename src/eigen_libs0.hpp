@@ -1,12 +1,14 @@
 #pragma once
+#include "fortran_c_glue_int.hpp"
 #include <mpi.h>
 
 namespace eigen_libs0_interface {
 
 extern "C" {
-void eigen_get_comm(int &eigen_comm, int &eigen_x_comm, int &eigen_y_comm);
-void eigen_get_procs(int &procs, int &x_procs, int &y_procs);
-void eigen_get_id(int &id, int &x_id, int &y_id);
+void eigen_get_comm(glue_int &eigen_comm, glue_int &eigen_x_comm,
+                    glue_int &eigen_y_comm);
+void eigen_get_procs(glue_int &procs, glue_int &x_procs, glue_int &y_procs);
+void eigen_get_id(glue_int &id, glue_int &x_id, glue_int &y_id);
 char eigen_get_grid_major();
 }
 
@@ -20,15 +22,15 @@ struct eigen_comm {
 };
 
 struct eigen_procs {
-  int procs;
-  int x_procs;
-  int y_procs;
+  glue_int procs;
+  glue_int x_procs;
+  glue_int y_procs;
 };
 
 struct eigen_id {
-  int id;
-  int x_id;
-  int y_id;
+  glue_int id;
+  glue_int x_id;
+  glue_int y_id;
 };
 
 inline eigen_procs eigen_get_procs() {
@@ -39,7 +41,7 @@ inline eigen_procs eigen_get_procs() {
 }
 
 inline eigen_comm eigen_get_comm() {
-  int icomm, ix_comm, iy_comm;
+  glue_int icomm, ix_comm, iy_comm;
   eigen_libs0_interface::eigen_get_comm(icomm, ix_comm, iy_comm);
   eigen_comm comm = {};
   comm.eigen_comm = MPI_Comm_f2c(icomm);
@@ -58,12 +60,16 @@ inline char eigen_get_grid_major() {
   return eigen_libs0_interface::eigen_get_grid_major();
 }
 
-inline int eigen_translate_g2l(int ictr, int nnod) { return ictr / nnod; }
-inline int eigen_owner_node(int ictr, int nnod) { return ictr % nnod; }
+inline glue_int eigen_translate_g2l(glue_int ictr, glue_int nnod) {
+  return ictr / nnod;
+}
+inline glue_int eigen_owner_node(glue_int ictr, glue_int nnod) {
+  return ictr % nnod;
+}
 
 } // namespace eigen_libs0_wrapper
 
 namespace eigen_libs0 {
-static int eigen_NB_f = 48;
-static int eigen_NB_b = 128;
+static glue_int eigen_NB_f = 48;
+static glue_int eigen_NB_b = 128;
 } // namespace eigen_libs0
