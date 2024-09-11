@@ -20,7 +20,7 @@ namespace {
 
 template <typename Integer, typename Float>
 Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
-                   Float work[], long lwork, Integer iwork[], long liwork,
+                   Float work[], long lwork, eigen_int iwork[], long liwork,
                    FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
@@ -71,9 +71,9 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
         const auto pq = root_node.FS_info_G2L(id, id);
         Integer info = 0;
         if (id < n - 1) {
-          info = lapacke::stedc<Integer, Float>('I', mat_size, &d[id], &e[id],
-                                                &q[pq.row + pq.col * ldq], ldq,
-                                                work, lwork, iwork, liwork);
+          info = lapacke::stedc<Float>('I', mat_size, &d[id], &e[id],
+                                       &q[pq.row + pq.col * ldq], ldq, work,
+                                       lwork, iwork, liwork);
         } else {
           q[pq.row + pq.col * ldq] = 1.0;
           info = 0;
@@ -171,14 +171,16 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
     const auto eigen_np = eigen_libs0_wrapper::eigen_get_procs().procs;
 
     if (nnod.nod == eigen_np) {
-      FS_pdlasrt(n, d, q, ldq, root_node, &work[ipq2], ldq2, &work[i_send_q],
-                 &work[i_recv_q], &work[i_buffer], &iwork[index_row],
-                 &iwork[index_col], &iwork[index], &iwork[index_recv], prof);
+      FS_pdlasrt<Integer, Float>(
+          n, d, q, ldq, root_node, &work[ipq2], ldq2, &work[i_send_q],
+          &work[i_recv_q], &work[i_buffer], &iwork[index_row],
+          &iwork[index_col], &iwork[index], &iwork[index_recv], prof);
     } else {
-      FS2eigen_pdlasrt(n, d, ldq, q, root_node, (Integer *)work, work,
-                       (FS2eigen::GpositionValue<Integer, Float>
-                            *)&work[std::max((Integer)0, (NP * NQ / 2))],
-                       iwork, prof);
+      FS2eigen_pdlasrt<Integer, Float>(
+          n, d, ldq, q, root_node, (Integer *)work, work,
+          (FS2eigen::GpositionValue<Integer, Float>
+               *)&work[std::max((Integer)0, (NP * NQ / 2))],
+          iwork, prof);
     }
     return 0;
   }();

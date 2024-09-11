@@ -1,14 +1,13 @@
 #pragma once
 #include <mpi.h>
 
-#define int_for_mpi int
-
 #include <algorithm>
 #include <memory>
 #include <numeric>
 
 #include "../FS_libs/FS_libs.hpp"
 #include "../MPI_Datatype_wrapper.hpp"
+#include "../cblas_lapacke_wrapper.hpp"
 #include "../eigen_libs0.hpp"
 #include "FS_dividing.hpp"
 
@@ -184,7 +183,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
                          const bt_node<Integer, Float> &subtree, Integer ibuf[],
                          Float rbuf[],
                          FS2eigen::GpositionValue<Integer, Float> tbuf[],
-                         Integer indx[], FS_prof &prof) {
+                         eigen_int indx[], FS_prof &prof) {
   double prof_time[40];
   for (Integer i = 0; i < 40; i++) {
     prof_time[i] = 0;

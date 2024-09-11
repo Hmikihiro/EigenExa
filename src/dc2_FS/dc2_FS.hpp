@@ -8,6 +8,7 @@
 #include "../eigen_libs0.hpp"
 #include "FS_EDC.hpp"
 #include "eigen_devel_FS_wrapper.hpp"
+#include "../cblas_lapacke_wrapper.hpp"
 
 #if TIMER_PRINT > 1
 #include <cstdio>
@@ -57,7 +58,7 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 
   try {
     unique_ptr<Float[]> work(new Float[lwork]);
-    unique_ptr<Integer[]> iwork(new Integer[liwork]);
+    unique_ptr<eigen_int[]> iwork(new eigen_int[liwork]);
 
 #if defined(__INTEL_COMPILER) && USE_MKL
     const auto mkl_mode = mkl_get_Dynamic();
@@ -70,7 +71,7 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
     prof.init();
 #endif
     *info = FS_EDC<Integer, Float>(n, d, e, z, ldz, work.get(), lwork,
-                                           iwork.get(), liwork, &prof);
+                                   iwork.get(), liwork, &prof);
 #if TIMER_PRINT
     prof.finalize();
 #endif

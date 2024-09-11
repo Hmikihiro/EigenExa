@@ -20,8 +20,8 @@ template <class Integer, class Float>
 void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
                 const bt_node<Integer, Float> &subtree, Float q2[],
                 Integer ldq2, Float sendq[], Float recvq[], Float buf[],
-                Integer indrow[], Integer indcol[], Integer indx[],
-                Integer indrcv[], FS_prof &prof) {
+                eigen_int indrow[], eigen_int indcol[], eigen_int indx[],
+                eigen_int indrcv[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_pdlasrt start.");
@@ -160,7 +160,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
         const auto il = subtree.FS_index_G2L('R', i);
 
         // 送信バッファに格納
-        lapacke::copy<Integer, Float>(nq, &q2[il], ldq2, &sendq[nsend * nq], 1);
+        lapacke::copy<Float>(nq, &q2[il], ldq2, &sendq[nsend * nq], 1);
         nsend += 1;
       }
 
@@ -196,7 +196,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
 #pragma omp parallel for
       for (Integer i = 0; i < nrecv; i++) {
         const auto il = indrcv[i];
-        lapacke::copy<Integer, Float>(nq, &recvq[i * nq], 1, &q[il], ldq);
+        lapacke::copy<Float>(nq, &recvq[i * nq], 1, &q[il], ldq);
       }
     }
   }

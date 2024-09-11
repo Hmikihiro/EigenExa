@@ -19,7 +19,7 @@ namespace {
 template <class Integer, class Float>
 Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
                    const bt_node<Integer, Float> &subtree, Float rho,
-                   Float work[], Integer iwork[], FS_prof &prof) {
+                   Float work[], eigen_int iwork[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_pdlaed1 start.\n");

@@ -46,7 +46,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
       if (jz1.rocsrc == grid_info.mycol) {
         const auto nb1 = std::min(n1, j + nb) - j;
         const auto q_index = iz1 + jz1.l_index * ldq;
-        lapacke::copy<Integer, Float>(nb1, &q[q_index], ldq, &z[j], 1);
+        lapacke::copy<Float>(nb1, &q[q_index], ldq, &z[j], 1);
       }
     }
   }
@@ -65,7 +65,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
       if (jz2col == grid_info.mycol) {
         const auto nb1 = std::min(n, j + nb) - j;
         const auto q_index = iz2 + jz2 * ldq;
-        lapacke::copy<Integer, Float>(nb1, &q[q_index], ldq, &z[j], 1);
+        lapacke::copy<Float>(nb1, &q[q_index], ldq, &z[j], 1);
       }
     }
   }

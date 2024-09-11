@@ -21,7 +21,7 @@ using std::min;
 using std::sqrt;
 
 template <class Integer>
-Integer get_pdc(Integer lctot, const Integer ctot[], Integer npcol,
+Integer get_pdc(Integer lctot, const eigen_int ctot[], Integer npcol,
                 Integer mycol) {
   Integer pdc = 0;
   for (Integer col = 0; col != mycol; col = (col + 1) % npcol) {
@@ -47,8 +47,8 @@ Integer get_pdr(Integer pdc, Integer klr, Integer mykl, Integer nprow,
  * \brief pjcolのrowインデックスリストを作成
  */
 template <class Integer>
-Integer get_klr(Integer k, const Integer indx[], const Integer indcol[],
-                Integer pjcol, Integer indxr[]) {
+Integer get_klr(Integer k, const eigen_int indx[], const eigen_int indcol[],
+                Integer pjcol, eigen_int indxr[]) {
   Integer klr = 0;
   for (Integer i = 0; i < k; i++) {
     const auto gi = indx[i];
@@ -65,8 +65,8 @@ Integer get_klr(Integer k, const Integer indx[], const Integer indcol[],
  * \brief 自身のCOLインデクスリストを作成
  */
 template <class Integer>
-void set_indxc(Integer k, const Integer indx[], const Integer indcol[],
-               Integer mycol, Integer indxc[]) {
+void set_indxc(Integer k, const eigen_int indx[], const eigen_int indcol[],
+               Integer mycol, eigen_int indxc[]) {
   Integer klc = 0;
   for (Integer i = 0; i < k; i++) {
     const auto gi = indx[i];
@@ -85,7 +85,7 @@ public:
 };
 template <class Integer>
 ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
-                              const Integer indrow[]) {
+                              const eigen_int indrow[]) {
   Integer minrow = n - 1;
   Integer maxrow = 0;
   Integer npa = 0;
@@ -120,11 +120,11 @@ template <class Integer, class Float>
 Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
                    Float dlamda[], Float w[], Integer ldq, Float q[],
                    const bt_node<Integer, Float> &subtree, Integer ldq2,
-                   Float q2[], Integer ldu, Float u[], Integer indx[],
-                   Integer lctot, const Integer ctot[], Float q2buf1[],
-                   Float q2buf2[], Float z[], Float buf[], Integer indrow[],
-                   Integer indcol[], Integer indxc[], Integer indxr[],
-                   Integer indxcb[], FS_prof &prof) {
+                   Float q2[], Integer ldu, Float u[], eigen_int indx[],
+                   Integer lctot, const eigen_int ctot[], Float q2buf1[],
+                   Float q2buf2[], Float z[], Float buf[], eigen_int indrow[],
+                   eigen_int indcol[], eigen_int indxc[], eigen_int indxr[],
+                   eigen_int indxcb[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     printf("FS_pdlaed3 start\n");
@@ -167,8 +167,8 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
     const auto klr = mykl / nprow;
     const auto myklr = (myrow == 0) ? klr + (mykl % nprow) : klr;
 
-    const auto pdc = get_pdc(lctot, ctot, npcol, mycol);
-    const auto pdr = get_pdr(pdc, klr, mykl, nprow, myrow);
+    const auto pdc = get_pdc<Integer>(lctot, ctot, npcol, mycol);
+    const auto pdr = get_pdr<Integer>(pdc, klr, mykl, nprow, myrow);
 
 #pragma omp parallel for
     for (Integer i = 0; i < k; i++) {
@@ -195,8 +195,8 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
           const Integer kk = pdr + i;
           const auto buf_index = (pdr - pdc + i);
           Float aux;
-          eigen_int iinfo = lapacke::laed4<eigen_int, Float>(
-              k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
+          Integer iinfo =
+              lapacke::laed4<Float>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
           if (k == 1 || k == 2) {
             buf[buf_index] = FS_const::ZERO<Float>;
             buf[mykl + buf_index] = aux;
@@ -515,8 +515,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
             const auto jju = subtree.FS_index_G2L('C', ju);
             Float aux;
             if (k == 1 || k == 2) {
-              lapacke::laed4<eigen_int, Float>(k, kk + 1, dlamda, w, sbuf.get(),
-                                               rho, aux);
+              lapacke::laed4<Float>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
             } else {
               for (Integer i = 0; i < k; i++) {
                 sbuf[i] = dlamda[i] - sbufb[kk];
@@ -536,7 +535,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
             for (Integer i = 0; i < k; i++) {
               sbuf[i] = z[i] / sbuf[i];
             }
-            const auto temp = lapacke::nrm2<Integer, Float>(k, sbuf.get(), 1);
+            const auto temp = lapacke::nrm2<Float>(k, sbuf.get(), 1);
 
             for (Integer i = 0; i < klr; i++) {
               const auto kk = indxr[i];
@@ -554,9 +553,9 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
 #if TIMER_PRINT > 1
           prof.start(67);
 #endif
-          lapacke::gemm<eigen_int, Float>(CblasNoTrans, CblasNoTrans, np1, mykl,
-                                          n12, FS_const::ONE<Float>, q2, ldq2,
-                                          u, ldu, FS_const::ONE<Float>, q, ldq);
+          lapacke::gemm<Float>(CblasNoTrans, CblasNoTrans, np1, mykl, n12,
+                               FS_const::ONE<Float>, q2, ldq2, u, ldu,
+                               FS_const::ONE<Float>, q, ldq);
           eigen_dc_interface::flops += 2 * static_cast<double>(np1) *
                                        static_cast<double>(mykl) *
                                        static_cast<double>(n12);
@@ -577,10 +576,10 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
 #if TIMER_PRINT > 1
           prof.start(67);
 #endif
-          lapacke::gemm<Integer, Float>(
-              CblasNoTrans, CblasNoTrans, np2, mykl, n23, FS_const::ONE<Float>,
-              &q2[jq2 * ldq2 + iq2], ldq2, &u[jju * ldu + iiu], ldu,
-              FS_const::ONE<Float>, &q[jq * ldq + iq], ldq);
+          lapacke::gemm<Float>(CblasNoTrans, CblasNoTrans, np2, mykl, n23,
+                               FS_const::ONE<Float>, &q2[jq2 * ldq2 + iq2],
+                               ldq2, &u[jju * ldu + iiu], ldu,
+                               FS_const::ONE<Float>, &q[jq * ldq + iq], ldq);
           eigen_dc_interface::flops += 2 * static_cast<double>(np2) *
                                        static_cast<double>(mykl) *
                                        static_cast<double>(n23);

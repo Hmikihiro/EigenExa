@@ -6,13 +6,11 @@
 
 typedef MKL_INT eigen_int;
 
-typedef MKL_INT64 eigen_int64;
-
 #else
 #include <cblas.h>
 #include <lapacke.h>
 
-typedef int eigen_int;
+typedef FJ_MATHLIB_INT eigen_int;
 
 extern "C" {
 double dlaed4_(eigen_int *n, eigen_int *i, double d[], double z[],
@@ -43,64 +41,64 @@ namespace lapacke {
 const CBLAS_LAYOUT FS_layout = CBLAS_LAYOUT::CblasColMajor;
 #define FS_LAPACKE_LAYOUT LAPACK_COL_MAJOR
 
-template <class Integer, class Float>
-inline Integer stedc(char compz, Integer n, Float *d, Float *e, Float *z,
-                     Integer ldz, Float *work, Integer lwork, Integer *iwork,
-                     Integer liwork);
+template <class Float>
+inline eigen_int stedc(char compz, eigen_int n, Float *d, Float *e, Float *z,
+                       eigen_int ldz, Float *work, eigen_int lwork,
+                       eigen_int *iwork, eigen_int liwork);
 
 template <>
-inline eigen_int stedc<eigen_int, double>(char compz, eigen_int n, double *d,
-                                          double *e, double *z, eigen_int ldz,
-                                          double *work, eigen_int lwork,
-                                          eigen_int *iwork, eigen_int liwork) {
+inline eigen_int stedc<double>(char compz, eigen_int n, double *d, double *e,
+                               double *z, eigen_int ldz, double *work,
+                               eigen_int lwork, eigen_int *iwork,
+                               eigen_int liwork) {
   return LAPACKE_dstedc_work(FS_LAPACKE_LAYOUT, compz, n, d, e, z, ldz, work,
                              lwork, iwork, liwork);
 }
 
 template <>
-inline eigen_int stedc<eigen_int, float>(char compz, eigen_int n, float *d,
-                                         float *e, float *z, eigen_int ldz,
-                                         float *work, eigen_int lwork,
-                                         eigen_int *iwork, eigen_int liwork) {
+inline eigen_int stedc<float>(char compz, eigen_int n, float *d, float *e,
+                              float *z, eigen_int ldz, float *work,
+                              eigen_int lwork, eigen_int *iwork,
+                              eigen_int liwork) {
   return LAPACKE_sstedc_work(FS_LAPACKE_LAYOUT, compz, n, d, e, z, ldz, work,
                              lwork, iwork, liwork);
 }
 
-template <class Integer, class Float>
-inline Integer lascl(char type, Integer kl, Integer ku, Float cfrom, Float cto,
-                     Integer m, Integer n, Float *a, Integer lda);
+template <class Float>
+inline eigen_int lascl(char type, eigen_int kl, eigen_int ku, Float cfrom,
+                       Float cto, eigen_int m, eigen_int n, Float *a,
+                       eigen_int lda);
 
 template <>
-inline eigen_int lascl<eigen_int, double>(char type, eigen_int kl, eigen_int ku,
-                                          double cfrom, double cto, eigen_int m,
-                                          eigen_int n, double *a,
-                                          eigen_int lda) {
+inline eigen_int lascl<double>(char type, eigen_int kl, eigen_int ku,
+                               double cfrom, double cto, eigen_int m,
+                               eigen_int n, double *a, eigen_int lda) {
   eigen_int info = 0;
   dlascl_(&type, &kl, &ku, &cfrom, &cto, &m, &n, a, &lda, &info);
   return info;
 }
 
 template <>
-inline eigen_int lascl<eigen_int, float>(char type, eigen_int kl, eigen_int ku,
-                                         float cfrom, float cto, eigen_int m,
-                                         eigen_int n, float *a, eigen_int lda) {
+inline eigen_int lascl<float>(char type, eigen_int kl, eigen_int ku,
+                              float cfrom, float cto, eigen_int m, eigen_int n,
+                              float *a, eigen_int lda) {
   eigen_int info = 0;
   slascl_(&type, &kl, &ku, &cfrom, &cto, &m, &n, a, &lda, &info);
   return info;
 }
 
-template <class Integer, class Float>
-inline Float lanst(char norm, Integer n, const Float *D, const Float *E);
+template <class Float>
+inline Float lanst(char norm, eigen_int n, const Float *D, const Float *E);
 
 template <>
-inline double lanst<eigen_int, double>(char norm, eigen_int n, const double *D,
-                                       const double *E) {
+inline double lanst<double>(char norm, eigen_int n, const double *D,
+                            const double *E) {
   return dlanst_(&norm, &n, D, E);
 }
 
 template <>
-inline float lanst<eigen_int, float>(char norm, eigen_int n, const float *D,
-                                     const float *E) {
+inline float lanst<float>(char norm, eigen_int n, const float *D,
+                          const float *E) {
   return slanst_(&norm, &n, D, E);
 }
 
@@ -114,66 +112,66 @@ template <> inline float lapy2<float>(float x, float y) {
   return LAPACKE_slapy2(x, y);
 }
 
-template <class Integer, class Float>
+template <class Float>
 inline void gemm(const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
-                 const Integer M, const Integer N, const Integer K,
-                 const Float alpha, const Float *A, const Integer lda,
-                 const Float *B, const Integer ldb, const Float beta, Float *C,
-                 const Integer ldc);
+                 const eigen_int M, const eigen_int N, const eigen_int K,
+                 const Float alpha, const Float *A, const eigen_int lda,
+                 const Float *B, const eigen_int ldb, const Float beta,
+                 Float *C, const eigen_int ldc);
 
 template <>
-inline void gemm<eigen_int, double>(
-    const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
-    const eigen_int M, const eigen_int N, const eigen_int K, const double alpha,
-    const double *A, const eigen_int lda, const double *B, const eigen_int ldb,
-    const double beta, double *C, const eigen_int ldc) {
+inline void
+gemm<double>(const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
+             const eigen_int M, const eigen_int N, const eigen_int K,
+             const double alpha, const double *A, const eigen_int lda,
+             const double *B, const eigen_int ldb, const double beta, double *C,
+             const eigen_int ldc) {
   cblas_dgemm(FS_layout, TransA, TransB, M, N, K, alpha, A, lda, B, ldb, beta,
               C, ldc);
 }
 
 template <>
-inline void gemm<eigen_int, float>(
-    const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
-    const eigen_int M, const eigen_int N, const eigen_int K, const float alpha,
-    const float *A, const eigen_int lda, const float *B, const eigen_int ldb,
-    const float beta, float *C, const eigen_int ldc) {
+inline void gemm<float>(const CBLAS_TRANSPOSE TransA,
+                        const CBLAS_TRANSPOSE TransB, const eigen_int M,
+                        const eigen_int N, const eigen_int K, const float alpha,
+                        const float *A, const eigen_int lda, const float *B,
+                        const eigen_int ldb, const float beta, float *C,
+                        const eigen_int ldc) {
   cblas_sgemm(FS_layout, TransA, TransB, M, N, K, alpha, A, lda, B, ldb, beta,
               C, ldc);
 }
 
-template <class Integer, class Float>
-inline void copy(Integer n, const Float *X, Integer incX, Float *Y,
-                 Integer incY);
+template <class Float>
+inline void copy(eigen_int n, const Float *X, eigen_int incX, Float *Y,
+                 eigen_int incY);
 
 template <>
-inline void copy<eigen_int, double>(eigen_int n, const double *X,
-                                    eigen_int incX, double *Y, eigen_int incY) {
+inline void copy<double>(eigen_int n, const double *X, eigen_int incX,
+                         double *Y, eigen_int incY) {
   cblas_dcopy(n, X, incX, Y, incY);
 }
 
 template <>
-inline void copy<eigen_int, float>(eigen_int n, const float *X, eigen_int incX,
-                                   float *Y, eigen_int incY) {
+inline void copy<float>(eigen_int n, const float *X, eigen_int incX, float *Y,
+                        eigen_int incY) {
   cblas_scopy(n, X, incX, Y, incY);
 }
 
-template <class Integer, class Float>
-inline Integer iamax(Integer n, Float dx[], Integer incx);
+template <class Float>
+inline eigen_int iamax(eigen_int n, Float dx[], eigen_int incx);
 
 template <>
-inline eigen_int iamax<eigen_int, double>(eigen_int n, double dx[],
-                                          eigen_int incx) {
+inline eigen_int iamax<double>(eigen_int n, double dx[], eigen_int incx) {
   return cblas_idamax(n, dx, incx);
 }
 
 template <>
-inline eigen_int iamax<eigen_int, float>(eigen_int n, float dx[],
-                                         eigen_int incx) {
+inline eigen_int iamax<float>(eigen_int n, float dx[], eigen_int incx) {
   return cblas_isamax(n, dx, incx);
 }
 
-template <class Integer, class Float>
-inline void scal(Integer n, Float alpha, Float x[], Integer incx);
+template <class Float>
+inline void scal(eigen_int n, Float alpha, Float x[], eigen_int incx);
 
 template <>
 inline void scal(eigen_int n, double alpha, double x[], eigen_int incx) {
@@ -185,8 +183,8 @@ inline void scal(eigen_int n, float alpha, float x[], eigen_int incx) {
   cblas_sscal(n, alpha, x, incx);
 }
 
-template <class Integer, class Float>
-inline Float nrm2(Integer n, Float X[], Integer incX);
+template <class Float>
+inline Float nrm2(eigen_int n, Float X[], eigen_int incX);
 
 template <> inline double nrm2(eigen_int n, double X[], eigen_int incX) {
   return cblas_dnrm2(n, X, incX);
@@ -196,9 +194,9 @@ template <> inline float nrm2(eigen_int n, float X[], eigen_int incX) {
   return cblas_snrm2(n, X, incX);
 }
 
-template <class Integer, class Float>
-inline Integer laed4(Integer n, Integer i, Float d[], Float z[], Float delta[],
-                     Float rho, Float &dlam);
+template <class Float>
+inline eigen_int laed4(eigen_int n, eigen_int i, Float d[], Float z[],
+                       Float delta[], Float rho, Float &dlam);
 
 template <>
 inline eigen_int laed4(eigen_int n, eigen_int i, double d[], double z[],
@@ -221,8 +219,8 @@ template <class Float> inline Float lamc3(Float x, Float y);
 template <> inline double lamc3(double x, double y) { return dlamc3_(&x, &y); }
 template <> inline float lamc3(float x, float y) { return slamc3_(&x, &y); }
 
-template <class Integer, class Float>
-inline void rot(Integer N, Float *X, Integer incX, Float *Y, Integer incY,
+template <class Float>
+inline void rot(eigen_int N, Float *X, eigen_int incX, Float *Y, eigen_int incY,
                 Float c, Float s);
 
 template <>
@@ -236,149 +234,4 @@ inline void rot(eigen_int N, float *X, eigen_int incX, float *Y, eigen_int incY,
                 float c, float s) {
   cblas_srot(N, X, incX, Y, incY, c, s);
 }
-
-#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
-template <>
-inline eigen_int64 stedc<eigen_int64, double>(
-    char compz, eigen_int64 n, double *d, double *e, double *z, eigen_int64 ldz,
-    double *work, eigen_int64 lwork, eigen_int64 *iwork, eigen_int64 liwork) {
-  return LAPACKE_dstedc_work_64(FS_LAPACKE_LAYOUT, compz, n, d, e, z, ldz, work,
-                                lwork, iwork, liwork);
-}
-
-template <>
-inline eigen_int64 stedc<eigen_int64, float>(
-    char compz, eigen_int64 n, float *d, float *e, float *z, eigen_int64 ldz,
-    float *work, eigen_int64 lwork, eigen_int64 *iwork, eigen_int64 liwork) {
-  return LAPACKE_sstedc_work_64(FS_LAPACKE_LAYOUT, compz, n, d, e, z, ldz, work,
-                                lwork, iwork, liwork);
-}
-
-template <>
-inline eigen_int64
-lascl<eigen_int64, double>(char type, eigen_int64 kl, eigen_int64 ku,
-                           double cfrom, double cto, eigen_int64 m,
-                           eigen_int64 n, double *a, eigen_int64 lda) {
-  return LAPACKE_dlascl_work_64(FS_LAPACKE_LAYOUT, type, kl, ku, cfrom, cto, m,
-                                n, a, lda);
-}
-
-template <>
-inline eigen_int64
-lascl<eigen_int64, float>(char type, eigen_int64 kl, eigen_int64 ku,
-                          float cfrom, float cto, eigen_int64 m, eigen_int64 n,
-                          float *a, eigen_int64 lda) {
-  return LAPACKE_slascl_work_64(FS_LAPACKE_LAYOUT, type, kl, ku, cfrom, cto, m,
-                                n, a, lda);
-}
-
-template <>
-inline double lanst<eigen_int64, double>(char norm, eigen_int64 n,
-                                         const double *D, const double *E) {
-  return dlanst_64(&norm, &n, D, E);
-}
-
-template <>
-inline float lanst<eigen_int64, float>(char norm, eigen_int64 n, const float *D,
-                                       const float *E) {
-  return slanst_64(&norm, &n, D, E);
-}
-
-template <>
-inline void gemm<eigen_int64, double>(const CBLAS_TRANSPOSE TransA,
-                                      const CBLAS_TRANSPOSE TransB,
-                                      const eigen_int64 M, const eigen_int64 N,
-                                      const eigen_int64 K, const double alpha,
-                                      const double *A, const eigen_int64 lda,
-                                      const double *B, const eigen_int64 ldb,
-                                      const double beta, double *C,
-                                      const eigen_int64 ldc) {
-  cblas_dgemm_64(FS_layout, TransA, TransB, M, N, K, alpha, A, lda, B, ldb,
-                 beta, C, ldc);
-}
-
-template <>
-inline void gemm<eigen_int64, float>(
-    const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
-    const eigen_int64 M, const eigen_int64 N, const eigen_int64 K,
-    const float alpha, const float *A, const eigen_int64 lda, const float *B,
-    const eigen_int64 ldb, const float beta, float *C, const eigen_int64 ldc) {
-  cblas_sgemm_64(FS_layout, TransA, TransB, M, N, K, alpha, A, lda, B, ldb,
-                 beta, C, ldc);
-}
-
-template <>
-inline void copy<eigen_int64, double>(eigen_int64 n, const double *X,
-                                      eigen_int64 incX, double *Y,
-                                      eigen_int64 incY) {
-  cblas_dcopy_64(n, X, incX, Y, incY);
-}
-
-template <>
-inline void copy<eigen_int64, float>(eigen_int64 n, const float *X,
-                                     eigen_int64 incX, float *Y,
-                                     eigen_int64 incY) {
-  cblas_scopy_64(n, X, incX, Y, incY);
-}
-
-template <>
-inline eigen_int64 iamax<eigen_int64, double>(eigen_int64 n, double dx[],
-                                              eigen_int64 incx) {
-  return cblas_idamax_64(n, dx, incx);
-}
-
-template <>
-inline eigen_int64 iamax<eigen_int64, float>(eigen_int64 n, float dx[],
-                                             eigen_int64 incx) {
-  return cblas_isamax_64(n, dx, incx);
-}
-
-template <>
-inline eigen_int64 laed4(eigen_int64 n, eigen_int64 i, double d[], double z[],
-                         double delta[], double rho, double &dlam) {
-  eigen_int64 info;
-  dlaed4_64(&n, &i, d, z, delta, &rho, &dlam, &info);
-  return info;
-}
-
-template <>
-inline eigen_int64 laed4(eigen_int64 n, eigen_int64 i, float d[], float z[],
-                         float delta[], float rho, float &dlam) {
-  eigen_int64 info;
-  slaed4_64(&n, &i, d, z, delta, &rho, &dlam, &info);
-  return info;
-}
-
-template <>
-inline void rot(eigen_int64 N, double *X, eigen_int64 incX, double *Y,
-                eigen_int64 incY, double c, double s) {
-  cblas_drot_64(N, X, incX, Y, incY, c, s);
-}
-
-template <>
-inline void rot(eigen_int64 N, float *X, eigen_int64 incX, float *Y,
-                eigen_int64 incY, float c, float s) {
-  cblas_srot_64(N, X, incX, Y, incY, c, s);
-}
-
-template <>
-inline void scal(eigen_int64 n, double alpha, double x[], eigen_int64 incx) {
-  cblas_dscal_64(n, alpha, x, incx);
-}
-
-template <>
-inline void scal(eigen_int64 n, float alpha, float x[], eigen_int64 incx) {
-  cblas_sscal_64(n, alpha, x, incx);
-}
-
-template <> inline double nrm2(eigen_int64 n, double X[], eigen_int64 incX) {
-  return cblas_dnrm2_64(n, X, incX);
-}
-
-template <> inline float nrm2(eigen_int64 n, float X[], eigen_int64 incX) {
-  return cblas_snrm2_64(n, X, incX);
-}
-
-#endif // defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
-
 } // namespace lapacke

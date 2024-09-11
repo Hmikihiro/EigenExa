@@ -33,8 +33,8 @@ Integer get_NPA(Integer n, Integer nb, const bt_node<Integer, Float> &subtree,
 }
 
 template <class Integer>
-void init_ctot(Integer n, const Integer coltyp[], const Integer indcol[],
-               Integer lctot, Integer ctot[], Integer npcol) {
+void init_ctot(Integer n, const eigen_int coltyp[], const eigen_int indcol[], Integer lctot,
+               eigen_int ctot[], Integer npcol) {
 #pragma omp parallel for
   for (Integer j = 0; j < 4; j++) {
     std::fill_n(&ctot[j * lctot], npcol, 0);
@@ -51,8 +51,7 @@ void init_ctot(Integer n, const Integer coltyp[], const Integer indcol[],
  * \brief PSM(*) = Position in SubMatrix (of types 0 through 3)
  */
 template <class Integer>
-void set_psm(Integer lctot, Integer psm[], const Integer ctot[],
-             Integer npcol) {
+void set_psm(Integer lctot, eigen_int psm[], const eigen_int ctot[], Integer npcol) {
 #pragma omp parallel for
   for (Integer col = 0; col < npcol; col++) {
     psm[0 * lctot + col] = 1;
@@ -63,8 +62,7 @@ void set_psm(Integer lctot, Integer psm[], const Integer ctot[],
 }
 
 template <class Integer>
-void set_ptt(Integer lctot, Integer ptt[4], const Integer ctot[],
-             Integer npcol) {
+void set_ptt(Integer lctot, Integer ptt[4], const eigen_int ctot[], Integer npcol) {
   std::fill_n(ptt, 4, 0);
   ptt[0] = 1;
 #pragma omp parallel for
@@ -83,7 +81,7 @@ void set_ptt(Integer lctot, Integer ptt[4], const Integer ctot[],
 
 template <class Integer, class Float>
 void set_indxp(Integer n, Integer &k2, Integer nj, Integer pj, Float d[],
-               Float c, Float s, Integer indxp[]) {
+               Float c, Float s, eigen_int indxp[]) {
   const auto c_2 = static_cast<Float>(pow(c, 2));
   const auto s_2 = static_cast<Float>(pow(s, 2));
   const auto t = d[pj] * c_2 + d[nj] * s_2;
@@ -106,7 +104,7 @@ void set_indxp(Integer n, Integer &k2, Integer nj, Integer pj, Float d[],
 template <class Integer, class Float>
 void pdlaed2_comm(Integer mycol, Integer ldq, Float q[], Integer npa,
                   const bt_node<Integer, Float> &subtree, Float qbuf[],
-                  Integer nj, Integer pj, Float c, Float s, Integer indcol[]) {
+                  Integer nj, Integer pj, Float c, Float s, eigen_int indcol[]) {
   const auto njj_info = subtree.FS_info_G1L('C', nj);
   const auto &njj = njj_info.l_index;
   const auto &njcol = njj_info.rocsrc;
@@ -115,8 +113,7 @@ void pdlaed2_comm(Integer mycol, Integer ldq, Float q[], Integer npa,
   const auto &pjcol = pjj_info.rocsrc;
 
   if (indcol[pj] == indcol[nj] && mycol == njcol) {
-    lapacke::rot<Integer, Float>(npa, &q[pjj * ldq + 0], 1, &q[njj * ldq + 0],
-                                 1, c, s);
+    lapacke::rot<Float>(npa, &q[pjj * ldq + 0], 1, &q[njj * ldq + 0], 1, c, s);
   } else if (mycol == pjcol) {
     MPI_Request req[2];
     MPI_Irecv(qbuf, npa, MPI_Datatype_wrapper::MPI_TYPE<Float>,
@@ -127,7 +124,7 @@ void pdlaed2_comm(Integer mycol, Integer ldq, Float q[], Integer npa,
               subtree.group_Y_processranklist_[njcol], 1,
               FS_libs::FS_COMM_WORLD, &req[0]);
     MPI_Waitall(2, req, MPI_STATUS_IGNORE);
-    lapacke::rot<Integer, Float>(npa, &q[pjj * ldq + 0], 1, qbuf, 1, c, s);
+    lapacke::rot<Float>(npa, &q[pjj * ldq + 0], 1, qbuf, 1, c, s);
   } else if (mycol == njcol) {
     MPI_Request req[2];
     MPI_Irecv(qbuf, npa, MPI_Datatype_wrapper::MPI_TYPE<Float>,
@@ -138,7 +135,7 @@ void pdlaed2_comm(Integer mycol, Integer ldq, Float q[], Integer npa,
               subtree.group_Y_processranklist_[pjcol], 1,
               FS_libs::FS_COMM_WORLD, &req[0]);
     MPI_Waitall(2, req, MPI_STATUS_IGNORE);
-    lapacke::rot<Integer, Float>(npa, qbuf, 1, &q[njj * ldq + 0], 1, c, s);
+    lapacke::rot<Float>(npa, qbuf, 1, &q[njj * ldq + 0], 1, c, s);
   }
 }
 
@@ -146,9 +143,9 @@ template <class Integer, class Float>
 Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
                    const bt_node<Integer, Float> &subtree, Float &rho,
                    Float z[], Float w[], Float dlamda[], Integer ldq2,
-                   Float q2[], Integer indx[], Integer ctot[], Float qbuf[],
-                   Integer coltyp[], Integer indcol[], Integer indxc[],
-                   Integer indxp[], Integer psm[], FS_prof &prof) {
+                   Float q2[], eigen_int indx[], eigen_int ctot[], Float qbuf[],
+                   eigen_int coltyp[], eigen_int indcol[], eigen_int indxc[], eigen_int indxp[],
+                   eigen_int psm[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     printf("FS_PDLAED2 start.\n");
@@ -175,19 +172,19 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     std::fill_n(dlamda, n, 0);
 
     if (rho < FS_const::ZERO<Float>) {
-      lapacke::scal<Integer, Float>(n2, FS_const::MONE<Float>, &z[n1], 1);
+      lapacke::scal<Float>(n2, FS_const::MONE<Float>, &z[n1], 1);
     }
     // Normalize z so that norm(z) = 1.  Since z is the concatenation of
     // two normalized vectors, norm2(z) = sqrt(2).
 
     const auto T = FS_const::ONE<Float> / std::sqrt(FS_const::TWO<Float>);
-    lapacke::scal<Integer, Float>(n, T, z, 1);
+    lapacke::scal<Float>(n, T, z, 1);
 
     rho = std::abs(FS_const::TWO<Float> * rho);
 
     // Calculate the allowable deflation tolerance
-    const auto imax = lapacke::iamax<Integer, Float>(n, z, 1);
-    const auto jmax = lapacke::iamax<Integer, Float>(n, d, 1);
+    const auto imax = lapacke::iamax<Float>(n, z, 1);
+    const auto jmax = lapacke::iamax<Float>(n, d, 1);
     const auto abs_zmax = std::abs(z[imax]);
     const auto abs_dmax = std::abs(d[jmax]);
     const auto eps = std::numeric_limits<Float>::epsilon() / 2;
@@ -272,7 +269,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
                                     c, s, indcol);
             }
 #pragma omp single nowait
-            { set_indxp(n, k2, nj, pj, d, c, s, indxp); }
+            { set_indxp<Integer>(n, k2, nj, pj, d, c, s, indxp); }
           }
           pj = nj;
         } else {
