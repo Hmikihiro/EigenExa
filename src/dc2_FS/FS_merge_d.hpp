@@ -4,12 +4,11 @@
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 
-namespace eigen_FS {
+namespace {
 using std::min;
 template <class Integer, class Float>
 void FS_merge_d(Integer n, const Float d[],
-                const FS_dividing::bt_node<Integer, Float> &subtree,
-                Float d_out[]) {
+                const bt_node<Integer, Float> &subtree, Float d_out[]) {
   std::fill_n(d_out, n, FS_const::ZERO<Float>);
 
   const auto grid_info = subtree.FS_grid_info();
@@ -39,4 +38,4 @@ void FS_merge_d(Integer n, const Float d[],
     }
   }
 }
-} // namespace eigen_FS
+} // namespace

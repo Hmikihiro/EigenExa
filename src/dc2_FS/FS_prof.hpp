@@ -9,7 +9,7 @@
 #include <omp.h>
 #endif
 
-namespace FS_prof {
+namespace {
 constexpr int FS_max_region = 70 + 1;
 
 class FS_prof {
@@ -29,9 +29,9 @@ public:
   void finalize();
 };
 
-} // namespace FS_prof
+} // namespace
 
-namespace FS_prof {
+namespace {
 inline void FS_prof::init() {
   std::strncpy(region_name[1], "total", 32);
   std::strncpy(region_name[10], "FS_EDC", 32);
@@ -176,4 +176,4 @@ inline void FS_prof::finalize() {
 #endif
   }
 }
-} // namespace FS_prof
+} // namespace

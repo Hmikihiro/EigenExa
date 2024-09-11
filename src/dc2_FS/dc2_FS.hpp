@@ -13,7 +13,7 @@
 #include <cstdio>
 #endif
 
-namespace eigen_FS {
+namespace {
 using eigen_devel_FS_wrapper::FS_eigen_abort;
 using eigen_devel_FS_wrapper::FS_eigen_timer_reset;
 using eigen_libs0_wrapper::eigen_get_comm;
@@ -69,7 +69,7 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 
     prof.init();
 #endif
-    *info = FS_EDC::FS_EDC<Integer, Float>(n, d, e, z, ldz, work.get(), lwork,
+    *info = FS_EDC<Integer, Float>(n, d, e, z, ldz, work.get(), lwork,
                                            iwork.get(), liwork, &prof);
 #if TIMER_PRINT
     prof.finalize();
@@ -113,4 +113,4 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 
   return;
 }
-} // namespace eigen_FS
+} // namespace

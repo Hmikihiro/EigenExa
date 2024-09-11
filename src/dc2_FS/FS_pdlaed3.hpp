@@ -13,7 +13,7 @@
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
 
-namespace FS_pdlaed3 {
+namespace {
 using FS_libs::FS_COMM_WORLD;
 using std::abs;
 using std::max;
@@ -119,12 +119,12 @@ ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
 template <class Integer, class Float>
 Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
                    Float dlamda[], Float w[], Integer ldq, Float q[],
-                   const FS_dividing::bt_node<Integer, Float> &subtree,
-                   Integer ldq2, Float q2[], Integer ldu, Float u[],
-                   Integer indx[], Integer lctot, const Integer ctot[],
-                   Float q2buf1[], Float q2buf2[], Float z[], Float buf[],
-                   Integer indrow[], Integer indcol[], Integer indxc[],
-                   Integer indxr[], Integer indxcb[], FS_prof::FS_prof &prof) {
+                   const bt_node<Integer, Float> &subtree, Integer ldq2,
+                   Float q2[], Integer ldu, Float u[], Integer indx[],
+                   Integer lctot, const Integer ctot[], Float q2buf1[],
+                   Float q2buf2[], Float z[], Float buf[], Integer indrow[],
+                   Integer indcol[], Integer indxc[], Integer indxr[],
+                   Integer indxcb[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     printf("FS_pdlaed3 start\n");
@@ -607,4 +607,4 @@ FS_pdlead3_end:
 #endif
   return info;
 }
-} // namespace FS_pdlaed3
+} // namespace

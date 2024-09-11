@@ -10,10 +10,8 @@
 #include <cstdio>
 #endif
 
-namespace eigen_FS {
-using FS_dividing::bt_node;
+namespace {
 using FS_libs::FS_COMM_WORLD;
-using FS_prof::FS_prof;
 template <class Integer, class Float>
 void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
                   Float work[], Float z[], Float d[], FS_prof &prof) {
@@ -60,4 +58,4 @@ void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
 #endif
 }
 
-} // namespace eigen_FS
+} // namespace

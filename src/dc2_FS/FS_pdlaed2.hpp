@@ -13,10 +13,9 @@
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
-namespace FS_pdlaed2 {
+namespace {
 template <class Integer, class Float>
-Integer get_NPA(Integer n, Integer nb,
-                const FS_dividing::bt_node<Integer, Float> &subtree,
+Integer get_NPA(Integer n, Integer nb, const bt_node<Integer, Float> &subtree,
                 Integer myrow) {
   Integer npa = 0;
 #pragma omp parallel for reduction(+ : npa)
@@ -106,9 +105,8 @@ void set_indxp(Integer n, Integer &k2, Integer nj, Integer pj, Float d[],
 
 template <class Integer, class Float>
 void pdlaed2_comm(Integer mycol, Integer ldq, Float q[], Integer npa,
-                  const FS_dividing::bt_node<Integer, Float> &subtree,
-                  Float qbuf[], Integer nj, Integer pj, Float c, Float s,
-                  Integer indcol[]) {
+                  const bt_node<Integer, Float> &subtree, Float qbuf[],
+                  Integer nj, Integer pj, Float c, Float s, Integer indcol[]) {
   const auto njj_info = subtree.FS_info_G1L('C', nj);
   const auto &njj = njj_info.l_index;
   const auto &njcol = njj_info.rocsrc;
@@ -146,12 +144,11 @@ void pdlaed2_comm(Integer mycol, Integer ldq, Float q[], Integer npa,
 
 template <class Integer, class Float>
 Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
-                   const FS_dividing::bt_node<Integer, Float> &subtree,
-                   Float &rho, Float z[], Float w[], Float dlamda[],
-                   Integer ldq2, Float q2[], Integer indx[], Integer ctot[],
-                   Float qbuf[], Integer coltyp[], Integer indcol[],
-                   Integer indxc[], Integer indxp[], Integer psm[],
-                   FS_prof::FS_prof &prof) {
+                   const bt_node<Integer, Float> &subtree, Float &rho,
+                   Float z[], Float w[], Float dlamda[], Integer ldq2,
+                   Float q2[], Integer indx[], Integer ctot[], Float qbuf[],
+                   Integer coltyp[], Integer indcol[], Integer indxc[],
+                   Integer indxp[], Integer psm[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     printf("FS_PDLAED2 start.\n");
@@ -351,4 +348,4 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 
   return k;
 }
-} // namespace FS_pdlaed2
+} // namespace

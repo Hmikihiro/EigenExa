@@ -15,13 +15,11 @@
 #if defined(_DEBUGLOG)
 #include <cstdio>
 #endif
-namespace FS_pdlaed1 {
-using eigen_FS::FS_reduce_zd;
+namespace {
 template <class Integer, class Float>
 Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
-                   const FS_dividing::bt_node<Integer, Float> &subtree,
-                   Float rho, Float work[], Integer iwork[],
-                   FS_prof::FS_prof &prof) {
+                   const bt_node<Integer, Float> &subtree, Float rho,
+                   Float work[], Integer iwork[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_pdlaed1 start.\n");
@@ -85,7 +83,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 #if TIMER_PRINT
     prof.start(31);
 #endif
-    eigen_FS::FS_merge_d<Integer, Float>(n, d, subtree, &work[idwork]);
+    FS_merge_d<Integer, Float>(n, d, subtree, &work[idwork]);
 #if TIMER_PRINT
     prof.end(31);
 #endif
@@ -93,8 +91,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     // Form the z-vector which consists of the last row of Q_1 and the
     // first row of Q_2.
     //
-    FS_pdlaedz::FS_pdlaedz<Integer, Float>(n, n1, q, ldq, subtree,
-                                           &work[izwork], prof);
+    FS_pdlaedz<Integer, Float>(n, n1, q, ldq, subtree, &work[izwork], prof);
     //
     // MPI_allreduce d and z
     //
@@ -102,7 +99,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     //
     // Deflate eigenvalues.
     //
-    const auto k = FS_pdlaed2::FS_pdlaed2<Integer, Float>(
+    const auto k = FS_pdlaed2<Integer, Float>(
         n, n1, d, q, ldq, subtree, rho, z, w, dlamda, ldq2, q2, &iwork[indx],
         &iwork[ictot], buf, &iwork[coltyp], &iwork[indcol], &iwork[indxc],
         &iwork[indxp], &iwork[ipsm], prof);
@@ -113,7 +110,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     Integer lctot = subtree.y_nnod_;
     Integer info = 0;
     if (k != 0) {
-      info = FS_pdlaed3::FS_pdlaed3<Integer, Float>(
+      info = FS_pdlaed3<Integer, Float>(
           k, n, n1, d, rho, dlamda, w, ldq, q, subtree, ldq2, q2, ldu, u,
           &iwork[indx], lctot, &iwork[ictot], sendq2, recvq2, z, buf,
           &iwork[indrow], &iwork[indcol], &iwork[indxc], &iwork[indxr],
@@ -132,4 +129,4 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 #endif
   return info;
 }
-} // namespace FS_pdlaed1
+} // namespace

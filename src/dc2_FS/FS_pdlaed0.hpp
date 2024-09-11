@@ -16,7 +16,7 @@
 #include <cstdio>
 #endif
 
-namespace eigen_FS {
+namespace {
 
 template <typename Integer, typename Float>
 Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
@@ -27,7 +27,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
     std::printf("FS_PDLAED0 start.\n");
   }
 #endif
-  FS_dividing::bt_node<Integer, Float> root_node = {};
+  bt_node<Integer, Float> root_node = {};
   const auto info = [&]() mutable -> Integer {
     auto nnod = (FS_libs::is_FS_comm_member()) ? FS_libs::FS_get_procs()
                                                : FS_libs::Nod{1, 1, 1};
@@ -37,7 +37,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
       prof.start(20);
 #endif
       std::unique_ptr<bool[]> hint(new bool[nnod.nod]);
-      FS_dividing::FS_create_hint(hint.get());
+      FS_create_hint(hint.get());
       const auto info_dividing =
           root_node.FS_dividing(n, d, e, std::move(hint), prof);
       if (info_dividing != 0) {
@@ -117,7 +117,7 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
 #if TIMER_PRINT
         prof_layer.init();
 #endif
-        Integer info_pdlaed1 = FS_pdlaed1::FS_pdlaed1<Integer, Float>(
+        Integer info_pdlaed1 = FS_pdlaed1<Integer, Float>(
             n0, n1, &d[id], &q[q_top.row + q_top.col * ldq], ldq, *parent_node,
             rho, work, iwork, prof_layer);
 #if TIMER_PRINT > 2
@@ -171,16 +171,14 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
     const auto eigen_np = eigen_libs0_wrapper::eigen_get_procs().procs;
 
     if (nnod.nod == eigen_np) {
-      FS_pdlasrt::FS_pdlasrt(n, d, q, ldq, root_node, &work[ipq2], ldq2,
-                             &work[i_send_q], &work[i_recv_q], &work[i_buffer],
-                             &iwork[index_row], &iwork[index_col],
-                             &iwork[index], &iwork[index_recv], prof);
+      FS_pdlasrt(n, d, q, ldq, root_node, &work[ipq2], ldq2, &work[i_send_q],
+                 &work[i_recv_q], &work[i_buffer], &iwork[index_row],
+                 &iwork[index_col], &iwork[index], &iwork[index_recv], prof);
     } else {
-      eigen_FS::FS2eigen::FS2eigen_pdlasrt(
-          n, d, ldq, q, root_node, (Integer *)work, work,
-          (eigen_FS::FS2eigen::GpositionValue<Integer, Float>
-               *)&work[std::max((Integer)0, (NP * NQ / 2))],
-          iwork, prof);
+      FS2eigen_pdlasrt(n, d, ldq, q, root_node, (Integer *)work, work,
+                       (FS2eigen::GpositionValue<Integer, Float>
+                            *)&work[std::max((Integer)0, (NP * NQ / 2))],
+                       iwork, prof);
     }
     return 0;
   }();
@@ -200,4 +198,4 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
   return info;
 }
 
-} // namespace eigen_FS
+} // namespace

@@ -8,6 +8,7 @@
 #include <cmath>
 
 namespace FS_libs {
+
 using eigen_libs0_wrapper::eigen_get_comm;
 using eigen_libs0_wrapper::eigen_get_id;
 using eigen_libs0_wrapper::eigen_get_procs;
@@ -29,6 +30,7 @@ extern process_grid FS_node;
 
 extern char FS_GRID_major;
 
+namespace {
 inline void FS_init_cartesian(char GRID_major, int nnod, int inod) {
   auto x_nnod = int(sqrt(double(nnod)));
   int i = 1;
@@ -176,4 +178,5 @@ inline MPI_Group FS_get_group() { return FS_GROUP; }
 
 inline bool is_FS_comm_member() { return FS_COMM_MEMBER; }
 
+} // namespace
 } // namespace FS_libs

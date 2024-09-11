@@ -13,7 +13,7 @@
 #include "../FS_libs/FS_libs.hpp"
 #include "FS_prof.hpp"
 
-namespace FS_dividing {
+namespace {
 template <class Integer> struct g1l {
   Integer l_index;
   Integer rocsrc;
@@ -70,11 +70,11 @@ public:
 
 public:
   Integer FS_dividing(Integer n, Float d[], const Float e[],
-                      std::unique_ptr<bool[]> hint, FS_prof::FS_prof &prof);
+                      std::unique_ptr<bool[]> hint, FS_prof &prof);
 
   Integer FS_dividing_recursive(Integer n, Float d[], const Float e[],
-                                std::unique_ptr<bool[]> &hint,
-                                FS_prof::FS_prof &prof, Integer bt_id = 0);
+                                std::unique_ptr<bool[]> &hint, FS_prof &prof,
+                                Integer bt_id = 0);
 
   void dividing_setBitStream();
 
@@ -114,7 +114,7 @@ public:
     return std::make_pair(nullptr, info);
   }
 
-  void FS_create_merge_comm(FS_prof::FS_prof &prof);
+  void FS_create_merge_comm(FS_prof &prof);
 
   void FS_create_mergeXY_group();
 
@@ -165,9 +165,9 @@ void FS_create_hint(bool[]);
 template <class Integer>
 void bitprint(Integer kout, Integer title, Integer ibit, Integer nbit);
 
-} // namespace FS_dividing
+} // namespace
 
-namespace FS_dividing {
+namespace {
 using std::abs;
 using std::max;
 using std::min;
@@ -241,7 +241,7 @@ template <class Integer, class Float>
 Integer bt_node<Integer, Float>::FS_dividing(Integer n, Float d[],
                                              const Float e[],
                                              std::unique_ptr<bool[]> hint,
-                                             FS_prof::FS_prof &prof) {
+                                             FS_prof &prof) {
 #if TIMER_PRINT
   prof.start(21);
 #endif
@@ -296,7 +296,7 @@ Integer bt_node<Integer, Float>::FS_dividing(Integer n, Float d[],
 template <class Integer, class Float>
 Integer bt_node<Integer, Float>::FS_dividing_recursive(
     const Integer n, Float d[], const Float e[], std::unique_ptr<bool[]> &hint,
-    FS_prof::FS_prof &prof, Integer bt_id) {
+    FS_prof &prof, Integer bt_id) {
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
   const auto x_lnod = this->proc_iend_ - this->proc_istart_;
   const auto y_lnod = this->proc_jend_ - this->proc_jstart_;
@@ -480,7 +480,7 @@ void bt_node<Integer, Float>::FS_create_mergeXY_group() {
 }
 
 template <class Integer, class Float>
-void bt_node<Integer, Float>::FS_create_merge_comm(FS_prof::FS_prof &prof) {
+void bt_node<Integer, Float>::FS_create_merge_comm(FS_prof &prof) {
   const FS_libs::Nod inod = FS_libs::FS_get_id();
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
 
@@ -797,4 +797,4 @@ void bt_node<Integer, Float>::print_node() const {
   std::printf("bit stream     = %d\n ", this->div_bit_);
   std::printf("#dights of bit = %d\n ", this->div_nbit_);
 }
-} // namespace FS_dividing
+} // namespace

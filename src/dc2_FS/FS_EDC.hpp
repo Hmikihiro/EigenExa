@@ -16,7 +16,7 @@
 #include <cstdio>
 #endif
 
-namespace FS_EDC {
+namespace {
 using FS_const::ONE;
 using FS_const::ZERO;
 /**
@@ -75,9 +75,9 @@ using FS_const::ZERO;
 template <class Integer, class Float>
 Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
                Float *work, Integer lwork, Integer *iwork, const Integer liwork,
-               FS_prof::FS_prof *prof) {
+               FS_prof *prof) {
 
-  FS_prof::FS_prof prof_tmp = {};
+  FS_prof prof_tmp = {};
 
   Integer info = 0;
 #ifdef _DEBUGLOG
@@ -134,8 +134,8 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
                                               n - 1, 1, E, n - 1);
       }
     }
-    info = eigen_FS::FS_pdlaed0<Integer, Float>(n, D, E, Q, ldq, work, lwork,
-                                                iwork, liwork, prof_tmp);
+    info = FS_pdlaed0<Integer, Float>(n, D, E, Q, ldq, work, lwork, iwork,
+                                      liwork, prof_tmp);
     // Scale back.
     if (info == 0 && orgnrm != ZERO<Float>) {
       info = lapacke::lascl<Integer, Float>('G', 0, 0, ONE<Float>, orgnrm, n, 1,
@@ -159,4 +159,4 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 #endif
   return info;
 }
-} // namespace FS_EDC
+} // namespace

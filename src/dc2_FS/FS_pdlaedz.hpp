@@ -12,11 +12,11 @@
 #include <cstdio>
 #endif
 
-namespace FS_pdlaedz {
+namespace {
 template <class Integer, class Float>
 void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
-                const FS_dividing::bt_node<Integer, Float> &subtree, Float z[],
-                FS_prof::FS_prof &prof) {
+                const bt_node<Integer, Float> &subtree, Float z[],
+                FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_pdlaedz start.\n");
@@ -79,4 +79,4 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
   }
 #endif
 }
-} // namespace FS_pdlaedz
+} // namespace

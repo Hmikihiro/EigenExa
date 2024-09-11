@@ -15,13 +15,13 @@
 #include <cstdio>
 #endif
 
-namespace FS_pdlasrt {
+namespace {
 template <class Integer, class Float>
 void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
-                const FS_dividing::bt_node<Integer, Float> &subtree, Float q2[],
+                const bt_node<Integer, Float> &subtree, Float q2[],
                 Integer ldq2, Float sendq[], Float recvq[], Float buf[],
                 Integer indrow[], Integer indcol[], Integer indx[],
-                Integer indrcv[], FS_prof::FS_prof &prof) {
+                Integer indrcv[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_pdlasrt start.");
@@ -211,4 +211,4 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
   }
 #endif
 }
-} // namespace FS_pdlasrt
+} // namespace

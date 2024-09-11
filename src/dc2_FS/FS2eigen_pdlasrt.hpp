@@ -16,9 +16,8 @@
 #include <cstdio>
 #endif
 
-namespace eigen_FS {
+namespace {
 namespace FS2eigen {
-using FS_dividing::bt_node;
 
 template <class Integer, class Float> class GpositionValue {
 public:
@@ -177,13 +176,15 @@ select_first_communicater(Integer send_nrank, Integer eigen_np,
   }
   return i0;
 }
-
+} // namespace FS2eigen
+} // namespace
+namespace {
 template <class Integer, class Float>
 Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
-                         const FS_dividing::bt_node<Integer, Float> &subtree,
-                         Integer ibuf[], Float rbuf[],
-                         GpositionValue<Integer, Float> tbuf[], Integer indx[],
-                         FS_prof::FS_prof &prof) {
+                         const bt_node<Integer, Float> &subtree, Integer ibuf[],
+                         Float rbuf[],
+                         FS2eigen::GpositionValue<Integer, Float> tbuf[],
+                         Integer indx[], FS_prof &prof) {
   double prof_time[40];
   for (Integer i = 0; i < 40; i++) {
     prof_time[i] = 0;
@@ -235,9 +236,8 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
 
   const auto FS_comm_member = FS_libs::is_FS_comm_member();
 
-  const auto FS_grid_info = FS_comm_member
-                                ? subtree.FS_grid_info()
-                                : FS_dividing::GridInfo<Integer>{0, 0, 0, 0};
+  const auto FS_grid_info =
+      FS_comm_member ? subtree.FS_grid_info() : GridInfo<Integer>{0, 0, 0, 0};
   const Integer FS_nblk = FS_comm_member ? subtree.FS_get_NBLK() : 0;
   const Integer FS_nb = FS_comm_member ? subtree.FS_get_NB() : 0;
   const Integer FS_nbrow =
@@ -246,12 +246,12 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
       FS_comm_member ? (FS_nblk / FS_grid_info.npcol) * FS_nb : 0;
   const Integer FS_nbrow_max =
       FS_comm_member
-          ? get_FS_nbrow_max(n, subtree, FS_nbrow, FS_grid_info.myrow)
+          ? FS2eigen::get_FS_nbrow_max(n, subtree, FS_nbrow, FS_grid_info.myrow)
           : 0;
   // プロセス数で割り切れない場合に拡張した領域を除いた計算領域の総数
   const Integer FS_nbcol_max =
       FS_comm_member
-          ? get_FS_nbcol_max(n, subtree, FS_nbcol, FS_grid_info.mycol)
+          ? FS2eigen::get_FS_nbcol_max(n, subtree, FS_nbcol, FS_grid_info.mycol)
           : 0;
 
   auto etime = MPI_Wtime();
@@ -307,7 +307,8 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
         const auto grow = lrow2grow_index[lrow];
         const auto prow =
             eigen_libs0_wrapper::eigen_owner_node(grow, eigen_nprow);
-        const auto pn = eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
+        const auto pn =
+            FS2eigen::eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
         comm_send_info[pn] += 1;
       }
     }
@@ -326,7 +327,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   stime = etime;
 
   const auto send_nrank_maxsize =
-      get_nrank_maxsize<Integer>((Integer)eigen_np, comm_send_info);
+      FS2eigen::get_nrank_maxsize<Integer>((Integer)eigen_np, comm_send_info);
   const auto send_nrank = send_nrank_maxsize.nrank;
   const auto send_maxsize = send_nrank_maxsize.maxsize;
 
@@ -335,15 +336,16 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   stime = etime;
 
   Integer pointer = 0;
-  std::unique_ptr<CommBuf<Integer, Float>[]> comm_send_data;
-  std::unique_ptr<RANKLIST<Integer>[]> sendrank_list;
-  GpositionValue<Integer, Float> *sendbuf;
+  std::unique_ptr<FS2eigen::CommBuf<Integer, Float>[]> comm_send_data;
+  std::unique_ptr<FS2eigen::RANKLIST<Integer>[]> sendrank_list;
+  FS2eigen::GpositionValue<Integer, Float> *sendbuf;
 
   if (send_nrank != 0) {
-    comm_send_data.reset(new CommBuf<Integer, Float>[send_nrank]);
-    init_send<Integer, Float>(eigen_np, comm_send_info, comm_send_data.get());
+    comm_send_data.reset(new FS2eigen::CommBuf<Integer, Float>[send_nrank]);
+    FS2eigen::init_send<Integer, Float>(eigen_np, comm_send_info,
+                                        comm_send_data.get());
 
-    sendrank_list.reset(new RANKLIST<Integer>[send_nrank]);
+    sendrank_list.reset(new FS2eigen::RANKLIST<Integer>[send_nrank]);
 
     for (Integer k = 0; k < send_nrank; k++) {
       sendrank_list[k].lid = &ibuf[pointer];
@@ -369,8 +371,8 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   prof_time[4] = etime - stime;
   stime = etime;
 
-  const auto recv_nrank_maxsize =
-      get_nrank_maxsize<Integer>((Integer)eigen_np, comm_recv_info.get());
+  const auto recv_nrank_maxsize = FS2eigen::get_nrank_maxsize<Integer>(
+      (Integer)eigen_np, comm_recv_info.get());
   const auto recv_nrank = recv_nrank_maxsize.nrank;
 
   etime = MPI_Wtime();
@@ -381,11 +383,11 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   if (!FS_comm_member) {
     pointer = 0;
   }
-  std::unique_ptr<CommBuf<Integer, Float>[]> comm_recv_data;
+  std::unique_ptr<FS2eigen::CommBuf<Integer, Float>[]> comm_recv_data;
   if (recv_nrank != 0) {
-    comm_recv_data.reset(new CommBuf<Integer, Float>[recv_nrank]);
-    init_recv<Integer, Float>(eigen_np, comm_recv_info.get(),
-                              comm_recv_data.get());
+    comm_recv_data.reset(new FS2eigen::CommBuf<Integer, Float>[recv_nrank]);
+    FS2eigen::init_recv<Integer, Float>(eigen_np, comm_recv_info.get(),
+                                        comm_recv_data.get());
     for (Integer k = 0; k < recv_nrank; k++) {
       if (comm_recv_data[k].rank + 1 != eigen_myrank) {
         comm_recv_data[k].bufp = &tbuf[pointer];
@@ -411,7 +413,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
         auto grow = lrow2grow_index[lrow];
         auto prow = eigen_libs0_wrapper::eigen_owner_node(grow, eigen_nprow);
 
-        auto pn = eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
+        auto pn = FS2eigen::eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
 
         const auto &info = comm_send_info[pn];
 
@@ -425,7 +427,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
     prof_time[11] = etime - stime;
     stime = etime;
 
-    const auto i0 = select_first_communicater<Integer>(
+    const auto i0 = FS2eigen::select_first_communicater<Integer>(
         send_nrank, eigen_np, eigen_myrank, comm_send_data.get());
     for (Integer k0 = i0; k0 < send_nrank + i0; k0++) {
       const auto k = (k0 + 1) % send_nrank;
@@ -531,5 +533,4 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   return 0;
 }
 
-} // namespace FS2eigen
-} // namespace eigen_FS
+} // namespace
