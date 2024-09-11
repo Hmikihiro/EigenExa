@@ -4,11 +4,11 @@
 
 #include "../FS_libs/FS_libs.hpp"
 #include "../MPI_Datatype_wrapper.hpp"
+#include "../cblas_lapacke_wrapper.hpp"
 #include "../eigen_dc_interface.hpp"
 #include "../eigen_libs0.hpp"
 #include "FS_EDC.hpp"
 #include "eigen_devel_FS_wrapper.hpp"
-#include "../cblas_lapacke_wrapper.hpp"
 
 #if TIMER_PRINT > 1
 #include <cstdio>
@@ -28,8 +28,8 @@ static long long buffer_for_gposition_value<float> =
     2; // 計算途中のtbufにおいて、使用するこの時、従来int,int,doubleだったものを使っているため、float対応でメモリ半分を想定していない。
 
 template <class Integer, class Float>
-void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
-            Integer ldz, long *info, Float *ret) {
+Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
+               Integer ldz, Float *ret) {
   eigen_dc_interface::flops = 0;
   eigen_dc_interface::dgemm_time = 0;
   eigen_dc_interface::p_time0 = 0;
@@ -56,6 +56,7 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
   MPI_Allreduce(&lwork_, &lwork, 1, MPI_LONG_LONG, MPI_MAX, eigen_comm);
   MPI_Allreduce(&liwork_, &liwork, 1, MPI_LONG_LONG, MPI_MAX, eigen_comm);
 
+  Integer info_fs_edc = 0;
   try {
     unique_ptr<Float[]> work(new Float[lwork]);
     unique_ptr<eigen_int[]> iwork(new eigen_int[liwork]);
@@ -70,8 +71,8 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 
     prof.init();
 #endif
-    *info = FS_EDC<Integer, Float>(n, d, e, z, ldz, work.get(), lwork,
-                                   iwork.get(), liwork, &prof);
+    info_fs_edc = FS_EDC<Integer, Float>(n, d, e, z, ldz, work.get(), lwork,
+                                         iwork.get(), liwork, &prof);
 #if TIMER_PRINT
     prof.finalize();
 #endif
@@ -112,6 +113,6 @@ void dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
   MPI_Allreduce(&eigen_dc_interface::flops, ret, 1,
                 MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_SUM, eigen_comm);
 
-  return;
+  return info_fs_edc;
 }
 } // namespace
