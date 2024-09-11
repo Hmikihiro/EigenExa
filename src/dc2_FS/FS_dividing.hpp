@@ -220,8 +220,11 @@ inline void FS_create_hint(bool hint[]) {
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    // TODO :: write(*,'(a,1000(1x,l))') "procdiv=",hint(1:layer)
-    // Fortranの書式がわからないのでスキップする
+    for (size_t i = 0; i < layer; i++) {
+      const char hint_char = hint[i] ? 'T' : 'F';
+      std::printf("%c ", hint_char);
+    }
+    std::printf("\n");
   }
 #endif
 }
