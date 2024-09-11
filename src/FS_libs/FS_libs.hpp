@@ -136,15 +136,20 @@ inline Nod FS_get_id() {
   return inod;
 }
 
-inline void FS_get_matdims(int n, int &nx, int &ny) {
+struct matdims {
+  int nx;
+  int ny;
+};
 
+inline matdims FS_get_matdims(int n) {
   const auto nnod = FS_get_procs();
   int n1 = n / nnod.nod;
   if (n % nnod.nod != 0) {
     n1 += 1;
   }
-  nx = n1 * (nnod.nod / nnod.x);
-  ny = n1 * (nnod.nod / nnod.y);
+  const auto nx = n1 * (nnod.nod / nnod.x);
+  const auto ny = n1 * (nnod.nod / nnod.y);
+  return {nx, ny};
 }
 
 inline char FS_get_grid_major() { return FS_GRID_major; }
@@ -155,9 +160,10 @@ struct fs_worksize {
 };
 
 inline fs_worksize FS_WorkSize(int n) {
-  int np, nq;
   const auto y_nnod = FS_get_procs().y;
-  FS_get_matdims(n, np, nq);
+  const auto dims = FS_get_matdims(n);
+  const auto np = dims.nx;
+  const auto nq = dims.ny;
 
   const long lwork = 1 + 7 * n + 3 * np * nq + nq * nq;
   const long liwork = 1 + 8 * n + 2 * 4 * y_nnod;

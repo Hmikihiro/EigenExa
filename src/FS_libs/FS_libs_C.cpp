@@ -19,7 +19,9 @@ extern "C" void FS_init(int comm, char order) {
 extern "C" void FS_free() { FS_libs::FS_free(); }
 
 extern "C" void FS_get_matdims(int n, int &nx, int &ny) {
-  FS_libs::FS_get_matdims(n, nx, ny);
+  const auto dims = FS_libs::FS_get_matdims(n);
+  nx = dims.nx;
+  ny = dims.ny;
 }
 extern "C" int FS_get_myrank() { return FS_libs::FS_MYRANK; }
 
