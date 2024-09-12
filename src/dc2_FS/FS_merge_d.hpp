@@ -1,7 +1,7 @@
 #pragma once
 /**>
- *> @file   FS_MERGE_D.F90
- *> @brief  subroutine FS_MERGE_D
+ *> @file   FS_merge_d.hpp
+ *> @brief  subroutine FS_merge_d
  **/
 #include <algorithm>
 
@@ -10,7 +10,7 @@
 
 namespace {
 /**
- *> subroutine FS_MERGE_D
+ *> subroutine FS_merge_d
  *>
  *> @brief  @n
  *> Purpose @n
