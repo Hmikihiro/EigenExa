@@ -13,10 +13,10 @@ typedef MKL_INT eigen_int;
 typedef FJ_MATHLIB_INT eigen_int;
 
 extern "C" {
-double dlaed4_(eigen_int *n, eigen_int *i, double d[], double z[],
+double dlaed4_(eigen_int *n, eigen_int *i, const double d[], const double z[],
                double delta[], double *rho, double *dlam, eigen_int *info);
-float slaed4_(eigen_int *n, eigen_int *i, float d[], float z[], float delta[],
-              float *rho, float *dlam, eigen_int *info);
+float slaed4_(eigen_int *n, eigen_int *i, const float d[], const float z[],
+              float delta[], float *rho, float *dlam, eigen_int *info);
 
 double dlanst_(char *norn, eigen_int *n, const double *D, const double *E);
 float slanst_(char *norn, eigen_int *n, const float *D, const float *E);
@@ -195,20 +195,21 @@ template <> inline float nrm2(eigen_int n, float X[], eigen_int incX) {
 }
 
 template <class Float>
-inline eigen_int laed4(eigen_int n, eigen_int i, Float d[], Float z[],
-                       Float delta[], Float rho, Float &dlam);
+inline eigen_int laed4(eigen_int n, eigen_int i, const Float d[],
+                       const Float z[], Float delta[], Float rho, Float &dlam);
 
 template <>
-inline eigen_int laed4(eigen_int n, eigen_int i, double d[], double z[],
-                       double delta[], double rho, double &dlam) {
+inline eigen_int laed4(eigen_int n, eigen_int i, const double d[],
+                       const double z[], double delta[], double rho,
+                       double &dlam) {
   eigen_int info;
   dlaed4_(&n, &i, d, z, delta, &rho, &dlam, &info);
   return info;
 }
 
 template <>
-inline eigen_int laed4(eigen_int n, eigen_int i, float d[], float z[],
-                       float delta[], float rho, float &dlam) {
+inline eigen_int laed4(eigen_int n, eigen_int i, const float d[],
+                       const float z[], float delta[], float rho, float &dlam) {
   eigen_int info;
   slaed4_(&n, &i, d, z, delta, &rho, &dlam, &info);
   return info;
