@@ -8,7 +8,7 @@
 #include <numeric>
 #include <utility>
 
-#define int_for_mpi int
+#define eigen_mpi_int int
 
 #include "../FS_libs/FS_libs.hpp"
 #include "FS_prof.hpp"
@@ -48,25 +48,25 @@ public:
   Integer block_end_ = 1;   //  merge block end   number(refer to procs_i/j)
   std::unique_ptr<bt_node<Integer, Float>[]> sub_bt_node_; //  sub tree node
   bt_node<Integer, Float> *parent_node_;                   //  parent node
-  Integer *procs_i_;     //  process No. list of row
-  Integer *procs_j_;     //  process No. list of column
-  Integer nnod_ = 0;     //  nprocs of communicator
-  Integer x_nnod_ = 0;   //  nprocs of X direction communicator
-  Integer y_nnod_ = 0;   //  nprocs of Y direction communicator
-  int_for_mpi inod_ = 0; //  inod in MERGE_COMM(1～)
-  Integer x_inod_ = 0;   //  x_inod in MERGE_COMM_X(1～)
-  Integer y_inod_ = 0;   //  y_inod in MERGE_COMM_Y(1～)
-  Integer div_bit_ = -1; //  bit stream of divided direction
-  Integer div_nbit_ = 0; //  number of dights of div_bit
+  Integer *procs_i_;       //  process No. list of row
+  Integer *procs_j_;       //  process No. list of column
+  Integer nnod_ = 0;       //  nprocs of communicator
+  Integer x_nnod_ = 0;     //  nprocs of X direction communicator
+  Integer y_nnod_ = 0;     //  nprocs of Y direction communicator
+  eigen_mpi_int inod_ = 0; //  inod in MERGE_COMM(1～)
+  Integer x_inod_ = 0;     //  x_inod in MERGE_COMM_X(1～)
+  Integer y_inod_ = 0;     //  y_inod in MERGE_COMM_Y(1～)
+  Integer div_bit_ = -1;   //  bit stream of divided direction
+  Integer div_nbit_ = 0;   //  number of dights of div_bit
 
   MPI_Group MERGE_GROUP_ = MPI_GROUP_NULL;   //  MERGE_COMM group
   MPI_Group MERGE_GROUP_X_ = MPI_GROUP_NULL; //  MERGE_COMM_X group
   MPI_Group MERGE_GROUP_Y_ = MPI_GROUP_NULL; //  MERGE_COMM_Y group
-  std::unique_ptr<int_for_mpi[]>
+  std::unique_ptr<eigen_mpi_int[]>
       group_processranklist_; //  list to convert from group
                               //  rank to communicator rank
-  std::unique_ptr<int_for_mpi[]> group_X_processranklist_;
-  std::unique_ptr<int_for_mpi[]> group_Y_processranklist_;
+  std::unique_ptr<eigen_mpi_int[]> group_X_processranklist_;
+  std::unique_ptr<eigen_mpi_int[]> group_Y_processranklist_;
 
 public:
   Integer FS_dividing(Integer n, Float d[], const Float e[],
@@ -403,7 +403,7 @@ void bt_node<Integer, Float>::FS_create_mergeXY_group() {
   const char order = FS_libs::FS_get_grid_major();
   const FS_libs::Nod inod = FS_libs::FS_get_id();
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
-  std::unique_ptr<int_for_mpi[]> ranklist_group(new int_for_mpi[nnod.nod]);
+  std::unique_ptr<eigen_mpi_int[]> ranklist_group(new eigen_mpi_int[nnod.nod]);
 
   {
     const auto proc_istart = this->proc_istart_;
@@ -432,7 +432,7 @@ void bt_node<Integer, Float>::FS_create_mergeXY_group() {
 
     std::iota(ranklist_group.get(), ranklist_group.get() + ii_nrank, 0);
 
-    this->group_X_processranklist_.reset(new int_for_mpi[ii_nrank]);
+    this->group_X_processranklist_.reset(new eigen_mpi_int[ii_nrank]);
 
     MPI_Group_translate_ranks(this->MERGE_GROUP_X_, ii_nrank,
                               ranklist_group.get(), FS_libs::FS_get_group(),
@@ -465,7 +465,7 @@ void bt_node<Integer, Float>::FS_create_mergeXY_group() {
 
     std::iota(ranklist_group.get(), ranklist_group.get() + jj_nrank, 0);
 
-    this->group_Y_processranklist_.reset(new int_for_mpi[jj_nrank]);
+    this->group_Y_processranklist_.reset(new eigen_mpi_int[jj_nrank]);
     MPI_Group_translate_ranks(this->MERGE_GROUP_Y_, jj_nrank,
                               ranklist_group.get(), FS_libs::FS_get_group(),
                               this->group_Y_processranklist_.get());
@@ -519,9 +519,10 @@ void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
     const auto ni = node.proc_iend_ - node.proc_istart_;
     const auto nj = node.proc_jend_ - node.proc_jstart_;
     const auto ranklist_nrank = ni * nj;
-    std::unique_ptr<int_for_mpi[]> ranklist(new int_for_mpi[ranklist_nrank]);
-    std::unique_ptr<int_for_mpi[]> ranklist_group(
-        new int_for_mpi[ranklist_nrank]);
+    std::unique_ptr<eigen_mpi_int[]> ranklist(
+        new eigen_mpi_int[ranklist_nrank]);
+    std::unique_ptr<eigen_mpi_int[]> ranklist_group(
+        new eigen_mpi_int[ranklist_nrank]);
 
     const auto nrank = [&]() mutable {
       Integer incl_nrank = 0;
@@ -553,7 +554,7 @@ void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
       MPI_Group_incl(FS_libs::FS_get_group(), nrank, ranklist_group.get(),
                      &node.MERGE_GROUP_);
 
-      node.group_processranklist_.reset(new int_for_mpi[nrank]);
+      node.group_processranklist_.reset(new eigen_mpi_int[nrank]);
       std::iota(ranklist_group.get(), ranklist_group.get() + nrank, 0);
 
       MPI_Group_translate_ranks(node.MERGE_GROUP_, nrank, ranklist_group.get(),
