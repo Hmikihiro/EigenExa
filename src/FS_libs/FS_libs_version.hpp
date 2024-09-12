@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <cstdio>
+#include <iostream>
 
 #include "../eigen_libs0.hpp"
 
@@ -37,8 +38,8 @@ inline void FS_show_version() {
                 FS_Version.Minor_Version, patchlevel);
 
   if (id == 1) {
-    std::printf("## FS version (%s) / (%s) / (%s)\n", version, FS_Version.date,
-                FS_Version.vcode);
+    std::cout << "## FS version (" << version << ") / (" << FS_Version.date
+              << ") / (" << FS_Version.vcode << ")" << std::endl;
   }
 }
 } // namespace FS_libs_version

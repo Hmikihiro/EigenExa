@@ -2,8 +2,9 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <cstdio>
 #include <cstring>
+#include <iomanip>
+#include <iostream>
 
 #include "../FS_libs/FS_libs.hpp"
 #ifdef _OPENMP
@@ -34,33 +35,33 @@ public:
 
 namespace {
 inline void FS_prof::init() {
-  std::strncpy(region_name[1], "total", 32);
-  std::strncpy(region_name[10], "FS_EDC", 32);
-  std::strncpy(region_name[11], "  DSTEDC(NPROCS=1)", 32);
-  std::strncpy(region_name[20], "  FS_PDLAED0", 32);
-  std::strncpy(region_name[21], "    FS_dividing", 32);
-  std::strncpy(region_name[22], "      FS_create_merge_comm", 32);
-  std::strncpy(region_name[23], "      barrier", 32);
-  std::strncpy(region_name[24], "      FS_create_mergeXY_group", 32);
-  std::strncpy(region_name[25], "      FS_create_merge_comm_recursive", 32);
-  std::strncpy(region_name[28], "    DSTEDC", 32);
-  std::strncpy(region_name[30], "    FS_PDLAED1", 32);
-  std::strncpy(region_name[31], "      FS_MERGE_D", 32);
-  std::strncpy(region_name[40], "      FS_PDLAEDZ", 32);
-  std::strncpy(region_name[45], "      FS_REDUCE_ZD", 32);
-  std::strncpy(region_name[46], "        barrier", 32);
-  std::strncpy(region_name[47], "        allreduce", 32);
-  std::strncpy(region_name[50], "      FS_PDLAED2", 32);
-  std::strncpy(region_name[60], "      FS_PDLAED3", 32);
-  std::strncpy(region_name[61], "        DLAED4(Z,D)", 32);
-  std::strncpy(region_name[62], "        allreduce x3", 32);
-  std::strncpy(region_name[63], "        COPY Q2", 32);
-  std::strncpy(region_name[64], "        WAIT/UNPACK", 32);
-  std::strncpy(region_name[65], "        PACK/ISEND/IRECV", 32);
+  std::strncpy(region_name[1], "total                                ", 32);
+  std::strncpy(region_name[10], "FS_EDC                               ", 32);
+  std::strncpy(region_name[11], "  DSTEDC(NPROCS=1)                   ", 32);
+  std::strncpy(region_name[20], "  FS_PDLAED0                         ", 32);
+  std::strncpy(region_name[21], "    FS_dividing                      ", 32);
+  std::strncpy(region_name[22], "      FS_create_merge_comm           ", 32);
+  std::strncpy(region_name[23], "      barrier                        ", 32);
+  std::strncpy(region_name[24], "      FS_create_mergeXY_group        ", 32);
+  std::strncpy(region_name[25], "      FS_create_merge_comm_recursive ", 32);
+  std::strncpy(region_name[28], "    DSTEDC                           ", 32);
+  std::strncpy(region_name[30], "    FS_PDLAED1                       ", 32);
+  std::strncpy(region_name[31], "      FS_MERGE_D                     ", 32);
+  std::strncpy(region_name[40], "      FS_PDLAEDZ                     ", 32);
+  std::strncpy(region_name[45], "      FS_REDUCE_ZD                   ", 32);
+  std::strncpy(region_name[46], "        barrier                      ", 32);
+  std::strncpy(region_name[47], "        allreduce                    ", 32);
+  std::strncpy(region_name[50], "      FS_PDLAED2                     ", 32);
+  std::strncpy(region_name[60], "      FS_PDLAED3                     ", 32);
+  std::strncpy(region_name[61], "        DLAED4(Z,D)                  ", 32);
+  std::strncpy(region_name[62], "        allreduce x3                 ", 32);
+  std::strncpy(region_name[63], "        COPY Q2                      ", 32);
+  std::strncpy(region_name[64], "        WAIT/UNPACK                  ", 32);
+  std::strncpy(region_name[65], "        PACK/ISEND/IRECV             ", 32);
   // std::strncpy(region_name[66], "        DLAED4(DELTA)+DGEMM", 32);
-  std::strncpy(region_name[66], "        RECALC DELTA+DGEMM", 32);
-  std::strncpy(region_name[67], "          DGEMM", 32);
-  std::strncpy(region_name[70], "    FS_PDLASRT", 32);
+  std::strncpy(region_name[66], "        RECALC DELTA+DGEMM           ", 32);
+  std::strncpy(region_name[67], "          DGEMM                      ", 32);
+  std::strncpy(region_name[70], "    FS_PDLASRT                       ", 32);
   std::fill_n(this->region_time, FS_max_region, 0);
   std::fill_n(this->region_start, FS_max_region, 0);
   std::fill_n(this->region_ecount, FS_max_region, 0);
@@ -108,13 +109,10 @@ inline void FS_prof::finalize() {
 
   // 集計と出力
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf(
-        " ================================================================\n");
-#ifdef _BLOCKING_DGEMM
-    std::printf("  TIMING INFO (DGEMM BLOCKING)\n");
-#else
-    std::printf("  TIMING INFO (DGEMM NON-BLOCKING)\n");
-#endif
+    std::cout
+        << " ================================================================"
+        << std::endl;
+    std::cout << "  TIMING INFO (DGEMM NON-BLOCKING)" << std::endl;
 
     // 各ランクから情報を受け取りながら出力
     double tmp_region_time[FS_max_region];
@@ -141,24 +139,26 @@ inline void FS_prof::finalize() {
                  FS_libs::FS_COMM_WORLD, &stat);
       }
 
-      std::printf("  RANK = %d\n", n);
-      std::printf(" -ID-+----region name ----------------+----time [s] "
-                  "---------+-count-\n");
+      std::cout << "  RANK = " << n << std::endl;
+      std::cout << " -ID-+----region name ----------------+----time [s] "
+                   "---------+-count-"
+                << std::endl;
       for (auto i = 0; i < FS_max_region; i++) {
         if (tmp_region_ecount[i] > 0) {
-          std::printf("%d %-30s %f %d\n", i, region_name[i], tmp_region_time[i],
-                      tmp_region_ecount[i]);
+          std::cout << i << ' ' << region_name[i] << ' ' << std::setw(30)
+                    << tmp_region_time[i] << ' ' << tmp_region_ecount[i]
+                    << std::endl;
 #ifdef COUNT_CHECK
           if (tmp_region_scount[i] != tmp_region_ecount[i]) {
-            std::printf("  Warning : start/end count are different in [%s]\n",
-                        region_name[i]);
+            std::cout << "  Warning : start/end count are different in ["
+                      << region_name[i] << "]" << std::endl;
           }
 #endif
         }
       }
-      std::printf(
-          " ==================================================================="
-          "=\n");
+      std::cout << " =========================================================="
+                   "=========="
+                << std::endl;
     }
   } else {
     // FS_get_myrank() != 0

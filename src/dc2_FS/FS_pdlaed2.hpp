@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <limits>
 #include <numeric>
 
@@ -14,9 +15,6 @@
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
 
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
 namespace {
 template <class Integer, class Float>
 Integer get_NPA(Integer n, Integer nb, const bt_node<Integer, Float> &subtree,
@@ -155,7 +153,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
                    eigen_int indxp[], eigen_int psm[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_PDLAED2 start.\n");
+    std::cout << "FS_PDLAED2 start." << std::endl;
   }
 #endif
 #if TIMER_PRINT
@@ -346,7 +344,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_PDLAED2 end.\n");
+    std::cout << "FS_PDLAED2 end." << std::endl;
   }
 #endif
 

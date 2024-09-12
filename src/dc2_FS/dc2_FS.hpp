@@ -11,7 +11,7 @@
 #include "eigen_devel_FS_wrapper.hpp"
 
 #if TIMER_PRINT > 1
-#include <cstdio>
+#include <iostream>
 #endif
 
 namespace {
@@ -40,6 +40,9 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
   FS_eigen_timer_reset(1, 0, 0, 0);
 
   const auto eigen_comm = eigen_get_comm().eigen_comm;
+#if TIMER_PRINT > 1
+  const auto iam = eigen_get_id().id - 1;
+#endif
 
   const auto worksize = FS_libs::FS_WorkSize(n);
   long long lwork_ = worksize.lwork * buffer_for_gposition_value<Float>;
@@ -88,9 +91,8 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 #endif
 
 #if TIMER_PRINT > 1
-    const auto iam = eigen_get_id().id - 1;
     if (iam == 0) {
-      std::printf("FS_EDC     %f\n", prof.region_time[10]);
+      std::cout << "FS_EDC     " << prof.region_time[10] << std::endl;
     }
 #endif
 
@@ -101,12 +103,12 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 
 #if TIMER_PRINT > 1
   if (iam == 0) {
-    std::printf("FS_dividing %f\n", eigen_dc_interface::p_time0);
-    std::printf("FS_pdlasrt  %f\n", eigen_dc_interface::p_timer);
-    std::printf("FS_pdlaed2  %f\n", eigen_dc_interface::p_time2);
-    std::printf("FS_pdlaed3  %f\n", eigen_dc_interface::p_time3);
-    std::printf("FS_pdlaedz  %f\n", eigen_dc_interface::p_timez);
-    std::printf("DGEMM       %f\n", eigen_dc_interface::dgemm_time);
+    std::cout << "FS_dividing " << eigen_dc_interface::p_time0 << std::endl;
+    std::cout << "FS_pdlasrt  " << eigen_dc_interface::p_timer << std::endl;
+    std::cout << "FS_pdlaed2  " << eigen_dc_interface::p_time2 << std::endl;
+    std::cout << "FS_pdlaed3  " << eigen_dc_interface::p_time3 << std::endl;
+    std::cout << "FS_pdlaedz  " << eigen_dc_interface::p_timez << std::endl;
+    std::cout << "DGEMM       " << eigen_dc_interface::dgemm_time << std::endl;
   }
 #endif
 

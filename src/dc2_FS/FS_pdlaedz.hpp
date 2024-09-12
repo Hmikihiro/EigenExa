@@ -19,7 +19,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
                 FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlaedz start.\n");
+    std::cout << "FS_pdlaedz start." << std::endl;
   }
 #endif
 #if TIMER_PRINT
@@ -75,7 +75,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
 #endif
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlaedz end.\n");
+    std::cout << "FS_pdlaedz end." << std::endl;
   }
 #endif
 }

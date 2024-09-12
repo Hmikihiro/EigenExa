@@ -1,14 +1,12 @@
 #pragma once
 
+#include <iostream>
+
 #include "../FS_libs/FS_libs.hpp"
 #include "../MPI_Allreduce_group.hpp"
 #include "../MPI_Datatype_wrapper.hpp"
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
-
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
 
 namespace {
 using FS_libs::FS_COMM_WORLD;
@@ -17,7 +15,7 @@ void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
                   Float work[], Float z[], Float d[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_reduce_zd start.\n");
+    std::cout << "FS_reduce_zd start." << std::endl;
   }
 #endif
 #if TIMER_PRINT
@@ -53,7 +51,7 @@ void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_reduce_zd end.\n");
+    std::cout << "FS_reduce_zd end." << std::endl;
   }
 #endif
 }

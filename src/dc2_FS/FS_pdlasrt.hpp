@@ -24,7 +24,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
                 eigen_int indrcv[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlasrt start.");
+    std::cout << "FS_pdlasrt start." << std::endl;
   }
 #endif
 #if TIMER_PRINT
@@ -207,7 +207,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlasrt end.");
+    std::cout << "FS_pdlasrt end." << std::endl;
   }
 #endif
 }

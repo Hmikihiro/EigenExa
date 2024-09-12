@@ -124,7 +124,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
                    FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlaed3 start\n");
+    std::cout << "FS_pdlaed3 start" << std::endl;
   }
 #endif
   Integer info = 0;
@@ -212,7 +212,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
           }
           if (iinfo != 0) {
             sinfo = kk;
-            std::printf("error");
+            std::cout << "error" << std::endl;
           }
           // ..Compute part of z
 #pragma loop nofp_relaxed nofp_contract noeval
@@ -599,7 +599,7 @@ FS_pdlead3_end:
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlaed3 end. info= %d\n", info);
+    std::cout << "FS_pdlaed3 end. info= " << info << std::endl;
   }
 #endif
   return info;

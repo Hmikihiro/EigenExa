@@ -3,6 +3,7 @@
 #include <mpi.h>
 
 #include <algorithm>
+#include <iostream>
 
 #include "FS_dividing.hpp"
 #include "FS_merge_d.hpp"
@@ -12,9 +13,6 @@
 #include "FS_prof.hpp"
 #include "FS_reduce_zd.hpp"
 
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
 namespace {
 template <class Integer, class Float>
 Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
@@ -22,7 +20,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
                    Float work[], eigen_int iwork[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlaed1 start.\n");
+    std::cout << "FS_pdlaed1 start." << std::endl;
   }
 #endif
 #if TIMER_PRINT
@@ -122,7 +120,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 #endif
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlaed1 end. INFO=%lld\n", static_cast<long long>(info));
+    std::cout << "FS_pdlaed1 end. INFO=" << info << std::endl;
   }
 #endif
   return info;

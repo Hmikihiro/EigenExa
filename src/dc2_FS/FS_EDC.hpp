@@ -5,16 +5,13 @@
  */
 
 #include <cmath>
+#include <iostream>
 
 #include "../cblas_lapacke_wrapper.hpp"
 #include "../eigen_libs0.hpp"
 #include "FS_const.hpp"
 #include "FS_pdlaed0.hpp"
 #include "FS_prof.hpp"
-
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
 
 namespace {
 using FS_const::ONE;
@@ -74,15 +71,15 @@ using FS_const::ZERO;
 
 template <class Integer, class Float>
 Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
-               Float *work, Integer lwork, eigen_int *iwork, const Integer liwork,
-               FS_prof *prof) {
+               Float *work, Integer lwork, eigen_int *iwork,
+               const Integer liwork, FS_prof *prof) {
 
   FS_prof prof_tmp = {};
 
   Integer info = 0;
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_EDC start\n");
+    std::cout << "FS_EDC start" << std::endl;
   }
 #endif
 
@@ -143,7 +140,7 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_EDC end. INFO=%d\n", info);
+    std::cout << "FS_EDC end. INFO=" << info << std::endl;
   }
 #endif
 

@@ -3,7 +3,7 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <cstdio>
+#include <iostream>
 #include <memory>
 #include <numeric>
 #include <utility>
@@ -224,9 +224,9 @@ inline void FS_create_hint(bool hint[]) {
   if (FS_libs::FS_get_myrank() == 0) {
     for (size_t i = 0; i < layer_debug; i++) {
       const char hint_char = hint[i] ? 'T' : 'F';
-      std::printf("%c ", hint_char);
+      std::cout << hint_char << " ";
     }
-    std::printf("\n");
+    std::cout << std::endl;
   }
 #endif
 }
@@ -744,10 +744,10 @@ void bt_node<Integer, Float>::print_tree() const {
   const auto inod = FS_libs::FS_get_id();
 
   if (this->layer_ == 0) {
-    std::printf("nnod, (x_nnod, y_nnod) = %d (%d, %d)\n", nnod.nod, nnod.x,
-                nnod.y);
-    std::printf("inod, (x_inod, y_inod) = %d (%d, %d)\n", inod.nod, inod.x,
-                inod.y);
+    std::cout << "nnod, (x_nnod, y_nnod) = " << nnod.nod << " (" << nnod.x
+              << ", " << nnod.y << ")" << std::endl;
+    std::cout << "inod, (x_inod, y_inod) = " << inod.nod << " (" << inod.x
+              << ", " << inod.y << ")" << std::endl;
   }
 
   this->print_node();
@@ -763,35 +763,36 @@ void bt_node<Integer, Float>::print_tree() const {
 template <class Integer, class Float>
 void bt_node<Integer, Float>::print_node() const {
   FS_libs::Nod nnod = FS_libs::FS_get_procs();
-  std::printf("******************************\n");
-  std::printf("layer               = %d\n", this->layer_);
-  std::printf("direction_horizontal= %d\n", this->direction_horizontal_);
-  std::printf("nstart              = %d\n", this->nstart_);
-  std::printf("nend                = %d\n", this->nend_);
-  std::printf("nend_active         = %d\n", this->nend_active_);
-  std::printf("proc_istart         = %d\n", this->proc_istart_);
-  std::printf("proc_iend           = %d\n", this->proc_iend_);
-  std::printf("proc_jstart         = %d\n", this->proc_jstart_);
-  std::printf("proc_jend           = %d\n", this->proc_jend_);
-  std::printf("block_start         = %d\n", this->block_start_);
-  std::printf("block_end           = %d\n", this->block_end_);
-  std::printf("parent_node = %p\n", this->parent_node_);
-  std::printf("child_node  = %p\n", this->sub_bt_node_);
-  std::printf("procs_i = ");
+  std::cout << "******************************" << std::endl;
+  std::cout << "layer               = " << this->layer_ << std::endl;
+  std::cout << "direction_horizontal= " << this->direction_horizontal_
+            << std::endl;
+  std::cout << "nstart              = " << this->nstart_ << std::endl;
+  std::cout << "nend                = " << this->nend_ << std::endl;
+  std::cout << "nend_active         = " << this->nend_active_ << std::endl;
+  std::cout << "proc_istart         = " << this->proc_istart_ << std::endl;
+  std::cout << "proc_iend           = " << this->proc_iend_ << std::endl;
+  std::cout << "proc_jstart         = " << this->proc_jstart_ << std::endl;
+  std::cout << "proc_jend           = " << this->proc_jend_ << std::endl;
+  std::cout << "block_start         = " << this->block_start_ << std::endl;
+  std::cout << "block_end           = " << this->block_end_ << std::endl;
+  std::cout << "parent_node = " << this->parent_node_ << std::endl;
+  std::cout << "child_node  = " << this->sub_bt_node_ << std::endl;
+  std::cout << "procs_i = ";
   for (Integer i = 0; i < nnod.nod; i++) {
-    std::printf("%d ", this->procs_i_[i]);
+    std::cout << this->procs_i_[i] << " ";
   }
-  std::printf("\nprocs_j = ");
+  std::cout << "\nprocs_j = ";
   for (Integer j = 0; j < nnod.nod; j++) {
-    std::printf("%d ", this->procs_j_[j]);
+    std::cout << this->procs_j_[j] << " ";
   }
-  std::printf("\nmerge procs    = %d\n ", this->nnod_);
-  std::printf("merge procs X  = %d\n ", this->x_nnod_);
-  std::printf("merge procs Y  = %d\n ", this->y_nnod_);
-  std::printf("merge rankid   = %d\n ", this->inod_);
-  std::printf("merge rankid X = %d\n ", this->x_inod_);
-  std::printf("merge rankid Y = %d\n ", this->y_inod_);
-  std::printf("bit stream     = %d\n ", this->div_bit_);
-  std::printf("#dights of bit = %d\n ", this->div_nbit_);
+  std::cout << "\nmerge procs    = " << this->nnod_ << std::endl;
+  std::cout << "merge procs X  = " << this->x_nnod_ << std::endl;
+  std::cout << "merge procs Y  = " << this->y_nnod_ << std::endl;
+  std::cout << "merge rankid   = " << this->inod_ << std::endl;
+  std::cout << "merge rankid X = " << this->x_inod_ << std::endl;
+  std::cout << "merge rankid Y = " << this->y_inod_ << std::endl;
+  std::cout << "bit stream     = " << this->div_bit_ << std::endl;
+  std::cout << "#dights of bit = " << this->div_nbit_ << std::endl;
 }
 } // namespace
