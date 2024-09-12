@@ -2,6 +2,7 @@
 #include <mpi.h>
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <numeric>
 
@@ -10,10 +11,6 @@
 #include "../cblas_lapacke_wrapper.hpp"
 #include "../eigen_libs0.hpp"
 #include "FS_dividing.hpp"
-
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
 
 namespace {
 namespace FS2eigen {
@@ -190,7 +187,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   }
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS2eigen_PDLASRT start.");
+    std::cout << "FS2eigen_PDLASRT start." << std::endl;
   }
 #endif
 #if TIMER_PRINT
@@ -526,7 +523,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
 #endif
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlasrt end.");
+    std::cout << "FS_pdlasrt end." << std::endl;
   }
 #endif
   return 0;
