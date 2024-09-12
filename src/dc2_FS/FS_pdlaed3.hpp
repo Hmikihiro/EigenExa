@@ -121,7 +121,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
                    Integer lctot, const eigen_int ctot[], Float q2buf1[],
                    Float q2buf2[], Float z[], Float buf[], eigen_int indrow[],
                    eigen_int indcol[], eigen_int indxc[], eigen_int indxr[],
-                   eigen_int indxcb[], FS_prof &prof) {
+                   FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::printf("FS_pdlaed3 start\n");

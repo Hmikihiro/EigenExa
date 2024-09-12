@@ -72,7 +72,6 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     const auto coltyp = indcol + n;
     const auto indrow = coltyp + n;
     const auto indxr = indrow + n;
-    const auto indxcb = indxr + n;
     //
     // for FS_merge_d, FS_pdlaedz, FS_reduce_zd
     const auto izwork = iz + n * 2;
@@ -113,8 +112,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
       info = FS_pdlaed3<Integer, Float>(
           k, n, n1, d, rho, dlamda, w, ldq, q, subtree, ldq2, q2, ldu, u,
           &iwork[indx], lctot, &iwork[ictot], sendq2, recvq2, z, buf,
-          &iwork[indrow], &iwork[indcol], &iwork[indxc], &iwork[indxr],
-          &iwork[indxcb], prof);
+          &iwork[indrow], &iwork[indcol], &iwork[indxc], &iwork[indxr], prof);
     }
     return info;
   }();
