@@ -124,7 +124,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 #endif
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlaed1 end. INFO=%lld\n", info);
+    std::printf("FS_pdlaed1 end. INFO=%lld\n", static_cast<long long>(info));
   }
 #endif
   return info;

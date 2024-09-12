@@ -2,6 +2,7 @@
 #include <mpi.h>
 
 #include <algorithm>
+#include <cstdio>
 #include <cstring>
 
 #include "../FS_libs/FS_libs.hpp"
@@ -107,12 +108,12 @@ inline void FS_prof::finalize() {
 
   // 集計と出力
   if (FS_libs::FS_get_myrank() == 0) {
-    printf(
+    std::printf(
         " ================================================================\n");
 #ifdef _BLOCKING_DGEMM
-    printf("  TIMING INFO (DGEMM BLOCKING)\n");
+    std::printf("  TIMING INFO (DGEMM BLOCKING)\n");
 #else
-    printf("  TIMING INFO (DGEMM NON-BLOCKING)\n");
+    std::printf("  TIMING INFO (DGEMM NON-BLOCKING)\n");
 #endif
 
     // 各ランクから情報を受け取りながら出力
@@ -140,22 +141,22 @@ inline void FS_prof::finalize() {
                  FS_libs::FS_COMM_WORLD, &stat);
       }
 
-      printf("  RANK = %d\n", n);
-      printf(" -ID-+----region name ----------------+----time [s] "
-             "---------+-count-\n");
+      std::printf("  RANK = %d\n", n);
+      std::printf(" -ID-+----region name ----------------+----time [s] "
+                  "---------+-count-\n");
       for (auto i = 0; i < FS_max_region; i++) {
         if (tmp_region_ecount[i] > 0) {
-          printf("%d %-30s %f %d\n", i, region_name[i], tmp_region_time[i],
-                 tmp_region_ecount[i]);
+          std::printf("%d %-30s %f %d\n", i, region_name[i], tmp_region_time[i],
+                      tmp_region_ecount[i]);
 #ifdef COUNT_CHECK
           if (tmp_region_scount[i] != tmp_region_ecount[i]) {
-            printf("  Warning : start/end count are different in [%s]\n",
-                   region_name[i]);
+            std::printf("  Warning : start/end count are different in [%s]\n",
+                        region_name[i]);
           }
 #endif
         }
       }
-      printf(
+      std::printf(
           " ==================================================================="
           "=\n");
     }

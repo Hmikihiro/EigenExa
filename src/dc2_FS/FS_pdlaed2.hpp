@@ -13,6 +13,10 @@
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
+
+#if defined(_DEBUGLOG)
+#include <cstdio>
+#endif
 namespace {
 template <class Integer, class Float>
 Integer get_NPA(Integer n, Integer nb, const bt_node<Integer, Float> &subtree,
@@ -33,8 +37,8 @@ Integer get_NPA(Integer n, Integer nb, const bt_node<Integer, Float> &subtree,
 }
 
 template <class Integer>
-void init_ctot(Integer n, const eigen_int coltyp[], const eigen_int indcol[], Integer lctot,
-               eigen_int ctot[], Integer npcol) {
+void init_ctot(Integer n, const eigen_int coltyp[], const eigen_int indcol[],
+               Integer lctot, eigen_int ctot[], Integer npcol) {
 #pragma omp parallel for
   for (Integer j = 0; j < 4; j++) {
     std::fill_n(&ctot[j * lctot], npcol, 0);
@@ -51,7 +55,8 @@ void init_ctot(Integer n, const eigen_int coltyp[], const eigen_int indcol[], In
  * \brief PSM(*) = Position in SubMatrix (of types 0 through 3)
  */
 template <class Integer>
-void set_psm(Integer lctot, eigen_int psm[], const eigen_int ctot[], Integer npcol) {
+void set_psm(Integer lctot, eigen_int psm[], const eigen_int ctot[],
+             Integer npcol) {
 #pragma omp parallel for
   for (Integer col = 0; col < npcol; col++) {
     psm[0 * lctot + col] = 1;
@@ -62,7 +67,8 @@ void set_psm(Integer lctot, eigen_int psm[], const eigen_int ctot[], Integer npc
 }
 
 template <class Integer>
-void set_ptt(Integer lctot, Integer ptt[4], const eigen_int ctot[], Integer npcol) {
+void set_ptt(Integer lctot, Integer ptt[4], const eigen_int ctot[],
+             Integer npcol) {
   std::fill_n(ptt, 4, 0);
   ptt[0] = 1;
 #pragma omp parallel for
@@ -104,7 +110,8 @@ void set_indxp(Integer n, Integer &k2, Integer nj, Integer pj, Float d[],
 template <class Integer, class Float>
 void pdlaed2_comm(Integer mycol, Integer ldq, Float q[], Integer npa,
                   const bt_node<Integer, Float> &subtree, Float qbuf[],
-                  Integer nj, Integer pj, Float c, Float s, eigen_int indcol[]) {
+                  Integer nj, Integer pj, Float c, Float s,
+                  eigen_int indcol[]) {
   const auto njj_info = subtree.FS_info_G1L('C', nj);
   const auto &njj = njj_info.l_index;
   const auto &njcol = njj_info.rocsrc;
@@ -144,11 +151,11 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
                    const bt_node<Integer, Float> &subtree, Float &rho,
                    Float z[], Float w[], Float dlamda[], Integer ldq2,
                    Float q2[], eigen_int indx[], eigen_int ctot[], Float qbuf[],
-                   eigen_int coltyp[], eigen_int indcol[], eigen_int indxc[], eigen_int indxp[],
-                   eigen_int psm[], FS_prof &prof) {
+                   eigen_int coltyp[], eigen_int indcol[], eigen_int indxc[],
+                   eigen_int indxp[], eigen_int psm[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    printf("FS_PDLAED2 start.\n");
+    std::printf("FS_PDLAED2 start.\n");
   }
 #endif
 #if TIMER_PRINT
@@ -339,7 +346,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    printf("FS_PDLAED2 end.\n");
+    std::printf("FS_PDLAED2 end.\n");
   }
 #endif
 

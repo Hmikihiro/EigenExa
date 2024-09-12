@@ -90,7 +90,7 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 #if TIMER_PRINT > 1
     const auto iam = eigen_get_id().id - 1;
     if (iam == 0) {
-      printf("FS_EDC     %f\n", prof.region_time[10]);
+      std::printf("FS_EDC     %f\n", prof.region_time[10]);
     }
 #endif
 
@@ -101,12 +101,12 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 
 #if TIMER_PRINT > 1
   if (iam == 0) {
-    printf("FS_dividing %f\n", eigen_dc_interface::p_time0);
-    printf("FS_pdlasrt  %f\n", eigen_dc_interface::p_timer);
-    printf("FS_pdlaed2  %f\n", eigen_dc_interface::p_time2);
-    printf("FS_pdlaed3  %f\n", eigen_dc_interface::p_time3);
-    printf("FS_pdlaedz  %f\n", eigen_dc_interface::p_timez);
-    printf("DGEMM       %f\n", eigen_dc_interface::dgemm_time);
+    std::printf("FS_dividing %f\n", eigen_dc_interface::p_time0);
+    std::printf("FS_pdlasrt  %f\n", eigen_dc_interface::p_timer);
+    std::printf("FS_pdlaed2  %f\n", eigen_dc_interface::p_time2);
+    std::printf("FS_pdlaed3  %f\n", eigen_dc_interface::p_time3);
+    std::printf("FS_pdlaedz  %f\n", eigen_dc_interface::p_timez);
+    std::printf("DGEMM       %f\n", eigen_dc_interface::dgemm_time);
   }
 #endif
 

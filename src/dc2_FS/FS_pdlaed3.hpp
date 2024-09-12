@@ -3,6 +3,7 @@
 #include <omp.h>
 
 #include <cmath>
+#include <cstdio>
 #include <memory>
 
 #include "../MPI_Allreduce_group.hpp"
@@ -114,7 +115,7 @@ ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
 
 template <class Integer, class Float>
 Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
-                   Float dlamda[], Float w[], Integer ldq, Float q[],
+                   Float dlamda[], const Float w[], Integer ldq, Float q[],
                    const bt_node<Integer, Float> &subtree, Integer ldq2,
                    Float q2[], Integer ldu, Float u[], eigen_int indx[],
                    Integer lctot, const eigen_int ctot[], Float q2buf1[],
@@ -123,7 +124,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
                    eigen_int indxcb[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    printf("FS_pdlaed3 start\n");
+    std::printf("FS_pdlaed3 start\n");
   }
 #endif
   Integer info = 0;
@@ -211,7 +212,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
           }
           if (iinfo != 0) {
             sinfo = kk;
-            printf("error");
+            std::printf("error");
           }
           // ..Compute part of z
 #pragma loop nofp_relaxed nofp_contract noeval
@@ -598,7 +599,7 @@ FS_pdlead3_end:
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    printf("FS_pdlaed3 end. info= %d\n", info);
+    std::printf("FS_pdlaed3 end. info= %d\n", info);
   }
 #endif
   return info;
