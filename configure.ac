@@ -720,7 +720,7 @@ fi
 # CXXFLAGS0 (special flags)
 
 if   test x"${FC_ACT}" = x"ifort"; then
-  CXXFLAGS0=${I_BASE}" -Ofast -Wall -Wextra -Wpointer-arith -Wuninitialized" 
+  CXXFLAGS0=${I_BASE}" -O3 -Wall -Wextra -Wpointer-arith -Wuninitialized" 
   
 elif test x"${FC_ACT}" = x"gfortran"; then
   CXXFLAGS0=${G_BASE}" -O0 -Wall"
