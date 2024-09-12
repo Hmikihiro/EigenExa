@@ -71,7 +71,7 @@ using FS_const::ZERO;
 
 template <class Integer, class Float>
 Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
-               Float *work, Integer lwork, eigen_int *iwork,
+               Float *work, Integer lwork, eigen_mathlib_int *iwork,
                const Integer liwork, FS_prof *prof) {
 
   FS_prof prof_tmp = {};

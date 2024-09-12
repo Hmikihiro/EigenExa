@@ -61,7 +61,7 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
   Integer info_fs_edc = 0;
   try {
     std::unique_ptr<Float[]> work(new Float[lwork]);
-    std::unique_ptr<eigen_int[]> iwork(new eigen_int[liwork]);
+    std::unique_ptr<eigen_mathlib_int[]> iwork(new eigen_mathlib_int[liwork]);
 
 #if defined(__INTEL_COMPILER) && USE_MKL
     const auto mkl_mode = mkl_get_Dynamic();

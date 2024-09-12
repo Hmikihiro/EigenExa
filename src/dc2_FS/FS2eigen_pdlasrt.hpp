@@ -180,7 +180,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
                          const bt_node<Integer, Float> &subtree, Integer ibuf[],
                          Float rbuf[],
                          FS2eigen::GpositionValue<Integer, Float> tbuf[],
-                         eigen_int indx[], FS_prof &prof) {
+                         eigen_mathlib_int indx[], FS_prof &prof) {
   double prof_time[40];
   for (Integer i = 0; i < 40; i++) {
     prof_time[i] = 0;

@@ -20,8 +20,8 @@ namespace {
 
 template <typename Integer, typename Float>
 Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
-                   Float work[], long lwork, eigen_int iwork[], long liwork,
-                   FS_prof &prof) {
+                   Float work[], long lwork, eigen_mathlib_int iwork[],
+                   long liwork, FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_PDLAED0 start." << std::endl;
