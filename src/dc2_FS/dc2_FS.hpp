@@ -20,7 +20,6 @@ using eigen_devel_FS_wrapper::FS_eigen_timer_reset;
 using eigen_libs0_wrapper::eigen_get_comm;
 using eigen_libs0_wrapper::eigen_get_id;
 using eigen_libs0_wrapper::eigen_get_procs;
-using std::unique_ptr;
 
 template <class Float> static long long buffer_for_gposition_value = 1;
 template <>
@@ -58,8 +57,8 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 
   Integer info_fs_edc = 0;
   try {
-    unique_ptr<Float[]> work(new Float[lwork]);
-    unique_ptr<eigen_int[]> iwork(new eigen_int[liwork]);
+    std::unique_ptr<Float[]> work(new Float[lwork]);
+    std::unique_ptr<eigen_int[]> iwork(new eigen_int[liwork]);
 
 #if defined(__INTEL_COMPILER) && USE_MKL
     const auto mkl_mode = mkl_get_Dynamic();

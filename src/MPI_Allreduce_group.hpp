@@ -31,7 +31,6 @@ public:
 } // namespace MPI_Group_property
 namespace MPI_Allreduce_main {
 using MPI_Group_property::MPI_Group_type;
-using std::abs;
 
 template <typename Number>
 void comm_op(size_t &n, size_t &head, Number sbuf[], Number rbuf[],
@@ -151,7 +150,7 @@ void Group_Allreduce(MPI_Group_type<Number> &mygroup) {
     if (step < 0) {
       step0 += i;
     }
-    step = abs(step / 2);
+    step = std::abs(step / 2);
     if ((step + step0) <= myrank) {
       step = -step;
     }

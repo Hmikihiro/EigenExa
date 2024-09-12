@@ -168,9 +168,6 @@ void bitprint(Integer kout, Integer title, Integer ibit, Integer nbit);
 } // namespace
 
 namespace {
-using std::abs;
-using std::max;
-using std::min;
 
 inline void FS_create_hint(bool hint[]) {
   FS_libs::Nod nnod = FS_libs::FS_get_procs();
@@ -315,8 +312,8 @@ Integer bt_node<Integer, Float>::FS_dividing_recursive(
         this->block_end_ = i + 1;
         const auto nend = this->nend_;
         if (nend < n) {
-          d[nend - 1] = d[nend - 1] - abs(e[nend - 1]);
-          d[nend] = d[nend] - abs(e[nend - 1]);
+          d[nend - 1] = d[nend - 1] - std::abs(e[nend - 1]);
+          d[nend] = d[nend] - std::abs(e[nend - 1]);
         }
         break;
       }
@@ -340,7 +337,7 @@ Integer bt_node<Integer, Float>::FS_dividing_recursive(
       subptr.direction_horizontal_ = hint[subptr.layer_];
       subptr.nstart_ = this_nstart + i * this_nstep;
       subptr.nend_ = this_nend - (1 - i) * this_nstep;
-      subptr.nend_active_ = max(min(subptr.nend_, n), subptr.nstart_);
+      subptr.nend_active_ = std::max(std::min(subptr.nend_, n), subptr.nstart_);
       subptr.sub_bt_node_.reset(nullptr);
       subptr.parent_node_ = this;
       subptr.procs_i_ = this->procs_i_;
@@ -367,10 +364,10 @@ Integer bt_node<Integer, Float>::FS_dividing_recursive(
       }
     }
 
-    this->block_start_ = min(this->sub_bt_node_[0].block_start_,
-                             this->sub_bt_node_[1].block_start_);
-    this->block_end_ =
-        max(this->sub_bt_node_[0].block_end_, this->sub_bt_node_[1].block_end_);
+    this->block_start_ = std::min(this->sub_bt_node_[0].block_start_,
+                                  this->sub_bt_node_[1].block_start_);
+    this->block_end_ = std::max(this->sub_bt_node_[0].block_end_,
+                                this->sub_bt_node_[1].block_end_);
     this->dividing_setBitStream();
     return info;
   }

@@ -12,9 +12,6 @@ namespace FS_libs {
 using eigen_libs0_wrapper::eigen_get_comm;
 using eigen_libs0_wrapper::eigen_get_id;
 using eigen_libs0_wrapper::eigen_get_procs;
-using std::log2;
-using std::min;
-using std::pow;
 
 extern MPI_Comm FS_COMM_WORLD;
 extern int FS_MYRANK;
@@ -82,9 +79,9 @@ inline void FS_init(MPI_Comm comm = MPI_COMM_WORLD, char order = 'C') {
   auto nnod = eigen_get_procs().procs;
   const auto inod = eigen_get_id().id;
 
-  const auto p = static_cast<int>(log2(nnod));
+  const auto p = static_cast<int>(std::log2(nnod));
   int color = 0;
-  if (inod <= pow(2, p)) {
+  if (inod <= std::pow(2, p)) {
     color = 0;
     FS_COMM_MEMBER = true;
   } else {

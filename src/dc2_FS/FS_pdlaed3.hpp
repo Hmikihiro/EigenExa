@@ -15,10 +15,6 @@
 
 namespace {
 using FS_libs::FS_COMM_WORLD;
-using std::abs;
-using std::max;
-using std::min;
-using std::sqrt;
 
 template <class Integer>
 Integer get_pdc(Integer lctot, const eigen_int ctot[], Integer npcol,
@@ -95,8 +91,8 @@ ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
     reduction(+ : npa)
   for (Integer i = 0; i < n; i++) {
     if (indrow[i] == myrow) {
-      minrow = min(minrow, (Integer)i);
-      maxrow = max(maxrow, (Integer)i);
+      minrow = std::min(minrow, (Integer)i);
+      maxrow = std::max(maxrow, (Integer)i);
       npa += 1;
     }
   }
@@ -204,7 +200,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
             auto sbufD_min = sbuf[kk];
             auto sbufB_min = dlamda[kk];
             if ((kk + 1) < k) {
-              if (abs(sbuf[kk + 1]) < abs(sbufD_min)) {
+              if (std::abs(sbuf[kk + 1]) < std::abs(sbufD_min)) {
                 sbufD_min = sbuf[kk + 1];
                 sbufB_min = dlamda[kk + 1];
               }
@@ -275,7 +271,8 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
 
 #pragma omp parallel for
     for (Integer i = 0; i < k; i++) {
-      z[i] = abs(sqrt(-z[i])) * ((w[i] >= 0) ? 1 : -1);
+      const auto sign = static_cast<Float>((w[i] >= 0) ? 1 : -1);
+      z[i] = sign * std::abs(std::sqrt(-z[i]));
     }
 
     if (mykl > 0) {

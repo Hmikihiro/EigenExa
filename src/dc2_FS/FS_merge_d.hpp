@@ -5,7 +5,6 @@
 #include "FS_dividing.hpp"
 
 namespace {
-using std::min;
 template <class Integer, class Float>
 void FS_merge_d(Integer n, const Float d[],
                 const bt_node<Integer, Float> &subtree, Float d_out[]) {
@@ -20,7 +19,7 @@ void FS_merge_d(Integer n, const Float d[],
       for (Integer i = 0; i < n; i += NB) {
         const auto row = subtree.FS_info_G1L('R', i).rocsrc;
         if (row == grid_info.myrow) {
-          const auto NB1 = min(n, i + NB) - i;
+          const auto NB1 = std::min(n, i + NB) - i;
           std::copy_n(&d[i], NB1, &d_out[i]);
         }
       }
@@ -31,7 +30,7 @@ void FS_merge_d(Integer n, const Float d[],
       for (Integer j = 0; j < n; j += NB) {
         const auto col = subtree.FS_info_G1L('C', j).rocsrc;
         if (col == grid_info.mycol) {
-          const auto NB1 = min(n, j + NB) - j;
+          const auto NB1 = std::min(n, j + NB) - j;
           std::copy_n(&d[j], NB1, &d_out[j]);
         }
       }
