@@ -214,7 +214,7 @@
         e2(1:n) = e(1:n)
         
         if (precision_ == SINGLE_PRECISION) then
-         allocate(z_f32(1:ldz, 1:(ny+10000)), stat=ierr)
+         allocate(z_f32(1:ldz, 1:(ny)), stat=ierr)
          allocate(w_f32(1:n), e2_f32(1:n), stat=ierr)
          do i=1, ny
             do j=1, ldz
@@ -250,7 +250,7 @@
       if (mode_ == 'A') then
          d (1:n) = e(1:n)
          if (precision_ == SINGLE_PRECISION) then
-            allocate(z_f32(1:ldz, 1:(ny+10000)), stat=ierr)
+            allocate(z_f32(1:ldz, 1:(ny)), stat=ierr)
             allocate(w_f32(1:n), d_f32(1:n),  stat=ierr)
             do i=1, ny
                do j=1, ldz
