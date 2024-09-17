@@ -19,8 +19,8 @@
 namespace {
 
 template <typename Integer, typename Float>
-Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
-                   Float work[], long lwork, Integer iwork[], long liwork,
+Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[], const Integer ldq,
+                   Float work[], long lwork, Integer iwork[],const long liwork,
                    FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {

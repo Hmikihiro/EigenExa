@@ -37,8 +37,9 @@ template <class Integer, class Float> struct dc2_FS_result {
 };
 
 template <class Integer, class Float>
-dc2_FS_result<Integer, Float> dc2_FS(Integer n, Integer nvec, Float d[],
-                                     Float e[], Float z[], Integer ldz) {
+dc2_FS_result<Integer, Float> dc2_FS(const Integer n, const Integer nvec,
+                                     Float d[], Float e[], Float z[],
+                                     const Integer ldz) {
   eigen_dc_interface::flops = 0;
   eigen_dc_interface::dgemm_time = 0;
   eigen_dc_interface::p_time0 = 0;

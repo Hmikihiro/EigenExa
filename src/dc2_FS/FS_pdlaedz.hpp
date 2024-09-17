@@ -14,9 +14,9 @@
 
 namespace {
 template <class Integer, class Float>
-void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
-                const bt_node<Integer, Float> &subtree, Float z[],
-                FS_prof &prof) {
+void FS_pdlaedz(const Integer n, const Integer n1, const Float q[],
+                const Integer ldq, const bt_node<Integer, Float> &subtree,
+                Float z[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_pdlaedz start." << std::endl;

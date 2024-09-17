@@ -34,7 +34,7 @@ namespace {
  *>
  */
 template <class Integer, class Float>
-void FS_merge_d(Integer n, const Float d[],
+void FS_merge_d(const Integer n, const Float d[],
                 const bt_node<Integer, Float> &subtree, Float d_out[]) {
   // reduce用バッファのゼロクリア
   std::fill_n(d_out, n, FS_const::ZERO<Float>);

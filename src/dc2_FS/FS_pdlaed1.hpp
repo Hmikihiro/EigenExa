@@ -15,9 +15,10 @@
 
 namespace {
 template <class Integer, class Float>
-Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
-                   const bt_node<Integer, Float> &subtree, Float rho,
-                   Float work[], Integer iwork[], FS_prof &prof) {
+Integer FS_pdlaed1(const Integer n, const Integer n1, Float d[], Float q[],
+                   const Integer ldq, const bt_node<Integer, Float> &subtree,
+                   const Float rho, Float work[], Integer iwork[],
+                   FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_pdlaed1 start." << std::endl;
@@ -104,7 +105,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     //
     // Solve Secular Equation.
     //
-    Integer lctot = subtree.y_nnod_;
+    const Integer lctot = subtree.y_nnod_;
     Integer info = 0;
     if (result.k != 0) {
       info = FS_pdlaed3<Integer, Float>(

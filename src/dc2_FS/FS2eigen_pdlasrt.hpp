@@ -46,7 +46,8 @@ public:
 
 template <class Integer>
 NrankMaxsize<Integer>
-get_nrank_maxsize(Integer eigen_np, const Integer comm_send_or_recv_info[]) {
+get_nrank_maxsize(const Integer eigen_np,
+                  const Integer comm_send_or_recv_info[]) {
   Integer send_or_recv_nrank = 0;
   Integer send_or_recv_maxsize = 1;
 #pragma omp parallel for reduction(+ : send_or_recv_nrank)                     \
@@ -63,7 +64,7 @@ get_nrank_maxsize(Integer eigen_np, const Integer comm_send_or_recv_info[]) {
 }
 
 template <class Integer, class Float>
-void init_send(Integer np, const Integer comm_info[],
+void init_send(const Integer np, const Integer comm_info[],
                CommBuf<Integer, Float> comm_buf[]) {
   Integer nrank = 0;
   for (Integer i = 0; i < np; i++) {
@@ -77,7 +78,7 @@ void init_send(Integer np, const Integer comm_info[],
   }
 }
 template <class Integer, class Float>
-void init_recv(Integer np, const Integer comm_info[],
+void init_recv(const Integer np, const Integer comm_info[],
                CommBuf<Integer, Float> comm_buf[]) {
   Integer nrank = 0;
   for (Integer i = 0; i < np; i++) {
@@ -93,7 +94,7 @@ void init_recv(Integer np, const Integer comm_info[],
 
 template <class Integer, class Float>
 void send(CommBuf<Integer, Float> &comm_send_data,
-          GpositionValue<Integer, Float> sendbuf[], MPI_Comm comm) {
+          const GpositionValue<Integer, Float> sendbuf[], const MPI_Comm comm) {
   auto ncount = sizeof(GpositionValue<Integer, Float>) * comm_send_data.Ndata;
   auto srank = comm_send_data.rank;
   comm_send_data.flag = false;
@@ -101,7 +102,7 @@ void send(CommBuf<Integer, Float> &comm_send_data,
 }
 template <class Integer, class Float>
 void irecv(CommBuf<Integer, Float> &comm_recv_data,
-           GpositionValue<Integer, Float> recvbuf[], MPI_Comm comm) {
+           GpositionValue<Integer, Float> recvbuf[], const MPI_Comm comm) {
   auto ncount = sizeof(GpositionValue<Integer, Float>) * comm_recv_data.Ndata;
   auto rrank = comm_recv_data.rank;
   comm_recv_data.flag = false;
@@ -109,9 +110,9 @@ void irecv(CommBuf<Integer, Float> &comm_recv_data,
             &comm_recv_data.req);
 }
 template <class Integer, class Float>
-Integer FS_nbroc_max(char comp, Integer n,
-                     const bt_node<Integer, Float> &subtree, Integer FS_nbroc,
-                     Integer FS_myroc) {
+Integer FS_nbroc_max(const char comp, const Integer n,
+                     const bt_node<Integer, Float> &subtree,
+                     const Integer FS_nbroc, const Integer FS_myroc) {
   for (Integer i = 0; i < FS_nbroc; i++) {
     auto lroc = i;
     auto groc = subtree.FS_index_L2G(comp, lroc, FS_myroc);
@@ -122,18 +123,21 @@ Integer FS_nbroc_max(char comp, Integer n,
   return FS_nbroc;
 }
 template <class Integer, class Float>
-Integer get_FS_nbrow_max(Integer n, const bt_node<Integer, Float> &subtree,
-                         Integer FS_nbrow, Integer FS_myrow) {
+Integer get_FS_nbrow_max(const Integer n,
+                         const bt_node<Integer, Float> &subtree,
+                         const Integer FS_nbrow, const Integer FS_myrow) {
   return FS_nbroc_max('R', n, subtree, FS_nbrow, FS_myrow);
 }
 template <class Integer, class Float>
-Integer get_FS_nbcol_max(Integer n, const bt_node<Integer, Float> &subtree,
-                         Integer FS_nbcol, Integer FS_mycol) {
+Integer get_FS_nbcol_max(const Integer n,
+                         const bt_node<Integer, Float> &subtree,
+                         const Integer FS_nbcol, const Integer FS_mycol) {
   return FS_nbroc_max('C', n, subtree, FS_nbcol, FS_mycol);
 }
 
 template <class Integer>
-Integer eigen_rank_xy2comm(char grid_major, Integer x_inod, Integer y_inod) {
+Integer eigen_rank_xy2comm(const char grid_major, const Integer x_inod,
+                           const Integer y_inod) {
   const auto procs = eigen_libs0_wrapper::eigen_get_procs();
   const auto x_nnod = procs.x_procs;
   const auto y_nnod = procs.y_procs;
@@ -150,8 +154,8 @@ Integer eigen_rank_xy2comm(char grid_major, Integer x_inod, Integer y_inod) {
  */
 template <class Integer, class Float>
 Integer
-select_first_communicater(Integer send_nrank, Integer eigen_np,
-                          Integer eigen_myrank,
+select_first_communicater(const Integer send_nrank, const Integer eigen_np,
+                          const Integer eigen_myrank,
                           const CommBuf<Integer, Float> comm_send_data[]) {
   Integer i0 = 0;
   if (0 < send_nrank) {
@@ -176,9 +180,9 @@ select_first_communicater(Integer send_nrank, Integer eigen_np,
 } // namespace
 namespace {
 template <class Integer, class Float>
-Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
-                         const bt_node<Integer, Float> &subtree, Integer ibuf[],
-                         Float rbuf[],
+Integer FS2eigen_pdlasrt(const Integer n, Float d[], const Integer ldq,
+                         Float q[], const bt_node<Integer, Float> &subtree,
+                         Integer ibuf[], Float rbuf[],
                          FS2eigen::GpositionValue<Integer, Float> tbuf[],
                          Integer indx[], FS_prof &prof) {
   double prof_time[40];

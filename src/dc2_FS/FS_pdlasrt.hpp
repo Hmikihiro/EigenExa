@@ -17,9 +17,9 @@
 
 namespace {
 template <class Integer, class Float>
-void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
+void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
                 const bt_node<Integer, Float> &subtree, Float q2[],
-                Integer ldq2, Float sendq[], Float recvq[], Float buf[],
+                const Integer ldq2, Float sendq[], Float recvq[], Float buf[],
                 Integer indrow[], Integer indcol[], Integer indx[],
                 Integer indrcv[], FS_prof &prof) {
 #ifdef _DEBUGLOG

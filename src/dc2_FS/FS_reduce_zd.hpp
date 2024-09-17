@@ -11,7 +11,7 @@
 namespace {
 using FS_libs::FS_COMM_WORLD;
 template <class Integer, class Float>
-void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
+void FS_reduce_zd(const Integer n, const bt_node<Integer, Float> &subtree,
                   Float work[], Float z[], Float d[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
