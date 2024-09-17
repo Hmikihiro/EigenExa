@@ -17,6 +17,73 @@
 #endif
 
 namespace {
+/**
+ * subroutine FS_PDLAED0
+ * @brief  @n
+ * Purpose @n
+ * ======= @n
+ * FS_PDLAED0 computes all eigenvalues and corresponding eigenvectors of a @n
+ * symmetric tridiagonal matrix using the divide and conquer method.
+ *
+ *  Arguments
+ *  =========
+ *
+ * @param[in]     N      (global input) INTEGER @n
+ *                       The order of the tridiagonal matrix T.  N >= 0.
+ *
+ * @param[in,out] D      (global input/output) DOUBLE PRECISION array,
+ dimension (N) @n
+ *                       On entry, the diagonal elements of the tridiagonal
+ matrix.  @n
+ *                       On exit, if INFO = 0, the eigenvalues in descending
+ order.
+ *
+ * @param[in,out] E      (global input/output) DOUBLE PRECISION array,
+ dimension (N-1) @n
+ *                       On entry, the subdiagonal elements of the tridiagonal
+ matrix. @n
+ *                       On exit, E has been destroyed.
+ *
+ * @param[in,out] Q      (local output) DOUBLE PRECISION array, @n
+ *                       global dimension (N, N), @n
+ *                       local dimension (LDQ, NQ) @n
+ *                       Q contains the orthonormal eigenvectors of the
+ symmetric @n
+ *                       tridiagonal matrix. @n
+ *                       On output, Q is distributed across the P processes in
+ non @n
+ *                       block cyclic format.
+ *
+ * @param[in]     LDQ    (local input) INTEGER @n
+ *                       The leading dimension of the array Q.  LDQ >=
+ max(1,NP).
+ *
+ * @param         WORK   (local workspace/output) DOUBLE PRECISION array,
+ dimension (LWORK)
+ *
+ * @param[in]     LWORK  (local input/output) INTEGER, the dimension of the
+ array WORK. @n
+ *                       LWORK = 1 + 6*N + 3*NP*NQ + NQ*NQ @n
+ *                       LWORK can be obtained from subroutine FS_WorkSize.
+ *
+ * @param         IWORK  (local workspace/output) INTEGER array, dimension
+ (LIWORK)
+ *
+ * @param[in]     LIWORK (input) INTEGER                   @n
+ *                       The dimension of the array IWORK. @n
+ *                       LIWORK = 1 + 8*N + 8*NPCOL        @n
+ *                       LIWORK can be obtained from subroutine FS_WorkSize.
+ *
+ * @param[out]    prof   (global output) type(FS_prof) @n
+ *                       profiling information of each subroutines.
+ *
+ * @return    INFO   (global output) INTEGER @n
+ *                       = 0: successful exit   @n
+ *                       /=0: error exit
+ *
+ * @note This routine is modified from ScaLAPACK PDLAED0.f
+ *
+ */
 
 template <typename Integer, typename Float>
 Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[],
