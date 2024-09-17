@@ -18,8 +18,8 @@ namespace {
 using FS_libs::FS_COMM_WORLD;
 
 template <class Integer>
-Integer get_pdc(Integer lctot, const Integer ctot[], Integer npcol,
-                Integer mycol) {
+Integer get_pdc(const Integer lctot, const Integer ctot[], const Integer npcol,
+                const Integer mycol) {
   Integer pdc = 0;
   for (Integer col = 0; col != mycol; col = (col + 1) % npcol) {
     pdc +=
@@ -29,8 +29,8 @@ Integer get_pdc(Integer lctot, const Integer ctot[], Integer npcol,
 }
 
 template <class Integer>
-Integer get_pdr(Integer pdc, Integer klr, Integer mykl, Integer nprow,
-                Integer myrow) {
+Integer get_pdr(const Integer pdc, const Integer klr, const Integer mykl,
+                const Integer nprow, const Integer myrow) {
   auto pdr = pdc;
   auto kl = klr + (mykl % nprow);
   for (Integer row = 0; row != myrow; row = (row + 1) % nprow) {
@@ -44,8 +44,8 @@ Integer get_pdr(Integer pdc, Integer klr, Integer mykl, Integer nprow,
  * \brief pjcolのrowインデックスリストを作成
  */
 template <class Integer>
-Integer get_klr(Integer k, const Integer indx[], const Integer indcol[],
-                Integer pjcol, Integer indxr[]) {
+Integer get_klr(const Integer k, const Integer indx[], const Integer indcol[],
+                const Integer pjcol, Integer indxr[]) {
   Integer klr = 0;
   for (Integer i = 0; i < k; i++) {
     const auto gi = indx[i];
@@ -62,8 +62,8 @@ Integer get_klr(Integer k, const Integer indx[], const Integer indcol[],
  * \brief 自身のCOLインデクスリストを作成
  */
 template <class Integer>
-void set_indxc(Integer k, const Integer indx[], const Integer indcol[],
-               Integer mycol, Integer indxc[]) {
+void set_indxc(const Integer k, const Integer indx[], const Integer indcol[],
+               const Integer mycol, Integer indxc[]) {
   Integer klc = 0;
   for (Integer i = 0; i < k; i++) {
     const auto gi = indx[i];
@@ -81,7 +81,8 @@ public:
   Integer np2; // 行列の下側
 };
 template <class Integer>
-ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
+ComputeArea<Integer> get_np12(const Integer n, const Integer n1,
+                              const Integer np, const Integer myrow,
                               const Integer indrow[]) {
   Integer minrow = n - 1;
   Integer maxrow = 0;
@@ -114,14 +115,15 @@ ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
 }
 
 template <class Integer, class Float>
-Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
-                   Float dlamda[], const Float w[], Integer ldq, Float q[],
-                   const bt_node<Integer, Float> &subtree, Integer ldq2,
-                   Float q2[], Integer ldu, Float u[], Integer indx[],
-                   Integer lctot, const Integer ctot[], Float q2buf1[],
-                   Float q2buf2[], Float z[], Float buf[], Integer indrow[],
-                   Integer indcol[], Integer indxc[], Integer indxr[],
-                   FS_prof &prof) {
+Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
+                   Float d[], const Float rho, Float dlamda[], const Float w[],
+                   const Integer ldq, Float q[],
+                   const bt_node<Integer, Float> &subtree, const Integer ldq2,
+                   Float q2[], const Integer ldu, Float u[],
+                   const Integer indx[], const Integer lctot,
+                   const Integer ctot[], Float q2buf1[], Float q2buf2[],
+                   Float z[], Float buf[], Integer indrow[], Integer indcol[],
+                   Integer indxc[], Integer indxr[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_pdlaed3 start" << std::endl;
