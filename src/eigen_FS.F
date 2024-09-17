@@ -1,5 +1,3 @@
-#undef TIMER_PRINT
-#define TIMER_PRINT 1
 #define SINGLE_PRECISION 32
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     

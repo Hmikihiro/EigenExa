@@ -1,7 +1,5 @@
 #include <mpi.h>
 
-#define _DEBUGLOG
-
 #include "dc2_FS.hpp"
 
 extern "C" {
