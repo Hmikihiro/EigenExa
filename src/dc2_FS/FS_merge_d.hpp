@@ -5,6 +5,7 @@
  **/
 #include <algorithm>
 
+#include "../cblas_lapacke_wrapper.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 
