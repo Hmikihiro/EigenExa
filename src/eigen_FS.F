@@ -60,10 +60,6 @@
 
       real(8), allocatable   :: d(:), e(:), e2(:)
 
-      real(4), allocatable :: z_fp32(:, :)
-      real(4), allocatable :: w_fp32(:), d_fp32(:),e2_fp32(:)
-      real(4) :: ret_2_fp32
-
       integer                :: m_f, m_b
       character              :: mode_
       integer                :: precision_
@@ -78,7 +74,6 @@
       real(8)                :: ret, ret_1, ret_2, ret_3
       integer :: nnod,x_nnod_dummy, y_nnod_dummy
       integer I
-      integer J
 
       call eigen_get_procs(nnod,x_nnod_dummy, y_nnod_dummy)
       if( (n<=nnod) .or. (nnod < 4) )then
@@ -212,31 +207,8 @@
         e2(1:n) = e(1:n)
         
         if (precision_ == SINGLE_PRECISION) then
-         allocate(z_fp32(1:ldz, 1:(ny)), stat=ierr)
-         allocate(w_fp32(1:n), e2_fp32(1:n), stat=ierr)
-         do i=1, ny
-            do j=1, ldz
-               z_fp32(j,i) = z(j, i)
-            enddo
-         enddo
-         do i=1, N
-            w_fp32(i) = w(i)
-            e2_fp32(i) = e2(i)
-         enddo
-
-         call dc2_FS_fp32(n, ABS(nvec), w_fp32, e2_fp32(2:),
-     &     z_fp32, ldz, INFO, ret_2_fp32)
-         do i=1, ny
-           do j= 1, ldz
-             z(j, i) = z_fp32(j, i)
-           enddo
-         enddo
-         do i=1, N
-            w(i) = w_fp32(i) 
-            e2(i) = e2_fp32(i)
-         enddo
-         ret_2 = ret_2_fp32
-         deallocate(w_fp32, e2_fp32, z_fp32)
+          call dc2_FS_fp32(n, ABS(nvec), w , e2(2:), 
+     &                     z, ldz, ny, INFO, ret_2)
         else
           call dc2_FS(n, ABS(nvec), w , e2(2:), z, ldz, INFO, ret_2)
         end if
@@ -248,36 +220,10 @@
       if (mode_ == 'A') then
          d (1:n) = e(1:n)
          if (precision_ == SINGLE_PRECISION) then
-            allocate(z_fp32(1:ldz, 1:(ny)), stat=ierr)
-            allocate(w_fp32(1:n), d_fp32(1:n),  stat=ierr)
-            do i=1, ny
-               do j=1, ldz
-                  z_fp32(j,i) = z(j, i)
-               enddo
-            enddo
-            do i=1, N
-               w_fp32(i) = w(i)
-               d_fp32(i) = d(i)
-            enddo
-    
-            call dc2_FS_fp32(n, ABS(nvec), w_fp32, d_fp32(2:),  
-     &         z_fp32, ldz, INFO, ret_2_fp32)
-            do i=1, ny
-               do j= 1, ldz
-                  z(j, i) = z_fp32(j, i)
-               enddo
-            enddo
-            do i=1, N
-               w(i) = w_fp32(i) 
-               d(i) = d_fp32(i) 
-            enddo
-            ret_2 = ret_2_fp32
-            deallocate(w_fp32, d_fp32, z_fp32)
-
+            call dc2_FS_fp32(n, ABS(nvec), w, d(2:),
+     &                       z, ldz, ny, INFO, ret_2)
          else
-
             call dc2_FS(n, ABS(nvec), w, d(2:), z, ldz, INFO, ret_2)
-         
          end if
         ERROR_INFO = INFO
       end if

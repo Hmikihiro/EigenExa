@@ -32,16 +32,16 @@
             real(c_double), intent(out) :: ret
          end subroutine
 
-         subroutine dc2_FS_fp32(n, nvec, d, e, z, ldz, info, ret) 
+         subroutine dc2_FS_fp32(n, nvec, d, e, z, ldz, ny, info, ret) 
      &      bind(c, name="dc2_FS_fp32")
        
             use, intrinsic :: iso_c_binding
-            integer(c_int), intent(in),value :: n, nvec, ldz
-            real(c_float), intent(inout) :: d(1:n)
-            real(c_float), intent(inout) :: e(1:n-1)
-            real(c_float), intent(out)   :: z(1:ldz,*)
+            integer(c_int), intent(in),value :: n, nvec, ldz, ny
+            real(c_double), intent(inout) :: d(1:n)
+            real(c_double), intent(inout) :: e(1:n-1)
+            real(c_double), intent(out)   :: z(1:ldz,1:ny)
             integer(c_long), intent(out) :: info
-            real(c_float), intent(out) :: ret
+            real(c_double), intent(out) :: ret
          end subroutine
       end interface
 
