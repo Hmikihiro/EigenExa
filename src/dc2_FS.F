@@ -18,7 +18,7 @@
       private
 
       public :: dc2_FS
-      public :: dc2_FS_f32
+      public :: dc2_FS_fp32
       interface 
          subroutine dc2_FS(n, nvec, d, e, z, ldz, info, ret) 
      &      bind(c, name="dc2_FS_f64")
@@ -32,8 +32,8 @@
             real(c_double), intent(out) :: ret
          end subroutine
 
-         subroutine dc2_FS_f32(n, nvec, d, e, z, ldz, info, ret) 
-     &      bind(c, name="dc2_FS_f32")
+         subroutine dc2_FS_fp32(n, nvec, d, e, z, ldz, info, ret) 
+     &      bind(c, name="dc2_FS_fp32")
        
             use, intrinsic :: iso_c_binding
             integer(c_int), intent(in),value :: n, nvec, ldz

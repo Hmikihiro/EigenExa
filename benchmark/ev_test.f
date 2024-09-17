@@ -49,7 +49,7 @@
 
       m_epsilon = get_constant_eps()
       if (msolver == 2) then
-         m_epsilon = get_constant_eps_f32()
+         m_epsilon = get_constant_eps_fp32()
       endif
 
       call eigen_get_id   ( iam, myrow, mycol )            
@@ -267,21 +267,6 @@
 
       return
       end function Fnorm2_local
-
-      real(4) function get_constant_eps_f32()
-     &     result(r)
-!DIR$ ATTRIBUTES FORCEINLINE :: get_constant_eps_f32
- 
-      integer(4), target :: const_eps_i4
-      real(4), pointer   :: const_eps_r4
-      data const_eps_i4 / z'34000000' /
- 
-      call c_f_pointer( c_loc(const_eps_i4), const_eps_r4 )
-      r = const_eps_r4
- 
-      return
- 
-      end function get_constant_eps_f32
 
       end subroutine ev_test
 

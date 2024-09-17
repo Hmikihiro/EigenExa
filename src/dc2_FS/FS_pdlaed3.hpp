@@ -215,6 +215,8 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
             std::cout << "error" << std::endl;
           }
           // ..Compute part of z
+
+// このpragmaはFujitsuコンパイラのtradにおいて有効になる
 #pragma loop nofp_relaxed nofp_contract noeval
           for (Integer j = 0; j < k; j++) {
             auto temp = dlamda[j] - dlamda[kk];
