@@ -148,7 +148,7 @@ Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[],
 
     const auto eigen_comm = eigen_libs0_wrapper::eigen_get_comm().eigen_comm;
 
-    constexpr auto datatype = MPI_Datatype_wrapper::MPI_TYPE<typeof(&nnod.x)>;
+    constexpr auto datatype = MPI_Datatype_wrapper::MPI_TYPE<typeof(nnod.x)>;
     MPI_Bcast(&nnod.x, 1, datatype, 0, eigen_comm);
     MPI_Bcast(&nnod.y, 1, datatype, 0, eigen_comm);
 
