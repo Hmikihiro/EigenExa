@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
 
 #include <mkl.h>
@@ -48,14 +50,17 @@ const CBLAS_LAYOUT FS_layout = CBLAS_LAYOUT::CblasColMajor;
 template <class Float>
 inline eigen_mathlib_int
 stedc(char compz, eigen_mathlib_int n, Float *d, Float *e, Float *z,
-      eigen_mathlib_int ldz, Float *work, eigen_mathlib_int lwork,
+      eigen_mathlib_int ldz, Float *work, int64_t lwork,
       eigen_mathlib_int *iwork, eigen_mathlib_int liwork);
 
 template <>
 inline eigen_mathlib_int
 stedc<double>(char compz, eigen_mathlib_int n, double *d, double *e, double *z,
-              eigen_mathlib_int ldz, double *work, eigen_mathlib_int lwork,
+              eigen_mathlib_int ldz, double *work, int64_t lwork,
               eigen_mathlib_int *iwork, eigen_mathlib_int liwork) {
+  if (lwork > std::numeric_limits<eigen_mathlib_int>::max()) {
+    lwork = std::numeric_limits<eigen_mathlib_int>::max();
+  }
   return LAPACKE_dstedc_work(FS_LAPACKE_LAYOUT, compz, n, d, e, z, ldz, work,
                              lwork, iwork, liwork);
 }
@@ -63,8 +68,11 @@ stedc<double>(char compz, eigen_mathlib_int n, double *d, double *e, double *z,
 template <>
 inline eigen_mathlib_int
 stedc<float>(char compz, eigen_mathlib_int n, float *d, float *e, float *z,
-             eigen_mathlib_int ldz, float *work, eigen_mathlib_int lwork,
+             eigen_mathlib_int ldz, float *work, int64_t lwork,
              eigen_mathlib_int *iwork, eigen_mathlib_int liwork) {
+  if (lwork > std::numeric_limits<eigen_mathlib_int>::max()) {
+    lwork = std::numeric_limits<eigen_mathlib_int>::max();
+  }
   return LAPACKE_sstedc_work(FS_LAPACKE_LAYOUT, compz, n, d, e, z, ldz, work,
                              lwork, iwork, liwork);
 }
