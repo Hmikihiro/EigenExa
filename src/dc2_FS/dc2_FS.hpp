@@ -30,9 +30,15 @@ static double buffer_for_gposition_value<long, float> =
 template <> static double buffer_for_gposition_value<int, float> = 2;
 template <> static double buffer_for_gposition_value<int, double> = 1;
 template <> static double buffer_for_gposition_value<long, double> = 1.5;
+
+template <class Integer, class Float> struct dc2_FS_result {
+  Float ret;
+  Integer info;
+};
+
 template <class Integer, class Float>
-Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
-               Integer ldz, Float *ret) {
+dc2_FS_result<Integer, Float> dc2_FS(Integer n, Integer nvec, Float d[],
+                                     Float e[], Float z[], Integer ldz) {
   eigen_dc_interface::flops = 0;
   eigen_dc_interface::dgemm_time = 0;
   eigen_dc_interface::p_time0 = 0;
@@ -117,9 +123,10 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
   }
 #endif
 
-  MPI_Allreduce(&eigen_dc_interface::flops, ret, 1,
+  Float ret_ = 0;
+  MPI_Allreduce(&eigen_dc_interface::flops, &ret_, 1,
                 MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_SUM, eigen_comm);
 
-  return info_fs_edc;
+  return {ret_, info_fs_edc};
 }
 } // namespace
