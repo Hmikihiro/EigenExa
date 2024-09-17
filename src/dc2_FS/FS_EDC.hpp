@@ -70,7 +70,7 @@ using FS_const::ZERO;
  */
 
 template <class Integer, class Float>
-Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
+Integer FS_EDC(const Integer n, Float *d, Float *e, Float *q, const Integer ldq,
                Float *work, Integer lwork, Integer *iwork, const Integer liwork,
                FS_prof *prof) {
 
@@ -104,14 +104,14 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
     // 何もしない
   } else if (n == 1) {
     if (x_inod == 1 && y_inod == 1) {
-      Q[0] = ONE<Float>;
+      q[0] = ONE<Float>;
     }
   } else if (x_nnod * y_nnod == 1) {
     // If P=NPROW*NPCOL=1, solve the problem with DSTEDC.
 #if TIMER_PRINT
     prof_tmp.start(11);
 #endif
-    info = lapacke::stedc<Float>('I', n, D, E, Q, ldq, work, lwork,
+    info = lapacke::stedc<Float>('I', n, d, e, q, ldq, work, lwork,
                                  reinterpret_cast<eigen_mathlib_int *>(iwork),
                                  liwork);
 
@@ -120,22 +120,22 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 #endif
   } else {
     // Scale matrix to allowable range, if necessary.
-    auto orgnrm = lapacke::lanst<Float>('M', n, D, E);
+    auto orgnrm = lapacke::lanst<Float>('M', n, d, e);
     if (std::isnan(orgnrm)) {
       orgnrm = ZERO<Float>;
     }
     if (orgnrm != ZERO<Float>) {
-      info = lapacke::lascl<Float>('G', 0, 0, orgnrm, ONE<Float>, n, 1, D, n);
+      info = lapacke::lascl<Float>('G', 0, 0, orgnrm, ONE<Float>, n, 1, d, n);
       if (n - 1 >= 1) {
-        info = lapacke::lascl<Float>('G', 0, 0, orgnrm, ONE<Float>, n - 1, 1, E,
+        info = lapacke::lascl<Float>('G', 0, 0, orgnrm, ONE<Float>, n - 1, 1, e,
                                      n - 1);
       }
     }
-    info = FS_pdlaed0<Integer, Float>(n, D, E, Q, ldq, work, lwork, iwork,
+    info = FS_pdlaed0<Integer, Float>(n, d, e, q, ldq, work, lwork, iwork,
                                       liwork, prof_tmp);
     // Scale back.
     if (info == 0 && orgnrm != ZERO<Float>) {
-      info = lapacke::lascl<Float>('G', 0, 0, ONE<Float>, orgnrm, n, 1, D, n);
+      info = lapacke::lascl<Float>('G', 0, 0, ONE<Float>, orgnrm, n, 1, d, n);
     }
   }
 
