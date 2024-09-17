@@ -2076,9 +2076,9 @@
      &     result(ret)
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_translate_g2l_
 
-      integer,value, intent(in)    ::  ictr
-      integer,value, intent(in)    ::  nnod
-      integer,value, intent(in)    ::  inod
+      integer, intent(in)    ::  ictr
+      integer, intent(in)    ::  nnod
+      integer, intent(in)    ::  inod
 
       ret = (ictr-1)/nnod+1
 
@@ -2160,9 +2160,9 @@
      &     result(ret)
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_owner_node_
 
-      integer, value, intent(in)    ::  ictr
-      integer, value, intent(in)    ::  nnod
-      integer, value, intent(in)    ::  inod
+      integer, intent(in)    ::  ictr
+      integer, intent(in)    ::  nnod
+      integer, intent(in)    ::  inod
 
       ret = mod(ictr-1, nnod)+1
 
