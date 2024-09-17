@@ -15,6 +15,14 @@
 namespace {
 namespace FS2eigen {
 
+/**
+ * @brief GpositionValueの大きさ @n <int, float> 4 + 4 + 4 @n <int, double> 4 +
+ * 4 + 8 @n <long, float> 8 + 8 + 4 + padding(4) = 24 @n <long, double> 8 + 8 +
+ * 8
+ *
+ * @tparam Integer
+ * @tparam Float
+ */
 template <class Integer, class Float> class GpositionValue {
 public:
   Integer GRow;

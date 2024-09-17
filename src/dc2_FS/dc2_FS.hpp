@@ -21,12 +21,17 @@ using eigen_libs0_wrapper::eigen_get_comm;
 using eigen_libs0_wrapper::eigen_get_id;
 using eigen_libs0_wrapper::eigen_get_procs;
 
+// GpositionValueの増加分int64と floatの時に確保する値
+// 計算途中のtbufにおいて、使用するこの時、従来int,int,doubleだったものを使っているため、float対応でメモリ半分を想定していない。
+/**
+ * @brief Float配列をFS2eigen_pdlaedのtbufで使用するために定数倍大きく確保する。
+ *
+ * @tparam Integer
+ * @tparam Float
+ */
 template <class Integer, class Float>
-static double buffer_for_gposition_value =
-    3; // GpositionValueの増加分int64と floatの時に確保する値
-template <>
-static double buffer_for_gposition_value<long, float> =
-    3; // 計算途中のtbufにおいて、使用するこの時、従来int,int,doubleだったものを使っているため、float対応でメモリ半分を想定していない。
+static double buffer_for_gposition_value = 3;
+template <> static double buffer_for_gposition_value<long, float> = 3;
 template <> static double buffer_for_gposition_value<int, float> = 2;
 template <> static double buffer_for_gposition_value<int, double> = 1;
 template <> static double buffer_for_gposition_value<long, double> = 1.5;
