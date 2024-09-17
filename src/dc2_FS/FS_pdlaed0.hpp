@@ -20,8 +20,8 @@ namespace {
 
 template <typename Integer, typename Float>
 Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
-                   Float work[], long lwork, eigen_mathlib_int iwork[],
-                   long liwork, FS_prof &prof) {
+                   Float work[], long lwork, Integer iwork[], long liwork,
+                   FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_PDLAED0 start." << std::endl;
@@ -71,9 +71,10 @@ Integer FS_pdlaed0(Integer n, Float d[], Float e[], Float q[], Integer ldq,
         const auto pq = root_node.FS_info_G2L(id, id);
         Integer info = 0;
         if (id < n - 1) {
-          info = lapacke::stedc<Float>('I', mat_size, &d[id], &e[id],
-                                       &q[pq.row + pq.col * ldq], ldq, work,
-                                       lwork, iwork, liwork);
+          info = lapacke::stedc<Float>(
+              'I', mat_size, &d[id], &e[id], &q[pq.row + pq.col * ldq], ldq,
+              work, lwork, reinterpret_cast<eigen_mathlib_int *>(iwork),
+              liwork);
         } else {
           q[pq.row + pq.col * ldq] = 1.0;
           info = 0;

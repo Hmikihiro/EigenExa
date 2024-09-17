@@ -71,8 +71,8 @@ using FS_const::ZERO;
 
 template <class Integer, class Float>
 Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
-               Float *work, Integer lwork, eigen_mathlib_int *iwork,
-               const Integer liwork, FS_prof *prof) {
+               Float *work, Integer lwork, Integer *iwork, const Integer liwork,
+               FS_prof *prof) {
 
   FS_prof prof_tmp = {};
 
@@ -111,8 +111,9 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 #if TIMER_PRINT
     prof_tmp.start(11);
 #endif
-    info =
-        lapacke::stedc<Float>('I', n, D, E, Q, ldq, work, lwork, iwork, liwork);
+    info = lapacke::stedc<Float>('I', n, D, E, Q, ldq, work, lwork,
+                                 reinterpret_cast<eigen_mathlib_int *>(iwork),
+                                 liwork);
 
 #if TIMER_PRINT
     prof_tmp.end(11);

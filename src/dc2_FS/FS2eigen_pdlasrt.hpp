@@ -180,7 +180,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
                          const bt_node<Integer, Float> &subtree, Integer ibuf[],
                          Float rbuf[],
                          FS2eigen::GpositionValue<Integer, Float> tbuf[],
-                         eigen_mathlib_int indx[], FS_prof &prof) {
+                         Integer indx[], FS_prof &prof) {
   double prof_time[40];
   for (Integer i = 0; i < 40; i++) {
     prof_time[i] = 0;
@@ -195,10 +195,10 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
 #endif
 
   const auto eigen_procs = eigen_libs0_wrapper::eigen_get_procs();
-  const auto eigen_np = eigen_procs.procs;
-  const auto eigen_nprow = eigen_procs.x_procs;
-  const auto eigen_npcol = eigen_procs.y_procs;
-  const auto eigen_myrank = eigen_libs0_wrapper::eigen_get_id().id;
+  const Integer eigen_np = eigen_procs.procs;
+  const Integer eigen_nprow = eigen_procs.x_procs;
+  const Integer eigen_npcol = eigen_procs.y_procs;
+  const Integer eigen_myrank = eigen_libs0_wrapper::eigen_get_id().id;
   const char eigen_grid_major = eigen_libs0_wrapper::eigen_get_grid_major();
   const auto eigen_comm = eigen_libs0_wrapper::eigen_get_comm().eigen_comm;
 

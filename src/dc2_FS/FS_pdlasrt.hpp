@@ -20,9 +20,8 @@ template <class Integer, class Float>
 void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
                 const bt_node<Integer, Float> &subtree, Float q2[],
                 Integer ldq2, Float sendq[], Float recvq[], Float buf[],
-                eigen_mathlib_int indrow[], eigen_mathlib_int indcol[],
-                eigen_mathlib_int indx[], eigen_mathlib_int indrcv[],
-                FS_prof &prof) {
+                Integer indrow[], Integer indcol[], Integer indx[],
+                Integer indrcv[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_pdlasrt start." << std::endl;

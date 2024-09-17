@@ -18,7 +18,7 @@ namespace {
 using FS_libs::FS_COMM_WORLD;
 
 template <class Integer>
-Integer get_pdc(Integer lctot, const eigen_mathlib_int ctot[], Integer npcol,
+Integer get_pdc(Integer lctot, const Integer ctot[], Integer npcol,
                 Integer mycol) {
   Integer pdc = 0;
   for (Integer col = 0; col != mycol; col = (col + 1) % npcol) {
@@ -44,9 +44,8 @@ Integer get_pdr(Integer pdc, Integer klr, Integer mykl, Integer nprow,
  * \brief pjcolのrowインデックスリストを作成
  */
 template <class Integer>
-Integer get_klr(Integer k, const eigen_mathlib_int indx[],
-                const eigen_mathlib_int indcol[], Integer pjcol,
-                eigen_mathlib_int indxr[]) {
+Integer get_klr(Integer k, const Integer indx[], const Integer indcol[],
+                Integer pjcol, Integer indxr[]) {
   Integer klr = 0;
   for (Integer i = 0; i < k; i++) {
     const auto gi = indx[i];
@@ -63,9 +62,8 @@ Integer get_klr(Integer k, const eigen_mathlib_int indx[],
  * \brief 自身のCOLインデクスリストを作成
  */
 template <class Integer>
-void set_indxc(Integer k, const eigen_mathlib_int indx[],
-               const eigen_mathlib_int indcol[], Integer mycol,
-               eigen_mathlib_int indxc[]) {
+void set_indxc(Integer k, const Integer indx[], const Integer indcol[],
+               Integer mycol, Integer indxc[]) {
   Integer klc = 0;
   for (Integer i = 0; i < k; i++) {
     const auto gi = indx[i];
@@ -84,7 +82,7 @@ public:
 };
 template <class Integer>
 ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
-                              const eigen_mathlib_int indrow[]) {
+                              const Integer indrow[]) {
   Integer minrow = n - 1;
   Integer maxrow = 0;
   Integer npa = 0;
@@ -119,11 +117,10 @@ template <class Integer, class Float>
 Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
                    Float dlamda[], const Float w[], Integer ldq, Float q[],
                    const bt_node<Integer, Float> &subtree, Integer ldq2,
-                   Float q2[], Integer ldu, Float u[], eigen_mathlib_int indx[],
-                   Integer lctot, const eigen_mathlib_int ctot[],
-                   Float q2buf1[], Float q2buf2[], Float z[], Float buf[],
-                   eigen_mathlib_int indrow[], eigen_mathlib_int indcol[],
-                   eigen_mathlib_int indxc[], eigen_mathlib_int indxr[],
+                   Float q2[], Integer ldu, Float u[], Integer indx[],
+                   Integer lctot, const Integer ctot[], Float q2buf1[],
+                   Float q2buf2[], Float z[], Float buf[], Integer indrow[],
+                   Integer indcol[], Integer indxc[], Integer indxr[],
                    FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {

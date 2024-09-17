@@ -22,16 +22,14 @@ using eigen_libs0_wrapper::eigen_get_id;
 using eigen_libs0_wrapper::eigen_get_procs;
 
 template <class Integer, class Float>
-static long long buffer_for_gposition_value =
+static double buffer_for_gposition_value =
     3; // GpositionValueの増加分int64と floatの時に確保する値
 template <>
-static long long buffer_for_gposition_value<long, float> =
+static double buffer_for_gposition_value<long, float> =
     3; // 計算途中のtbufにおいて、使用するこの時、従来int,int,doubleだったものを使っているため、float対応でメモリ半分を想定していない。
-template <> static long long buffer_for_gposition_value<int, float> = 2;
-template <> static long long buffer_for_gposition_value<int, double> = 1;
-template <>
-static long long buffer_for_gposition_value<long, double> =
-    2; // 1.5倍で十分だが、切り上げて2
+template <> static double buffer_for_gposition_value<int, float> = 2;
+template <> static double buffer_for_gposition_value<int, double> = 1;
+template <> static double buffer_for_gposition_value<long, double> = 1.5;
 template <class Integer, class Float>
 Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
                Integer ldz, Float *ret) {
@@ -51,7 +49,8 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
 #endif
 
   const auto worksize = FS_libs::FS_WorkSize(n);
-  long long lwork_ = worksize.lwork * 3;
+  long long lwork_ =
+      std::ceil(worksize.lwork * buffer_for_gposition_value<Integer, Float>);
   long long liwork_ = worksize.liwork;
 
   const int FS_COMM_MEMBER = FS_libs::is_FS_comm_member();
@@ -67,7 +66,7 @@ Integer dc2_FS(Integer n, Integer nvec, Float d[], Float e[], Float z[],
   Integer info_fs_edc = 0;
   try {
     std::unique_ptr<Float[]> work(new Float[lwork]);
-    std::unique_ptr<eigen_mathlib_int[]> iwork(new eigen_mathlib_int[liwork]);
+    std::unique_ptr<Integer[]> iwork(new Integer[liwork]);
 
 #if defined(__INTEL_COMPILER) && USE_MKL
     const auto mkl_mode = mkl_get_Dynamic();
