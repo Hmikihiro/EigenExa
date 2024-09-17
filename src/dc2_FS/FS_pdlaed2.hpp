@@ -17,8 +17,8 @@
 
 namespace {
 template <class Integer, class Float>
-Integer get_NPA(Integer n, Integer nb, const bt_node<Integer, Float> &subtree,
-                Integer myrow) {
+Integer get_NPA(const Integer n, const Integer nb,
+                const bt_node<Integer, Float> &subtree, const Integer myrow) {
   Integer npa = 0;
 #pragma omp parallel for reduction(+ : npa)
   for (Integer i = 0; i < n; i += nb) {
@@ -35,8 +35,8 @@ Integer get_NPA(Integer n, Integer nb, const bt_node<Integer, Float> &subtree,
 }
 
 template <class Integer>
-void init_ctot(Integer n, const Integer coltyp[], const Integer indcol[],
-               Integer lctot, Integer ctot[], Integer npcol) {
+void init_ctot(const Integer n, const Integer coltyp[], const Integer indcol[],
+               const Integer lctot, Integer ctot[], const Integer npcol) {
 #pragma omp parallel for
   for (Integer j = 0; j < 4; j++) {
     std::fill_n(&ctot[j * lctot], npcol, 0);
@@ -53,8 +53,8 @@ void init_ctot(Integer n, const Integer coltyp[], const Integer indcol[],
  * \brief PSM(*) = Position in SubMatrix (of types 0 through 3)
  */
 template <class Integer>
-void set_psm(Integer lctot, Integer psm[], const Integer ctot[],
-             Integer npcol) {
+void set_psm(const Integer lctot, Integer psm[], const Integer ctot[],
+             const Integer npcol) {
 #pragma omp parallel for
   for (Integer col = 0; col < npcol; col++) {
     psm[0 * lctot + col] = 1;
@@ -65,8 +65,8 @@ void set_psm(Integer lctot, Integer psm[], const Integer ctot[],
 }
 
 template <class Integer>
-void set_ptt(Integer lctot, Integer ptt[4], const Integer ctot[],
-             Integer npcol) {
+void set_ptt(const Integer lctot, Integer ptt[4], const Integer ctot[],
+             const Integer npcol) {
   std::fill_n(ptt, 4, 0);
   ptt[0] = 1;
 #pragma omp parallel for
@@ -84,8 +84,8 @@ void set_ptt(Integer lctot, Integer ptt[4], const Integer ctot[],
 }
 
 template <class Integer, class Float>
-void set_indxp(Integer n, Integer &k2, Integer nj, Integer pj, Float d[],
-               Float c, Float s, Integer indxp[]) {
+void set_indxp(const Integer n, Integer &k2, const Integer nj, const Integer pj,
+               Float d[], const Float c, const Float s, Integer indxp[]) {
   const auto c_2 = static_cast<Float>(pow(c, 2));
   const auto s_2 = static_cast<Float>(pow(s, 2));
   const auto t = d[pj] * c_2 + d[nj] * s_2;
@@ -106,9 +106,10 @@ void set_indxp(Integer n, Integer &k2, Integer nj, Integer pj, Float d[],
 }
 
 template <class Integer, class Float>
-void pdlaed2_comm(Integer mycol, Integer ldq, Float q[], Integer npa,
-                  const bt_node<Integer, Float> &subtree, Float qbuf[],
-                  Integer nj, Integer pj, Float c, Float s, Integer indcol[]) {
+void pdlaed2_comm(const Integer mycol, const Integer ldq, Float q[],
+                  const Integer npa, const bt_node<Integer, Float> &subtree,
+                  Float qbuf[], const Integer nj, const Integer pj,
+                  const Float c, const Float s, Integer indcol[]) {
   const auto njj_info = subtree.FS_info_G1L('C', nj);
   const auto &njj = njj_info.l_index;
   const auto &njcol = njj_info.rocsrc;
@@ -143,13 +144,19 @@ void pdlaed2_comm(Integer mycol, Integer ldq, Float q[], Integer npa,
   }
 }
 
+template <class Integer, class Float> struct FS_pdlead2_result {
+  Float rho;
+  Integer k;
+};
+
 template <class Integer, class Float>
-Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
-                   const bt_node<Integer, Float> &subtree, Float &rho,
-                   Float z[], Float w[], Float dlamda[], Integer ldq2,
-                   Float q2[], Integer indx[], Integer ctot[], Float qbuf[],
-                   Integer coltyp[], Integer indcol[], Integer indxc[],
-                   Integer indxp[], Integer psm[], FS_prof &prof) {
+FS_pdlead2_result<Integer, Float>
+FS_pdlaed2(const Integer n, const Integer n1, Float d[], Float q[],
+           const Integer ldq, const bt_node<Integer, Float> &subtree,
+           const Float rho, Float z[], Float w[], Float dlamda[],
+           const Integer ldq2, Float q2[], Integer indx[], Integer ctot[],
+           Float qbuf[], Integer coltyp[], Integer indcol[], Integer indxc[],
+           Integer indxp[], Integer psm[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_PDLAED2 start." << std::endl;
@@ -159,10 +166,10 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
   prof.start(50);
 #endif
 
-  const auto k = [&]() mutable -> Integer {
+  const auto result = [&]() mutable -> FS_pdlead2_result<Integer, Float> {
     // Quick return if possible
     if (n == 0) {
-      return 0;
+      return {rho, 0};
     }
 
     const auto grid_info = subtree.FS_grid_info();
@@ -184,7 +191,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     const auto T = FS_const::ONE<Float> / std::sqrt(FS_const::TWO<Float>);
     lapacke::scal<Float>(n, T, z, 1);
 
-    rho = std::abs(FS_const::TWO<Float> * rho);
+    const auto result_rho = std::abs(FS_const::TWO<Float> * rho);
 
     // Calculate the allowable deflation tolerance
     const auto imax = lapacke::iamax<Float>(n, z, 1);
@@ -198,8 +205,8 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     // If the rank-1 modifier is small enough, no more needs to be done
     // except to reorganize Q so that its columns correspond with the
     // elements in D.
-    if (rho * abs_zmax <= tol) {
-      return 0;
+    if (result_rho * abs_zmax <= tol) {
+      return {result_rho, 0};
     }
 
     // If there are multiple eigenvalues then the problem deflates.  Here
@@ -233,64 +240,66 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
 
     const auto npa = get_NPA<Integer>(n, nb, subtree, myrow);
     Integer k = 0;
-    Integer k2 = n;
-    Integer pj = 0;
-    bool set_pj = true;
-    for (Integer j = 0; j < n; j++) {
-      const auto nj = indx[j];
-      if (rho * std::abs(z[nj]) <= tol) {
-        // Deflate due to small z component.
-        k2 -= 1;
-        coltyp[nj] = 3;
-        indxp[k2] = nj;
-      } else if (set_pj) {
-        set_pj = false;
-        pj = nj;
-      } else {
-        // Check if eigenvalues are close enough to allow deflation.
-        const auto s_pj = z[pj];
-        const auto c_nj = z[nj];
-        // Find sqrt(a**2+b**2) without overflow or
-        // destructive underflow.
-        const auto tau = lapacke::lapy2<Float>(c_nj, s_pj);
-
-        const auto t = d[nj] - d[pj];
-        const auto c = c_nj / tau;
-        const auto s = -s_pj / tau;
-        if (std::abs(t * c * s) <= tol) {
-          // Deflation is possible.
-          z[nj] = tau;
-          z[pj] = FS_const::ZERO<Float>;
-          if (coltyp[nj] != coltyp[pj]) {
-            coltyp[nj] = 1;
-          }
-          coltyp[pj] = 3;
-#pragma omp parallel
-          {
-#pragma omp master
-            {
-              pdlaed2_comm<Integer>(mycol, ldq, q, npa, subtree, qbuf, nj, pj,
-                                    c, s, indcol);
-            }
-#pragma omp single nowait
-            { set_indxp<Integer>(n, k2, nj, pj, d, c, s, indxp); }
-          }
+    {
+      Integer k2 = n;
+      Integer pj = 0;
+      bool set_pj = true;
+      for (Integer j = 0; j < n; j++) {
+        const auto nj = indx[j];
+        if (result_rho * std::abs(z[nj]) <= tol) {
+          // Deflate due to small z component.
+          k2 -= 1;
+          coltyp[nj] = 3;
+          indxp[k2] = nj;
+        } else if (set_pj) {
+          set_pj = false;
           pj = nj;
         } else {
-          dlamda[k] = d[pj];
-          w[k] = z[pj];
-          indxp[k] = pj;
-          k += 1;
-          pj = nj;
+          // Check if eigenvalues are close enough to allow deflation.
+          const auto s_pj = z[pj];
+          const auto c_nj = z[nj];
+          // Find sqrt(a**2+b**2) without overflow or
+          // destructive underflow.
+          const auto tau = lapacke::lapy2<Float>(c_nj, s_pj);
+
+          const auto t = d[nj] - d[pj];
+          const auto c = c_nj / tau;
+          const auto s = -s_pj / tau;
+          if (std::abs(t * c * s) <= tol) {
+            // Deflation is possible.
+            z[nj] = tau;
+            z[pj] = FS_const::ZERO<Float>;
+            if (coltyp[nj] != coltyp[pj]) {
+              coltyp[nj] = 1;
+            }
+            coltyp[pj] = 3;
+#pragma omp parallel
+            {
+#pragma omp master
+              {
+                pdlaed2_comm<Integer>(mycol, ldq, q, npa, subtree, qbuf, nj, pj,
+                                      c, s, indcol);
+              }
+#pragma omp single nowait
+              { set_indxp<Integer>(n, k2, nj, pj, d, c, s, indxp); }
+            }
+            pj = nj;
+          } else {
+            dlamda[k] = d[pj];
+            w[k] = z[pj];
+            indxp[k] = pj;
+            k += 1;
+            pj = nj;
+          }
         }
       }
-    }
 
-    // Record the last eigenvalue.
-    dlamda[k] = d[pj];
-    w[k] = z[pj];
-    indxp[k] = pj;
-    k += 1;
+      // Record the last eigenvalue.
+      dlamda[k] = d[pj];
+      w[k] = z[pj];
+      indxp[k] = pj;
+      k += 1;
+    }
     // Count up the total number of the various types of columns, then
     // form a permutation which positions the four column types into
     // four uniform groups (although one or more of these groups may be
@@ -334,7 +343,7 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
       const auto i = indx[j];
       d[i] = z[js];
     }
-    return k;
+    return {result_rho, k};
   }();
 
 #if TIMER_PRINT
@@ -347,6 +356,6 @@ Integer FS_pdlaed2(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
   }
 #endif
 
-  return k;
+  return result;
 }
 } // namespace

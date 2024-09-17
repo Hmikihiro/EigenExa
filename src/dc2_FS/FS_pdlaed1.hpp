@@ -96,7 +96,7 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     //
     // Deflate eigenvalues.
     //
-    const auto k = FS_pdlaed2<Integer, Float>(
+    const auto result = FS_pdlaed2<Integer, Float>(
         n, n1, d, q, ldq, subtree, rho, z, w, dlamda, ldq2, q2, &iwork[indx],
         &iwork[ictot], buf, &iwork[coltyp], &iwork[indcol], &iwork[indxc],
         &iwork[indxp], &iwork[ipsm], prof);
@@ -106,10 +106,10 @@ Integer FS_pdlaed1(Integer n, Integer n1, Float d[], Float q[], Integer ldq,
     //
     Integer lctot = subtree.y_nnod_;
     Integer info = 0;
-    if (k != 0) {
+    if (result.k != 0) {
       info = FS_pdlaed3<Integer, Float>(
-          k, n, n1, d, rho, dlamda, w, ldq, q, subtree, ldq2, q2, ldu, u,
-          &iwork[indx], lctot, &iwork[ictot], sendq2, recvq2, z, buf,
+          result.k, n, n1, d, result.rho, dlamda, w, ldq, q, subtree, ldq2, q2,
+          ldu, u, &iwork[indx], lctot, &iwork[ictot], sendq2, recvq2, z, buf,
           &iwork[indrow], &iwork[indcol], &iwork[indxc], &iwork[indxr], prof);
     }
     return info;
