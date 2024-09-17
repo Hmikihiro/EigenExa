@@ -332,11 +332,11 @@ FS_pdlaed2(const Integer n, const Integer n1, Float d[], Float q[],
         const auto jjs = subtree.FS_index_G2L('C', js);
         const auto i = indx[j];
         const auto jjq2 = subtree.FS_index_G2L('C', i);
-        std::copy_n(&q[jjs * ldq], npa, &q2[jjq2 * ldq2]);
+        lapacke::copy(npa, &q[jjs * ldq], 1, &q2[jjq2 * ldq2], 1);
       }
     }
 
-    std::copy_n(d, n, z);
+    lapacke::copy(n, d, 1, z, 1);
 #pragma omp parallel for
     for (Integer j = k; j < n; j++) {
       const auto js = indxp[j];

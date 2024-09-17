@@ -54,7 +54,7 @@ void FS_merge_d(const Integer n, const Float d[],
         const auto row = subtree.FS_info_G1L('R', i).rocsrc;
         if (row == grid_info.myrow) {
           const auto NB1 = std::min(n, i + NB) - i;
-          std::copy_n(&d[i], NB1, &d_out[i]);
+          lapacke::copy(NB1, &d[i], 1, &d_out[i], 1);
         }
       }
     }
@@ -71,7 +71,7 @@ void FS_merge_d(const Integer n, const Float d[],
         const auto col = subtree.FS_info_G1L('C', j).rocsrc;
         if (col == grid_info.mycol) {
           const auto NB1 = std::min(n, j + NB) - j;
-          std::copy_n(&d[j], NB1, &d_out[j]);
+          lapacke::copy(NB1, &d[j], 1, &d_out[j], 1);
         }
       }
     }

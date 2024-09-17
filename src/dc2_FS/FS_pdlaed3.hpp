@@ -411,7 +411,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 #pragma omp parallel for
           for (Integer jq2 = 0; jq2 < n12; jq2++) {
             const auto js = jq2 * np1;
-            std::copy_n(&recvq2[js], np1, &q2[jq2 * ldq2 + 0]);
+            lapacke::copy(np1, &recvq2[js], 1, &q2[jq2 * ldq2 + 0], 1);
           }
         }
         // 下側
@@ -420,7 +420,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
           for (Integer j = 0; j < n23; j++) {
             const auto jq2 = j + ctot[0 * lctot + pjcol];
             const auto js = n12 * np1 + j * np2;
-            std::copy_n(&recvq2[js], np2, &q2[jq2 * ldq2 + np1]);
+            lapacke::copy(np2, &recvq2[js], 1, &q2[jq2 * ldq2 + np1], 1);
           }
         }
 
@@ -456,7 +456,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 #pragma omp parallel for
             for (Integer jq2 = 0; jq2 < n12; jq2++) {
               const auto js = jq2 * np1;
-              std::copy_n(&q2[jq2 * ldq2 + 0], np1, &sendq2[js]);
+              lapacke::copy(np1, &q2[jq2 * ldq2 + 0], 1, &sendq2[js], 1);
             }
           }
           // 下側
@@ -465,7 +465,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
             for (Integer j = 0; j < n23; j++) {
               const auto jq2 = j + ctot[0 * lctot + pjcol];
               const auto js = n12 * np1 + j * np2;
-              std::copy_n(&q2[jq2 * ldq2 + np1], np2, &sendq2[js]);
+              lapacke::copy(np2, &q2[jq2 * ldq2 + np1], 1, &sendq2[js], 1);
             }
           }
         }

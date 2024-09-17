@@ -97,7 +97,8 @@ void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
         const auto jl = subtree.FS_index_G2L('C', gi);
 
         // 送信バッファに格納
-        std::copy_n(&q[jl * ldq], np, &sendq[nsend * np]);
+
+        lapacke::copy(np, &q[jl * ldq], 1, &sendq[nsend * np], 1);
         nsend += 1;
       }
 
@@ -133,7 +134,7 @@ void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
 #pragma omp parallel for
       for (Integer j = 0; j < nrecv; j++) {
         const auto jl = indrcv[j];
-        std::copy_n(&recvq[j * np], np, &q2[jl * ldq2]);
+        lapacke::copy(np, &recvq[j * np], 1, &q2[jl * ldq2], 1);
       }
     }
   }
