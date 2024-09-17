@@ -2073,12 +2073,12 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       integer function eigen_translate_g2l_(ictr, nnod, inod)
-     &     result(ret) 
+     &     result(ret)
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_translate_g2l_
 
-        integer,value, intent(in)    ::  ictr
-        integer,value, intent(in)    ::  nnod
-        integer,value, intent(in)    ::  inod
+      integer,value, intent(in)    ::  ictr
+      integer,value, intent(in)    ::  nnod
+      integer,value, intent(in)    ::  inod
 
       ret = (ictr-1)/nnod+1
 
@@ -2157,7 +2157,7 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       integer function eigen_owner_node_(ictr, nnod, inod)
-     &     result(ret) 
+     &     result(ret)
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_owner_node_
 
       integer, value, intent(in)    ::  ictr
