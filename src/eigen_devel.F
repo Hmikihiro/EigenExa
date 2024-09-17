@@ -16,7 +16,6 @@
       use, intrinsic :: iso_c_binding
       use mpi
 !$    use omp_lib
-      use, intrinsic :: iso_c_binding
 
       implicit none
       public
@@ -61,7 +60,7 @@
       integer                :: w_inod, w_nnod, w_COMM_WORLD
       integer                :: n_common, diag_0, diag_1
 
-      integer                :: ERROR_INFO
+      integer(8)             :: ERROR_INFO
 
       real(8)                :: Barrier_Overhead_x
       real(8)                :: Barrier_Overhead_y
