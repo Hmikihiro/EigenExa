@@ -19,9 +19,9 @@
 namespace {
 
 template <typename Integer, typename Float>
-Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[], const Integer ldq,
-                   Float work[], long lwork, Integer iwork[],const long liwork,
-                   FS_prof &prof) {
+Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[],
+                   const Integer ldq, Float work[], long lwork, Integer iwork[],
+                   const long liwork, FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_PDLAED0 start." << std::endl;
@@ -148,9 +148,9 @@ Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[], const Integ
 
     const auto eigen_comm = eigen_libs0_wrapper::eigen_get_comm().eigen_comm;
 
-    // TODO MPI_INTがtemplateで書き換えるべき部分
-    MPI_Bcast(&nnod.x, 1, MPI_INT, 0, eigen_comm);
-    MPI_Bcast(&nnod.y, 1, MPI_INT, 0, eigen_comm);
+    constexpr auto datatype = MPI_Datatype_wrapper::MPI_TYPE<typeof(&nnod.x)>;
+    MPI_Bcast(&nnod.x, 1, datatype, 0, eigen_comm);
+    MPI_Bcast(&nnod.y, 1, datatype, 0, eigen_comm);
 
     const auto NBLK = root_node.FS_get_NBLK();
     const auto NB = root_node.FS_get_NB();
