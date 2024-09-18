@@ -14,6 +14,7 @@
 #include "FS_reduce_zd.hpp"
 
 namespace {
+namespace dc2_FS {
 /**
  * @brief @n
  *  Purpose @n
@@ -150,4 +151,5 @@ Integer FS_pdlaed1(const Integer n, const Integer n1, Float d[], Float q[],
 #endif
   return info;
 }
+} // namespace dc2_FS
 } // namespace

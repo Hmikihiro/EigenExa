@@ -10,6 +10,7 @@
 #include "FS_dividing.hpp"
 
 namespace {
+namespace dc2_FS {
 /**
  * subroutine FS_merge_d
  *
@@ -78,4 +79,5 @@ void FS_merge_d(const Integer n, const Float d[],
     }
   }
 }
+} // namespace dc2_FS
 } // namespace

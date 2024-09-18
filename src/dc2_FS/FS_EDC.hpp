@@ -14,6 +14,7 @@
 #include "FS_prof.hpp"
 
 namespace {
+namespace dc2_FS {
 using FS_const::ONE;
 using FS_const::ZERO;
 /**
@@ -155,4 +156,5 @@ Integer FS_EDC(const Integer n, Float *d, Float *e, Float *q, const Integer ldq,
 #endif
   return info;
 }
+} // namespace dc2_FS
 } // namespace

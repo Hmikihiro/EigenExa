@@ -13,6 +13,7 @@
 #include "FS_prof.hpp"
 
 namespace {
+namespace dc2_FS {
 /**
  * subroutine FS_PDLAED0
  * @brief  @n
@@ -244,7 +245,7 @@ Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[],
     } else {
       Integer *ibuf = reinterpret_cast<Integer *>(work);
       auto *tbuf = reinterpret_cast<FS2eigen::GpositionValue<Integer, Float> *>(
-          *ibuf[std::max((Integer)0, (NP * NQ))]);
+          &ibuf[std::max((Integer)0, (NP * NQ))]);
       FS2eigen_pdlasrt<Integer, Float>(n, d, ldq, q, root_node, ibuf, work,
                                        tbuf, iwork, prof);
     }
@@ -266,4 +267,5 @@ Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[],
   return info;
 }
 
+} // namespace dc2_FS
 } // namespace

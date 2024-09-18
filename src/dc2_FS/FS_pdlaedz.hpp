@@ -7,12 +7,10 @@
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
 
-#if defined(_DEBUGLOG)
 #include "../FS_libs/FS_libs.hpp"
-#include <cstdio>
-#endif
 
 namespace {
+namespace dc2_FS {
 template <class Integer, class Float>
 void FS_pdlaedz(const Integer n, const Integer n1, const Float q[],
                 const Integer ldq, const bt_node<Integer, Float> &subtree,
@@ -79,4 +77,5 @@ void FS_pdlaedz(const Integer n, const Integer n1, const Float q[],
   }
 #endif
 }
+} // namespace dc2_FS
 } // namespace

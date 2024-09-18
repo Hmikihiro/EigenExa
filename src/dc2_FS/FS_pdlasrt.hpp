@@ -11,11 +11,8 @@
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
 
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
-
 namespace {
+namespace dc2_FS {
 template <class Integer, class Float>
 void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
                 const bt_node<Integer, Float> &subtree, Float q2[],
@@ -212,4 +209,5 @@ void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
   }
 #endif
 }
+} // namespace dc2_FS
 } // namespace

@@ -9,6 +9,7 @@
 #include "FS_prof.hpp"
 
 namespace {
+namespace dc2_FS {
 using FS_libs::FS_COMM_WORLD;
 template <class Integer, class Float>
 void FS_reduce_zd(const Integer n, const bt_node<Integer, Float> &subtree,
@@ -56,4 +57,5 @@ void FS_reduce_zd(const Integer n, const bt_node<Integer, Float> &subtree,
 #endif
 }
 
+} // namespace dc2_FS
 } // namespace

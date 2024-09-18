@@ -14,6 +14,7 @@
 #include "FS_prof.hpp"
 
 namespace {
+namespace dc2_FS {
 template <class Integer> struct g1l {
   Integer l_index;
   Integer rocsrc;
@@ -165,9 +166,10 @@ void FS_create_hint(bool[]);
 template <class Integer>
 void bitprint(Integer kout, Integer title, Integer ibit, Integer nbit);
 
+} // namespace dc2_FS
 } // namespace
-
 namespace {
+namespace dc2_FS {
 
 inline void FS_create_hint(bool hint[]) {
   FS_libs::Nod nnod = FS_libs::FS_get_procs();
@@ -792,4 +794,5 @@ void bt_node<Integer, Float>::print_node() const {
   std::cout << "bit stream     = " << this->div_bit_ << std::endl;
   std::cout << "#dights of bit = " << this->div_nbit_ << std::endl;
 }
+} // namespace dc2_FS
 } // namespace

@@ -15,6 +15,7 @@
 #endif
 
 namespace {
+namespace dc2_FS {
 using eigen_devel_FS_wrapper::FS_eigen_abort;
 using eigen_devel_FS_wrapper::FS_eigen_timer_reset;
 using eigen_libs0_wrapper::eigen_get_comm;
@@ -119,4 +120,5 @@ dc2_FS_result<Integer, Float> dc2_FS(const Integer n, const Integer nvec,
 
   return {ret_, info_fs_edc};
 }
+} // namespace dc2_FS
 } // namespace

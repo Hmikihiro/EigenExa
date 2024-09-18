@@ -15,6 +15,7 @@
 #include "FS_prof.hpp"
 
 namespace {
+namespace dc2_FS {
 using FS_libs::FS_COMM_WORLD;
 
 template <class Integer>
@@ -608,4 +609,5 @@ FS_pdlead3_end:
 #endif
   return info;
 }
+} // namespace dc2_FS
 } // namespace

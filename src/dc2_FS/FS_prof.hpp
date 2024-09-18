@@ -12,6 +12,7 @@
 #endif
 
 namespace {
+namespace dc2_FS {
 constexpr int FS_max_region = 70 + 1;
 
 class FS_prof {
@@ -31,9 +32,9 @@ public:
   void finalize();
 };
 
-} // namespace
+} // namespace dc2_FS
 
-namespace {
+namespace dc2_FS {
 inline void FS_prof::init() {
   std::strncpy(region_name[1], "total                                ", 32);
   std::strncpy(region_name[10], "FS_EDC                               ", 32);
@@ -177,4 +178,5 @@ inline void FS_prof::finalize() {
 #endif
   }
 }
+} // namespace dc2_FS
 } // namespace

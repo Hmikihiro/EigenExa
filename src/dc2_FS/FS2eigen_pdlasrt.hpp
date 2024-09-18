@@ -18,6 +18,7 @@
 #include "FS_dividing.hpp"
 
 namespace {
+namespace dc2_FS {
 namespace FS2eigen {
 
 /**
@@ -190,8 +191,8 @@ select_first_communicater(const Integer send_nrank, const Integer eigen_np,
   return i0;
 }
 } // namespace FS2eigen
-} // namespace
-namespace {
+} // namespace dc2_FS
+namespace dc2_FS {
 /**
  * subroutine FS2eigen_PDLASRT
  *
@@ -602,4 +603,5 @@ Integer FS2eigen_pdlasrt(const Integer n, Float d[], const Integer ldq,
   return 0;
 }
 
+} // namespace dc2_FS
 } // namespace

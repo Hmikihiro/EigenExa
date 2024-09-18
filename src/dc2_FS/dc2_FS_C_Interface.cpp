@@ -6,7 +6,7 @@
 extern "C" {
 void dc2_FS_f64(int n, int nvec, double d[], double e[], double z[], int ldz,
                 long *info, double *ret) {
-  const auto result = dc2_FS<int64_t, double>(n, nvec, d, e, z, ldz);
+  const auto result = dc2_FS::dc2_FS<int64_t, double>(n, nvec, d, e, z, ldz);
   *ret = result.ret;
   *info = result.info;
 }
@@ -31,8 +31,8 @@ void dc2_FS_fp32(int n, int nvec, double d[], double e[], double z[], int ldz,
       e_fp32[i] = e[i];
     }
   }
-  const auto result = dc2_FS<int64_t, float>(n, nvec, d_fp32.get(),
-                                             e_fp32.get(), z_fp32.get(), ldz);
+  const auto result = dc2_FS::dc2_FS<int64_t, float>(
+      n, nvec, d_fp32.get(), e_fp32.get(), z_fp32.get(), ldz);
   *ret = result.ret;
   *info = result.info;
 #pragma omp parallel

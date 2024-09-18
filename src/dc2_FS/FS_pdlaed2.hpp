@@ -16,6 +16,7 @@
 #include "FS_prof.hpp"
 
 namespace {
+namespace dc2_FS {
 template <class Integer, class Float>
 Integer get_NPA(const Integer n, const Integer nb,
                 const bt_node<Integer, Float> &subtree, const Integer myrow) {
@@ -358,4 +359,5 @@ FS_pdlaed2(const Integer n, const Integer n1, Float d[], Float q[],
 
   return result;
 }
+} // namespace dc2_FS
 } // namespace
