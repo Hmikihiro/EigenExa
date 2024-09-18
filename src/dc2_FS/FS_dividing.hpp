@@ -73,15 +73,72 @@ public:
   std::unique_ptr<eigen_mpi_int[]> group_Y_processranklist_;
 
 public:
+  /**
+   * @brief main routine of dividing tree
+   *
+   * @param[in]     n      (global input) INTEGER @n
+   *                       The order of the tridiagonal matrix T.  N >= 0.
+   *
+   * @param[in,out] d      (global input/output) DOUBLE PRECISION array, dimension (N) @n
+   *                       On entry, the diagonal elements of the tridiagonal matrix.  @n
+   *                       On exit, rank-1 modification.
+   *
+   * @param[in]     e      (global input) DOUBLE PRECISION array, dimension (N-1) @n
+   *                       the subdiagonal elements of the tridiagonal matrix.
+   *
+   * @param[in]     hint   (input) LOGICAL array, dimension = number of tree layer @n
+   *                       tree divide pattern
+   *
+   * @param[out]    prof   (global output) type(FS_prof) @n
+   *                       profiling information of each subroutines.
+   *
+   * @return       info   (global output) INTEGER @n
+   *                       = 0: successful exit   @n
+   *                       /=0: error exit
+   *
+   */
   Integer FS_dividing(Integer n, Real d[], const Real e[],
                       std::unique_ptr<bool[]> hint, FS_prof &prof);
 
+  /**
+   * @brief create sub-tree recursive
+   *
+   * @param[in]     n      (global input) INTEGER @n
+   *                       The order of the tridiagonal matrix T.  N >= 0.
+   *
+   * @param[in,out] d      (global input/output) DOUBLE PRECISION array, dimension (N) @n
+   *                       On entry, the diagonal elements of the tridiagonal matrix.  @n
+   *                       On exit, rank-1 modification.
+   *
+   * @param[in]     e      (global input) DOUBLE PRECISION array, dimension (N-1) @n
+   *                       the subdiagonal elements of the tridiagonal matrix.
+   *
+   * @param[in]     hint   (input) LOGICAL array, dimension = number of tree layer @n
+   *                       tree divide pattern
+   *
+   * @param[out]    prof   (global output) type(FS_prof) @n
+   *                       profiling information of each subroutines.
+   *
+   * @return    info   (global output) INTEGER @n
+   *                       = 0: successful exit   @n
+   *                       /=0: error exit
+   *
+   */
   Integer FS_dividing_recursive(Integer n, Real d[], const Real e[],
                                 std::unique_ptr<bool[]> &hint, FS_prof &prof,
                                 Integer bt_id = 0);
 
+  /**
+   * @brief set bit stream of tree dividing direction of all child node to leaf
+   */
   void dividing_setBitStream();
 
+   /**
+   * @brief 自プロセスがノードに含まれるかチェックする
+   * @param[in] node   (input) tree node
+   * @retval    true    含まれる
+   * @retval    false   含まれない
+   */
   inline bool FS_node_included() const {
     const FS_libs::Nod inod = FS_libs::FS_get_id();
     if (inod.x < this->proc_istart_ || inod.x > this->proc_iend_) {
@@ -93,6 +150,17 @@ public:
     return true;
   }
 
+
+  /**
+   * @brief search leaf node of own process recursive.
+   *
+   * @param[out]    leaf   (output) type(bt_node) @n
+   *                       leaf node pointer
+   *
+   * @return       info   (global output) INTEGER @n
+   *                       = 0: successful exit   @n
+   *                       /=0: error exit
+   */
   std::pair<const bt_node<Integer, Real> *, Integer>
   FS_dividing_getleaf(Integer info) const {
     const FS_libs::Nod inod = FS_libs::FS_get_id();
@@ -118,24 +186,83 @@ public:
     return std::make_pair(nullptr, info);
   }
 
+  /**
+   * @brief create local merge group
+   */
   void FS_create_merge_comm(FS_prof &prof);
 
+/**
+ * @brief create local merge X,Y group
+ */
   void FS_create_mergeXY_group();
 
+/**
+ * @brief create local merge group (recursive)
+ * 
+ */
   void FS_create_merge_comm_recursive();
 
+ /**
+  * @brief deallocate tree information
+  */
   void FS_dividing_free();
 
-  inline Integer FS_get_N() const { return this->nend_ - this->nstart_; }
+  /**
+   * @brief get matrix size of merge block @n
+   * マージブロックのNを取得 @n
+   * 全体次数Nが割り切れないとき、拡張したNの範囲で取得する
+   *
+   * @return matrix size of merge block
+   */
+  Integer FS_get_N() const { return this->nend_ - this->nstart_; }
 
+  /**
+   * @brief get matrix size of merge block @n
+   * マージブロックのNを取得 @n
+   * 全体次数Nが割り切れないとき、本来の次数Nの範囲で取得する
+   *
+   * @return matrix size of merge block
+   */
   Integer FS_get_N_active() const { return this->nend_active_ - this->nstart_; }
 
+  /**
+   * @brief get number of row/col block @n
+   * マージブロック内の行/列ブロック数を取得 @n
+   *
+   * @return number of row/col block
+   */
   Integer FS_get_NBLK() const { return this->block_end_ - this->block_start_; }
 
+  /**
+   * @brief get matrix size of one block @n
+   * マージブロックの1ブロックの行/列次数 @n
+   *
+   * @return matrix size of one block
+   *
+    */
   Integer FS_get_NB() const { return this->FS_get_N() / this->FS_get_NBLK(); }
 
+  /**
+   * @brief get top index of Q in merge block @n
+   * マージブロックにおける自プロセス担当のQの全体先頭インデクスを取得 @n
+   * subroutine FS_get_QTOP
+   *
+   *
+   * @return     row IPQ top index of 1st dimension. @n
+   *             col JPQ top index of 2nd dimension.
+   */
   GridIndex<Integer> FS_get_QTOP() const;
 
+  /**
+   * @brief get process grid information @n
+   * マージブロック内のプロセス情報を取得 @n
+   *
+   *
+   * @return     NPROW number of process grid row @n
+   *             NPCOL   number of process grid column @n
+   *             MYROW row process index of own process (>=0) @n
+   *             MYCOL colum
+   */
   const GridInfo<Integer> FS_grid_info() const {
     return GridInfo<Integer>{.nprow = this->x_nnod_,
                              .npcol = this->y_nnod_,
@@ -143,8 +270,40 @@ public:
                              .mycol = this->y_inod_};
   }
 
+  /**
+   * @brief convert index global to local @n
+   * 自プロセスに含まれないときでもLINDXにはROCSRCにおけるローカルインデクスが格納される @n
+   * ROCSRCにはCOMM_X/Yにおけるランク番号(0～)が入る
+   *
+   * @param[in]     COMP   (input) character @n
+   *                       set flag. 'R':row, 'C':columun
+   *
+   * @param[in]     GINDX  (input) INTEGER @n
+   *                       global index
+   *
+   * @param[in]     node   (input) type(bt_node) @n
+   *                       node pointer of merge block
+   *
+   * @return   LINDX local index @n
+   *           ROCSRC row/column index of process grid include GINDX
+   *
+   */
   g1l<Integer> FS_info_G1L(char comp, Integer g_index) const;
 
+  /**
+   * subroutine FS_INFOG2L
+   * @brief convert index global to local
+   *
+   * @param[in]     GRINDX (input) INTEGER @n
+   *                       global row index
+   *
+   * @param[in]     GCINDX (input) INTEGER @n
+   *                       global column index
+   *
+   *
+   * @return     LRINDX local row index
+   *             LCINDX local column index
+   */
   inline const GridIndex<Integer> FS_info_G2L(Integer gr_index,
                                               Integer gc_index) const {
     const auto r = this->FS_info_G1L('R', gr_index);
@@ -152,15 +311,50 @@ public:
     return GridIndex<Integer>{.row = r.l_index, .col = i.l_index};
   }
 
+   /**
+   * @brief convert index global to local
+   *
+   * @param[in]     COMP   (input) character @n
+   *                       set flag. 'R':row, 'C':columun
+   *
+   * @param[in]     G_INDEX  (input) INTEGER @n
+   *                       global index
+   *
+   *
+   * @return local index
+   */
   Integer FS_index_G2L(char comp, Integer g_index) const {
     const auto g1l = this->FS_info_G1L(comp, g_index);
     return g1l.l_index;
   }
 
+  /**
+   * @brief convert index local to global
+   *
+   * @param[in]     COMP   (input) character @n
+   *                       set flag. 'R':row, 'C':columun
+   *
+   * @param[in]     L_INDX  (input) INTEGER @n
+   *                       local index
+   *
+   * @param[in]     MY_ROC  (input) INTEGER @n
+   *                       row/column index of process grid include L_INDX
+   *
+   *
+   * @return global index
+   */
   Integer FS_index_L2G(char comp, Integer l_indx, Integer my_roc) const;
 
+  /**
+   * @brief  output log of tree information recursive
+   * 
+   */
   void print_tree() const;
 
+ /**
+  * @brief output log of node information
+  * 
+  */
   void print_node() const;
 };
 
@@ -175,6 +369,8 @@ void bitprint(Integer kout, Integer title, Integer ibit, Integer nbit);
 
 } // namespace dc2_FS
 } // namespace
+
+
 namespace {
 namespace dc2_FS {
 
