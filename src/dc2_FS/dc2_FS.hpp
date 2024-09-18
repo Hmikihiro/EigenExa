@@ -81,8 +81,8 @@ template <class Integer, class Real> struct dc2_FS_result {
  */
 template <class Integer, class Real>
 dc2_FS_result<Integer, Real> dc2_FS(const Integer n, const Integer nvec,
-                                     Real d[], Real e[], Real z[],
-                                     const Integer ldz) {
+                                    Real d[], Real e[], Real z[],
+                                    const Integer ldz) {
   eigen_dc_interface::flops = 0;
   eigen_dc_interface::dgemm_time = 0;
   eigen_dc_interface::p_time0 = 0;
@@ -128,7 +128,7 @@ dc2_FS_result<Integer, Real> dc2_FS(const Integer n, const Integer nvec,
     prof.init();
 #endif
     info_fs_edc = FS_EDC<Integer, Real>(n, d, e, z, ldz, work.get(), lwork,
-                                         iwork.get(), liwork, &prof);
+                                        iwork.get(), liwork, &prof);
 #if TIMER_PRINT
     prof.finalize();
 #endif
@@ -170,7 +170,10 @@ dc2_FS_result<Integer, Real> dc2_FS(const Integer n, const Integer nvec,
   MPI_Allreduce(&eigen_dc_interface::flops, &ret_, 1,
                 MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM, eigen_comm);
 
-  return {ret_, info_fs_edc};
+  return dc2_FS_result<Integer, Real>{
+      .info = info_fs_edc,
+      .ret = ret_,
+  };
 }
 } // namespace dc2_FS
 } // namespace
