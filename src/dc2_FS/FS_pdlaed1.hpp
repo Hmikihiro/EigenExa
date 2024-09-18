@@ -14,6 +14,30 @@
 #include "FS_reduce_zd.hpp"
 
 namespace {
+/**
+ * @brief @n
+ *  Purpose @n
+ *  ======= @n
+ *  FS_pdlaed1 computes the updated eigensystem of a diagonal @n
+ *  matrix after modification by a rank-one symmetric matrix, @n
+ *  in parallel.
+ *
+ * @tparam Integer
+ * @tparam Float
+ * @param n
+ * @param n1
+ * @param d
+ * @param q
+ * @param ldq
+ * @param subtree
+ * @param rho
+ * @param work
+ * @param iwork
+ * @param prof
+ * @return info Integer @n
+ *              = 0: successuful exit @n
+ *              !=0: error exit
+ */
 template <class Integer, class Float>
 Integer FS_pdlaed1(const Integer n, const Integer n1, Float d[], Float q[],
                    const Integer ldq, const bt_node<Integer, Float> &subtree,
@@ -28,8 +52,8 @@ Integer FS_pdlaed1(const Integer n, const Integer n1, Float d[], Float q[],
   prof.start(30);
 #endif
   const auto info = [&]() mutable -> Integer {
-    // Quick return if possible
     if (n == 0) {
+      // Quick return if possible
       return 0;
     }
     // The following values are  integer pointers which indicate
