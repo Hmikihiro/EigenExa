@@ -12,7 +12,7 @@ typedef MKL_INT eigen_mathlib_int;
 #include <cblas.h>
 #include <lapacke.h>
 
-typedef FJ_MATHLIB_INT eigen_mathlib_int;
+typedef FJ_MATHLIB_TYPE_INT eigen_mathlib_int;
 
 extern "C" {
 double dlaed4_(eigen_mathlib_int *n, eigen_mathlib_int *i, const double d[],
@@ -104,8 +104,7 @@ lascl<float>(char type, eigen_mathlib_int kl, eigen_mathlib_int ku, float cfrom,
 }
 
 template <class Real>
-inline Real lanst(char norm, eigen_mathlib_int n, const Real *D,
-                   const Real *E);
+inline Real lanst(char norm, eigen_mathlib_int n, const Real *D, const Real *E);
 
 template <>
 inline double lanst<double>(char norm, eigen_mathlib_int n, const double *D,
