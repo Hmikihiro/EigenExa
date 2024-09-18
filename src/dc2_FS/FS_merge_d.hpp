@@ -1,7 +1,7 @@
 #pragma once
 /**
  * @file   FS_merge_d.hpp
- * @brief  subroutine FS_merge_d
+ * @brief  FS_merge_d
  */
 #include <algorithm>
 
