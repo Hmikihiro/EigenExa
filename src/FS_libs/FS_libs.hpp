@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <mpi.h>
 
 #include "../eigen_libs0.hpp"
@@ -158,15 +159,38 @@ struct fs_worksize {
   long liwork;
 };
 
-inline fs_worksize FS_WorkSize(int n) {
+inline fs_worksize FS_WorkSize(int n, int int_byte_size, int real_byte_size) {
   const auto y_nnod = FS_get_procs().y;
   const auto dims = FS_get_matdims(n);
   const auto np = dims.nx;
   const auto nq = dims.ny;
 
-  const long lwork = 1 + 7 * n + 3 * np * nq + nq * nq;
+  // FS2eigen_pdlasrtのtbufで使用するGpositionValueのサイズ
+  const auto default_size = 16; // 4 + 4 + 8
+  unsigned long actual_size = 0;
+  if (int_byte_size == 8) {
+    // float, doubleともに構造体に対するパディングのため同じサイズ
+    // float 8 + 8 + 4 + (padding)4
+    // double 8 + 8 + 8
+    actual_size = 24;
+  } else if (real_byte_size == 4) {
+    actual_size = 12; // 4 + 4 + 4
+  } else if (real_byte_size == 8) {
+    actual_size = 16; // 4 + 4 + 8
+  }
+
+  const double padding_rate = ((double)sizeof(double) / real_byte_size) *
+                              ((double)actual_size / default_size);
+
+  const long lwork =
+      std::ceil((1 + 7 * n + 3 * np * nq + nq * nq) * padding_rate);
   const long liwork = 1 + 8 * n + 2 * 4 * y_nnod;
   return {lwork, liwork};
+}
+
+inline long FS_byte_data_context(int n, int int_byte_size, int real_byte_size) {
+  const auto worksize = FS_WorkSize(n, int_byte_size, real_byte_size);
+  return worksize.lwork * real_byte_size + worksize.liwork * int_byte_size;
 }
 
 inline int FS_get_myrank() { return FS_MYRANK; }

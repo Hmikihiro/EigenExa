@@ -25,9 +25,7 @@ extern "C" void FS_get_matdims(int n, int &nx, int &ny) {
 }
 extern "C" int FS_get_myrank() { return FS_libs::FS_MYRANK; }
 
-extern "C" void FS_WorkSize(int n, int64_t &lwork, int64_t &liwork) {
-  const auto work = FS_libs::FS_WorkSize(n);
-  lwork = work.lwork;
-  liwork = work.liwork;
+extern "C" long FS_byte_data_context(int n, int int_size, int real_size) {
+  return FS_libs::FS_byte_data_context(n, int_size, real_size);
 }
 } // namespace FS_libs_interface

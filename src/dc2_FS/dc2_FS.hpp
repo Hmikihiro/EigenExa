@@ -21,21 +21,6 @@ using eigen_libs0_wrapper::eigen_get_comm;
 using eigen_libs0_wrapper::eigen_get_id;
 using eigen_libs0_wrapper::eigen_get_procs;
 
-// GpositionValueの増加分int64と floatの時に確保する値
-// 計算途中のtbufにおいて、使用するこの時、従来int,int,doubleだったものを使っているため、float対応でメモリ半分を想定していない。
-/**
- * @brief Float配列をFS2eigen_pdlaedのtbufで使用するために定数倍大きく確保する。
- *
- * @tparam Integer
- * @tparam Float
- */
-template <class Integer, class Float>
-static double buffer_for_gposition_value = 3;
-template <> static double buffer_for_gposition_value<long, float> = 3;
-template <> static double buffer_for_gposition_value<int, float> = 2;
-template <> static double buffer_for_gposition_value<int, double> = 1;
-template <> static double buffer_for_gposition_value<long, double> = 1.5;
-
 template <class Integer, class Float> struct dc2_FS_result {
   Float ret;
   Integer info;
@@ -60,9 +45,8 @@ dc2_FS_result<Integer, Float> dc2_FS(const Integer n, const Integer nvec,
   const auto iam = eigen_get_id().id - 1;
 #endif
 
-  const auto worksize = FS_libs::FS_WorkSize(n);
-  long long lwork_ =
-      std::ceil(worksize.lwork * buffer_for_gposition_value<Integer, Float>);
+  const auto worksize = FS_libs::FS_WorkSize(n, sizeof(Integer), sizeof(Float));
+  long long lwork_ = worksize.lwork;
   long long liwork_ = worksize.liwork;
 
   const int FS_COMM_MEMBER = FS_libs::is_FS_comm_member();

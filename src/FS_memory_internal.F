@@ -104,9 +104,8 @@
       byte_tridi = LWORK * REAL_SIZE
 
 !     ===== for FS ====
-
-      call FS_WorkSize(n, LWORK, LIWORK)
-      byte_dcx = LWORK * REAL_SIZE + LIWORK * INT_SIZE
+      
+      byte_dcx = FS_byte_data_context(n, INT_SIZE, REAL_SIZE)
 
 !     ===== for TRBAK ====
 
@@ -134,4 +133,3 @@
       return
 
       end function FS_memory_internal
-

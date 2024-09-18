@@ -98,11 +98,11 @@ module FS_libs_mod
          use, intrinsic ::iso_c_binding
        end function
 
-      subroutine FS_WorkSize(N, LWORK, LIWORK) bind(c, name="FS_WorkSize")
+      integer(c_int) function FS_byte_data_context(N, int_size, real_size) &
+         bind(c, name="FS_byte_data_context")
         use, intrinsic :: iso_c_binding
-        integer(c_int), intent(in), value :: N
-        integer(c_long), intent(out) :: LWORK, LIWORK
-      end subroutine
+        integer(c_int), intent(in), value :: N, int_size, real_size
+      end function
 
   end interface
 
