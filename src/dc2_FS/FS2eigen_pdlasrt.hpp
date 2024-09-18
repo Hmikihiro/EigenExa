@@ -1,7 +1,7 @@
 #pragma once
 /**
  * @file FS2eigen_pdlasrt.hpp
- * @brief fn FS2eigen_pdlasrt
+ * @brief FS2eigen_pdlasrt
  */
 
 #include <mpi.h>
@@ -192,6 +192,7 @@ select_first_communicater(const Integer send_nrank, const Integer eigen_np,
 }
 } // namespace FS2eigen
 } // namespace dc2_FS
+
 namespace dc2_FS {
 /**
  * subroutine FS2eigen_PDLASRT
@@ -211,32 +212,32 @@ namespace dc2_FS {
  *                         sub( Q ). N >= 0.
  *
  * @param[in,out] D        (global input/output) DOUBLE PRECISION array,
- dimension (N) @n
+ *                         dimension (N) @n
  *                         On exit, the number in D are sorted in increasing
  order.
  *
  * @param[in,out] Q        (input/output) DOUBLE PRECISION pointer into the
- local memory @n
+ *                          local memory @n
  *                         to an array of dimension (LDQ, NQ). This array
- contains the   @n
+ *                          contains the   @n
  *                         local pieces of the distributed matrix sub( A ) to be
- copied  @n
+ *                          copied  @n
  *                         from.
  *
  * @param[in]     LDQ      (local input) INTEGER @n
  *                         The leading dimension of the array Q.  LDQ >=
- max(1,NP).
+ *                          max(1,NP).
  *
  * @param[in]     SUBTREE  (input) type(bt_node) @n
  *                         sub-tree information of merge block.
  *
  * @param         IBUF     (workspace) INTEGR array, dimension
- (FS_NBROW*FS_NBCOL)
+ *                          (FS_NBROW*FS_NBCOL)
  *
  * @param         RBUF     (workspace) DOUBLE PRECISION array, dimension (N)
  *
  * @param         TBUF     (workspace) TYPE(GpositionValue) array, dimension
- (FS_NBROW*FS_NBCOL)
+ *                          (FS_NBROW*FS_NBCOL)
  *
  * @param         INDX     (workspace) INTEGER array, dimension (N)
  *

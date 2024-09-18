@@ -1,4 +1,9 @@
 #pragma once
+/**
+ * @file FS_pdlaed3.hpp
+ * @brief FS_pdlaed3
+ */
+
 #include <mpi.h>
 #include <omp.h>
 
@@ -76,11 +81,19 @@ void set_indxc(const Integer k, const Integer indx[], const Integer indcol[],
   }
 }
 
+/**
+ * @brief return of get_np12
+ *
+ * @tparam Integer
+ */
 template <class Integer> class ComputeArea {
 public:
-  Integer np1; // 行列の上側
-  Integer np2; // 行列の下側
+  /** 上側の行列の次数 */
+  Integer np1;
+  /** 下側の行列の次数 */
+  Integer np2;
 };
+
 template <class Integer>
 ComputeArea<Integer> get_np12(const Integer n, const Integer n1,
                               const Integer np, const Integer myrow,
@@ -115,6 +128,112 @@ ComputeArea<Integer> get_np12(const Integer n, const Integer n1,
   return ComputeArea<Integer>{np1, np2};
 }
 
+/**
+ * subroutine FS_PDLAED3
+ *
+ * @brief @n
+ *  Purpose @n
+ *  ======= @n
+ *  FS_PDLAED3 finds the roots of the secular equation, as defined by the @n
+ *  values in D, W, and RHO, between 1 and K.  It makes the               @n
+ *  appropriate calls to DLAED4                                           @n
+ *                                                                        @n
+ *  The final stage consists of computing the updated eigenvectors        @n
+ *  directly using the updated eigenvalues.  The eigenvectors for         @n
+ *  the current problem are multiplied with the eigenvectors from         @n
+ *  the overall problem.
+!
+!  Arguments
+!  =========
+ *
+ * @param[in]     K        (output) INTEGER @n
+ *                         The number of non-deflated eigenvalues, and the order of the @n
+ *                         related secular equation. 0 <= K <=N.
+ *
+ * @param[in]     N        (input) INTEGER @n
+ *                         The dimension of the symmetric tridiagonal matrix.  N >= 0.
+ *
+ * @param[in]     N1       (input) INTEGER @n
+ *                         The location of the last eigenvalue in the leading sub-matrix. @n
+ *                         min(1,N) <= N1 <= N.
+ *
+ * @param[in,out] D        (input/output) DOUBLE PRECISION array, dimension (N)        @n
+ *                         On entry, D contains the trailing (N-K) updated eigenvalues @n
+ *                         (those which were deflated) sorted into increasing order.   @n
+ *                         On exit, D contains the updated eigenvalues.
+ *
+ * @param[in]     RHO      (global output) DOUBLE PRECISION                        @n
+ *                         The off-diagonal element associated with the rank-1 cut @n
+ *                         cut which modified to the value for this subroutine.
+ *
+ * @param[in,out] DLAMDA   (global input) DOUBLE PRECISION array, dimension (K)   @n
+ *                         A copy of the first K eigenvalues.
+ *
+ * @param[in]     W        (global input) DOUBLE PRECISION array, dimension (K)        @n
+ *                         The first k values of the final deflation-altered z-vector. @n
+ *
+ * @param[out]    Q        (output) DOUBLE PRECISION array, dimension (LDQ, NQ)  @n
+ *                         On exit, Q contains the updated eigenvectors.
+ *
+ * @param[in]     LDQ      (local input) INTEGER @n
+ *                         The leading dimension of the array Q.  LDQ >= max(1,NP).
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param[in,out] Q2       (input/workspace) DOUBLE PRECISION array, dimension (LDQ2, NQ) @n
+ *                         On entry, The eigen vectors which sorted by COLTYP             @n
+ *                         On exit, Q2 has been destroyed.
+ *
+ * @param[in]     LDQ2     (input) INTEGER @n
+ *                         The leading dimension of the array Q2.
+ *
+ * @param         U        (workspace) DOUBLE PRECISION array, dimension (LDU, NQ) @n
+ *                         delta.
+ *
+ * @param[in]     LDU      (input) INTEGER @n
+ *                         The leading dimension of the array U.
+ *
+ * @param[in]     SC       (input) INTEGER @n
+ *                         blocking size.
+ *
+ * @param[in]     INDX     (input) INTEGER array, dimension (N)                     @n
+ *                         The permutation used to sort the contents of DLAMDA into @n
+ *                         ascending order.
+ *
+ * @param[in]     CTOT     (input) INTEGER array, dimension (NPCOL, 4) @n
+ *                         The number of COLTYP of each process column.
+ *
+ * @param         Q2BUF1   (workspace) DOUBLE PRECISION array, dimension (LQ2BUF)
+ *
+ * @param         Q2BUF2   (workspace) DOUBLE PRECISION array, dimension (LQ2BUF)
+ *
+ * @param         LQ2BUF   (input) INTEGER @n
+ *                         The leading dimension of the array LQ2BUF (=NP*NQ)
+ *
+ * @param         Z        (workspace) DOUBLE PRECISION array, dimension (K)
+ *
+ * @param         BUF      (workspace) DOUBLE PRECISION array, dimension (4*K)
+ *
+ * @param         INDROW   (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDCOL   (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDXC    (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDXR    (workspace) INTEGER array, dimension (N)
+ *
+ *
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ *
+ * @return    INFO     (global output) INTEGER @n
+ *                         = 0: successful exit    @n
+ *                         /=0: error exit
+ *
+ * @note This routine is modified from ScaLAPACK PDLAED3.f
+ */
 template <class Integer, class Float>
 Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
                    Float d[], const Float rho, Float dlamda[], const Float w[],

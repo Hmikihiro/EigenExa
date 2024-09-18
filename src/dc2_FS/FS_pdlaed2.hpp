@@ -1,5 +1,8 @@
 #pragma once
-
+/**
+ * @file FS_pdlaed2.hpp
+ * @brief FS_pdlaed2
+ */
 #include <mpi.h>
 
 #include <algorithm>
@@ -145,11 +148,129 @@ void pdlaed2_comm(const Integer mycol, const Integer ldq, Float q[],
   }
 }
 
+
+/**
+ * @brief return of FS_pdlaed2
+ */
 template <class Integer, class Float> struct FS_pdlead2_result {
+  /**
+   * @brief  On exit, RHO has been modified to the value
+   *         \n required by FS_PDLAED3.
+   */
   Float rho;
+  /**
+   * @brief The number of non-deflated eigenvalues, and the order of the @n
+   *        related secular equation. 0 <= K <=N.
+   */
   Integer k;
 };
 
+/**
+ * subroutine FS_PDLAED2
+ *
+ * @brief @n
+ *  Purpose @n
+ *  ======= @n
+ *  FS_PDLAED2 sorts the two sets of eigenvalues together into a single  @n
+ *  sorted set.  Then it tries to deflate the size of the problem.       @n
+ *  There are two ways in which deflation can occur:  when two or more   @n
+ *  eigenvalues are close together or if there is a tiny entry in the    @n
+ *  Z vector.  For each such occurrence the order of the related secular
+ *  equation problem is reduced by one.
+ *
+ * @param[in]     N        (input) INTEGER @n
+ *                         The dimension of the symmetric tridiagonal matrix.  N >= 0.
+ *
+ * @param[in]     N1       (input) INTEGER @n
+ *                         The location of the last eigenvalue in the leading sub-matrix. @n
+ *                         min(1,N) <= N1 <= N.
+ *
+ * @param[in,out] D        (input/output) DOUBLE PRECISION array, dimension (N)           @n
+ *                         On entry, D contains the eigenvalues of the two submatrices to @n
+ *                         be combined.                                                   @n
+ *                         On exit, D contains the trailing (N-K) updated eigenvalues     @n
+ *                         (those which were deflated) sorted into increasing order.
+ *
+ * @param[in,out] Q        (input/output) DOUBLE PRECISION array, dimension (LDQ, NQ)  @n
+ *                         On entry, Q contains the eigenvectors of two submatrices in @n
+ *                         the two square blocks with corners at (1,1), (N1,N1)        @n
+ *                         and (N1+1, N1+1), (N,N).                                    @n
+ *                         On exit, Q contains the trailing (N-K) updated eigenvectors @n
+ *                         (those which were deflated) in its last N-K columns.
+ *
+ * @param[in]     LDQ      (local input) INTEGER @n
+ *                         The leading dimension of the array Q.  LDQ >= max(1,NP).
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param[in] RHO          (global input/output) DOUBLE PRECISION                        @n
+ *                         On entry, the off-diagonal element associated with the rank-1 @n
+ *                         cut which originally split the two submatrices which are now  @n
+ *                         being recombined.                                             @n
+ *
+ *
+ * @param[in,out] Z        (global input) DOUBLE PRECISION array, dimension (N)           @n
+ *                         On entry, Z contains the updating vector (the last             @n
+ *                         row of the first sub-eigenvector matrix and the first row of   @n
+ *                         the second sub-eigenvector matrix).                            @n
+ *                         On exit, the contents of Z have been destroyed by the updating @n
+ *                         process.
+ *
+ * @param[out]    W        (global output) DOUBLE PRECISION array, dimension (N)      @n
+ *                         The first k values of the final deflation-altered z-vector @n
+ *                         which will be passed to FS_PDLAED3.
+ *
+ * @param[out]    DLAMDA   (global output) DOUBLE PRECISION array, dimension (N)   @n
+ *                         A copy of the first K eigenvalues which will be used by @n
+ *                         FS_PDLAED3 to form the secular equation.
+ *
+ * @param[out]    Q2       (output) DOUBLE PRECISION array, dimension (LDQ2, NQ) @n
+ *                         The eigen vectors which sorted by COLTYP
+ *
+ * @param[in]     LDQ2     (input) INTEGER @n
+ *                         The leading dimension of the array Q2.
+ *
+ * @param[out]    INDX     (output) INTEGER array, dimension (N)                    @n
+ *                         The permutation used to sort the contents of DLAMDA into @n
+ *                         ascending order which will be passed to FS_PDLAED3.
+ *
+ * @param[out]    CTOT     (output) INTEGER array, dimension (NPCOL, 4) @n
+ *                         The number of COLTYP of each process column  @n
+ *                         which will be passed to FS_PDLAED3.
+ *
+ * @param         QBUF     (workspace) DOUBLE PRECISION array, dimension (N)
+ *
+ * @param         COLTYP   (workspace) INTEGER array, dimension (N)                   @n
+ *                         During execution, a label which will indicate which of the @n
+ *                         following types a column in the Q2 matrix is:              @n
+ *                         1 : non-zero in the upper half only;                       @n
+ *                         2 : dense;                                                 @n
+ *                         3 : non-zero in the lower half only;                       @n
+ *                         4 : deflated.
+ *
+ * @param         INDCOL   (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDXC    (workspace) INTEGER array, dimension (N)                       @n
+ *                         The permutation used to arrange the columns of the deflated    @n
+ *                         Q matrix into three groups:  the first group contains non-zero @n
+ *                         elements only at and above N1, the second contains             @n
+ *                         non-zero elements only below N1, and the third is dense.
+ *
+ * @param         INDXP    (workspace) INTEGER array, dimension (N)                      @n
+ *                         The permutation used to place deflated values of D at the end @n
+ *                         of the array.  INDXP(1:K) points to the nondeflated D-values  @n
+ *                         and INDXP(K+1:N) points to the deflated eigenvalues.
+ *
+ * @param         PSM      (workspace) INTEGER array, dimension (NPCOL, 4)
+ *
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ *
+  * @return    FS_pdlead2_result @n
+ * @note This routine is modified from ScaLAPACK PDLAED2.f
+ */
 template <class Integer, class Float>
 FS_pdlead2_result<Integer, Float>
 FS_pdlaed2(const Integer n, const Integer n1, Float d[], Float q[],

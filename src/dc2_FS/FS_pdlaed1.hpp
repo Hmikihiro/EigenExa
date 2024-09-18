@@ -1,5 +1,8 @@
 #pragma once
-
+/**
+ * @file FS_pdlaed1.hpp
+ * @brief FS_pdlaed1
+ */
 #include <mpi.h>
 
 #include <algorithm>
@@ -23,8 +26,6 @@ namespace dc2_FS {
  *  matrix after modification by a rank-one symmetric matrix, @n
  *  in parallel.
  *
- * @tparam Integer
- * @tparam Float
  * @param n
  * @param n1
  * @param d

@@ -1,5 +1,8 @@
 #pragma once
-
+/**
+ * @file FS_dividing.hpp
+ * @brief FS_dividing
+ */
 #include <mpi.h>
 
 #include <algorithm>
@@ -161,7 +164,11 @@ public:
   void print_node() const;
 };
 
-void FS_create_hint(bool[]);
+/**
+ *  @brief  create default hint of dividind tree
+ *  @param[out] hint   (output) creted hint. dimension = number of tree layer
+ */
+void FS_create_hint(bool hint[]);
 
 template <class Integer>
 void bitprint(Integer kout, Integer title, Integer ibit, Integer nbit);

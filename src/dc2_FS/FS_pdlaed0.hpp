@@ -87,7 +87,7 @@ namespace dc2_FS {
 
 template <typename Integer, typename Float>
 Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[],
-                   const Integer ldq, Float work[], long lwork, Integer iwork[],
+                   const Integer ldq, Float work[], const long lwork, Integer iwork[],
                    const long liwork, FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {

@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file FS_reduce_zd.hpp
+ * @brief FS_reduce_zd
+ */
 
 #include <iostream>
 
@@ -11,6 +15,35 @@
 namespace {
 namespace dc2_FS {
 using FS_libs::FS_COMM_WORLD;
+
+/**
+ * subroutine FS_REDUCE_ZD
+ *
+ * @brief  @n
+ * Purpose @n
+ * ======= @n
+ * MPI_ALLREDUCE Z and D
+ *
+ * @param[in]     N        (global input) INTEGER @n
+ *                         The order of the tridiagonal matrix T.  N >= 0.
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param[in]     WORK     (input) DOUBLE PRECISION array, dimension (N,2)         @n
+ *                         WORK(:,1) is the updating vector before MPI_ALLREDUCE.  @n
+ *                         WORK(:,2) is the generated D before MPI_ALLREDUCE.
+ *
+ * @param[out]    Z        (local output) DOUBLE PRECISION array, dimension (N)                   @n
+ *                         The updating vector (the last row of the first sub-eigenvector  @n
+ *                         matrix and the first row of the second sub-eigenvector matrix).
+ *
+ * @param[out]    D        (local output) DOUBLE PRECISION array, dimension (N)
+ *                         generated D.
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ */
 template <class Integer, class Float>
 void FS_reduce_zd(const Integer n, const bt_node<Integer, Float> &subtree,
                   Float work[], Float z[], Float d[], FS_prof &prof) {

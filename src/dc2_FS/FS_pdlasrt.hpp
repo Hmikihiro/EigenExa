@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file FS_pdlasrt.hpp
+ * @brief FS_pdlasrt
+ */
 
 #include <mpi.h>
 
@@ -13,6 +17,61 @@
 
 namespace {
 namespace dc2_FS {
+/**
+ * subroutine FS_PDLASRT
+ *
+ * @brief @n
+ *  Purpose @n
+ *  ======= @n
+ *  FS_PDLASRT Sort the numbers in D in increasing order and the @n
+ *  corresponding vectors in Q.
+!
+!  Arguments
+!  =========
+ *
+ * @param[in]     N        (global input) INTEGER @n
+ *                         The number of columns to be operated on i.e the number of @n
+ *                         columns of the distributed submatrix sub( Q ). N >= 0.
+ *
+ * @param[in,out] D        (global input/output) DOUBLE PRECISION array, dimension (N) @n
+ *                         On exit, the number in D are sorted in increasing order.
+ *
+ * @param[in,out] Q        (input/output) DOUBLE PRECISION pointer into the local memory @n
+ *                         to an array of dimension (LDQ, NQ). This array contains the   @n
+ *                         local pieces of the distributed matrix sub( A ) to be copied  @n
+ *                         from.
+ *
+ * @param[in]     LDQ      (local input) INTEGER @n
+ *                         The leading dimension of the array Q.  LDQ >= max(1,NP).
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param         Q2       (workspace) DOUBLE PRECISION array, dimension (LDQ2, NQ)
+ *
+ * @param[in]     LDQ2     (input) INTEGER @n
+ *                         The leading dimension of the array Q2. (=NP)
+ *
+ * @param         SENDQ    (workspace) DOUBLE PRECISION array, dimension (LDQ2*NQ)
+ *
+ * @param         RECVQ    (workspace) DOUBLE PRECISION array, dimension (LDQ2*NQ)
+ *
+ * @param         BUF      (workspace) DOUBLE PRECISION array, dimension (N)
+ *
+ * @param         INDROW   (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDCOL   (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDX     (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDRCV   (workspace) INTEGER array, dimension (N)
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ *
+ * @note This routine is modified from ScaLAPACK PDLASRT.f
+ */
+
 template <class Integer, class Float>
 void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
                 const bt_node<Integer, Float> &subtree, Float q2[],

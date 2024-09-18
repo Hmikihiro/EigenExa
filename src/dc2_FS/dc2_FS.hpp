@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file dc2_FS.hpp
+ * @brief dc2_FS
+ */
 #include <memory>
 #include <mpi.h>
 
@@ -22,11 +26,59 @@ using eigen_libs0_wrapper::eigen_get_comm;
 using eigen_libs0_wrapper::eigen_get_id;
 using eigen_libs0_wrapper::eigen_get_procs;
 
+/**
+ * @brief return value of dc2_FS
+ */
 template <class Integer, class Float> struct dc2_FS_result {
-  Float ret;
+  /**
+   * @brief (output) integer \n
+   *        = 0: successful exit \n
+   *        < 0: error status as same as scalapack \n
+   *        > 0: error status as same as scalapack \n
+   */
   Integer info;
-};
 
+  /**
+   * @brief (output) real \n
+   *      The number of floating point operations. \n
+   */
+  Float ret;
+};
+/**
+ * @brief dc2_FS invokes the main body of the divide and conquer solver,
+ *        dc2_FS_body, to solve the eigenpairs of the symmetric tridiagonal
+ *        matrix.
+ *
+ *
+ * \param[in] n       (input) integer
+ *        The dimension of the symmetric tridiagonal matrix. N >= 0.
+ *
+ * \param[in] nvec    (input) integer
+ *        The number of eigenmodes to be computed. N >= NVEC >= 0.
+ *
+ * \param[in,out] d       (input/output) real array, dimension(n)
+ *        On entry, d contains the diagonal elements of the symmetric
+ *        tridiagonal matrix.
+ *        On exit, d contains eigenvalues of the input matrix.
+ *
+ * \param[in,out] e       (input/output) real array, dimension(n-1)
+ *        On entry, e contains the off-diagonal elements of the
+ *        symmetric tridiagonal matrix.
+ *        On exit, values has been destroyed.
+ *
+ * \param[in, out] z       (output) real array, dimension(ldz,(n-1)/y_nnod+1)
+ *        z returns the eigenvectors of the input matrix.
+ *
+ * \param[in,out] ldz     (input) integer
+ *        The leading dimension of the array z. ldz >= ceil(N/x_nnod).
+ *
+ * \return  info    integer \n
+ *        = 0: successful exit \n
+ *        < 0: error status as same as scalapack \n
+ *        > 0: error status as same as scalapack \n
+ *          ret     real \n
+ *        The number of floating point operations.
+ */
 template <class Integer, class Float>
 dc2_FS_result<Integer, Float> dc2_FS(const Integer n, const Integer nvec,
                                      Float d[], Float e[], Float z[],

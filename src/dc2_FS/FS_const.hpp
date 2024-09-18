@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file FS_const.hpp
+ * @brief FS_const
+ */
 
 namespace FS_const {
 template <class Float> constexpr Float ZERO = 0.0e0;

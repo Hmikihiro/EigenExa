@@ -1,7 +1,7 @@
 #pragma once
 /**
  * @file FS_EDC.hpp
- * @brief template int FS_EDC
+ * @brief FS_EDC
  */
 
 #include <cmath>

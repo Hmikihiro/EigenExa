@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file FS_pdlaedz.hpp
+ * @brief FS_pdlaedz
+ */
 
 #include <algorithm>
 
@@ -11,6 +15,48 @@
 
 namespace {
 namespace dc2_FS {
+/**
+ * subroutine FS_PDLAEDZ
+ *
+ * @brief  @n
+ * Purpose @n
+ * ======= @n
+ * FS_PDLAEDZ Form the z-vector which consists of the last row of Q_1 @n
+ * and the first row of Q_2.
+!
+!  Arguments
+!  =========
+ *
+ * @param[in]     N        (global input) INTEGER @n
+ *                         The order of the tridiagonal matrix T.  N >= 0.
+ *
+ * @param[in]     N1       (input) INTEGER @n
+ *                         The location of the last eigenvalue in the leading sub-matrix. @n
+ *                         min(1,N) <= N1 <= N.
+ *
+ * @param[in]     Q        (local output) DOUBLE PRECISION array,                    @n
+ *                         global dimension (N, N),                                  @n
+ *                         local dimension (LDQ, NQ)                                 @n
+ *                         Q  contains the orthonormal eigenvectors of the symmetric @n
+ *                         tridiagonal matrix.
+ *
+ * @param[in]     LDQ      (local input) INTEGER @n
+ *                         The leading dimension of the array Q.  LDQ >= max(1,NP).
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param[out]    Z        (input) DOUBLE PRECISION array, dimension (N)                   @n
+ *                         The updating vector before MPI_ALLREDUCE (the last row of the   @n
+ *                         first sub-eigenvector matrix and the first row of the second    @n
+ *                         sub-eigenvector matrix).
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ *
+ * @note This routine is modified from ScaLAPACK PDLAEDZ.f
+ */
+ 
 template <class Integer, class Float>
 void FS_pdlaedz(const Integer n, const Integer n1, const Float q[],
                 const Integer ldq, const bt_node<Integer, Float> &subtree,
