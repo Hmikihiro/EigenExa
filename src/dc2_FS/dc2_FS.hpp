@@ -98,7 +98,7 @@ dc2_FS_result<Integer, Real> dc2_FS(const Integer n, const Integer nvec,
   const auto iam = eigen_get_id().id - 1;
 #endif
 
-  const auto worksize = FS_libs::FS_WorkSize(n, sizeof(Integer), sizeof(Real));
+  const auto worksize = FS_libs::FS_WorkSize(n, sizeof(Real));
   long long lwork_ = worksize.lwork;
   long long liwork_ = worksize.liwork;
 

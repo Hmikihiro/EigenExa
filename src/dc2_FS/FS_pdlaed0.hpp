@@ -87,8 +87,8 @@ namespace dc2_FS {
 
 template <typename Integer, typename Real>
 Integer FS_pdlaed0(const Integer n, Real d[], Real e[], Real q[],
-                   const Integer ldq, Real work[], const long lwork, Integer iwork[],
-                   const long liwork, FS_prof &prof) {
+                   const Integer ldq, Real work[], const long lwork,
+                   Integer iwork[], const long liwork, FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_PDLAED0 start." << std::endl;
@@ -246,11 +246,11 @@ Integer FS_pdlaed0(const Integer n, Real d[], Real e[], Real q[],
           &work[i_recv_q], &work[i_buffer], &iwork[index_row],
           &iwork[index_col], &iwork[index], &iwork[index_recv], prof);
     } else {
-      Integer *ibuf = reinterpret_cast<Integer *>(work);
-      auto *tbuf = reinterpret_cast<FS2eigen::GpositionValue<Integer, Real> *>(
+      int *ibuf = reinterpret_cast<int *>(work);
+      auto *tbuf = reinterpret_cast<FS2eigen::GpositionValue<Real> *>(
           &ibuf[std::max((Integer)0, (NP * NQ))]);
-      FS2eigen_pdlasrt<Integer, Real>(n, d, ldq, q, root_node, ibuf, work,
-                                       tbuf, iwork, prof);
+      FS2eigen_pdlasrt<Integer, Real>(n, d, ldq, q, root_node, ibuf, work, tbuf,
+                                      iwork, prof);
     }
     return 0;
   }();

@@ -157,7 +157,7 @@ struct fs_worksize {
   long liwork;
 };
 
-inline fs_worksize FS_WorkSize(int n, int int_byte_size, int real_byte_size) {
+inline fs_worksize FS_WorkSize(int n, int real_byte_size) {
   const auto y_nnod = FS_get_procs().y;
   const auto dims = FS_get_matdims(n);
   const auto np = dims.nx;
@@ -165,17 +165,7 @@ inline fs_worksize FS_WorkSize(int n, int int_byte_size, int real_byte_size) {
 
   // FS2eigen_pdlasrtのtbufで使用するGpositionValueのサイズ
   const auto default_size = 16; // 4 + 4 + 8
-  unsigned long actual_size = 0;
-  if (int_byte_size == 8) {
-    // float, doubleともに構造体に対するパディングのため同じサイズ
-    // float 8 + 8 + 4 + (padding)4
-    // double 8 + 8 + 8
-    actual_size = 24;
-  } else if (real_byte_size == 4) {
-    actual_size = 12; // 4 + 4 + 4
-  } else if (real_byte_size == 8) {
-    actual_size = 16; // 4 + 4 + 8
-  }
+  const auto actual_size = real_byte_size == 4 ? 12 : 16;
 
   const double padding_rate = ((double)sizeof(double) / real_byte_size) *
                               ((double)actual_size / default_size);
@@ -187,7 +177,7 @@ inline fs_worksize FS_WorkSize(int n, int int_byte_size, int real_byte_size) {
 }
 
 inline long FS_byte_data_context(int n, int int_byte_size, int real_byte_size) {
-  const auto worksize = FS_WorkSize(n, int_byte_size, real_byte_size);
+  const auto worksize = FS_WorkSize(n, real_byte_size);
   return worksize.lwork * real_byte_size + worksize.liwork * int_byte_size;
 }
 

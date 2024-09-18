@@ -22,17 +22,14 @@ namespace dc2_FS {
 namespace FS2eigen {
 
 /**
- * @brief GpositionValueの大きさ @n <int, float> 4 + 4 + 4 @n <int, double> 4 +
- * 4 + 8 @n <long, float> 8 + 8 + 4 + padding(4) = 24 @n <long, double> 8 + 8 +
- * 8
+ * @brief GRow と
+ * GColはそれぞれ行列のindexであり、次数nを超えないから32bit整数を用いる
  *
- * @tparam Integer
- * @tparam Real
  */
-template <class Integer, class Real> class GpositionValue {
+template <class Real> class GpositionValue {
 public:
-  Integer GRow;
-  Integer GCol;
+  int GRow;
+  int GCol;
   Real MatrixValue;
 };
 
@@ -43,13 +40,17 @@ public:
   MPI_Request req;
   MPI_Status sta;
   bool flag;
-  GpositionValue<Integer, Real> *bufp;
+  GpositionValue<Real> *bufp;
 };
 
+/**
+ * @brief lidの要素はFS_nbrow_max * FS_nbcol_max 以下である
+ *
+ */
 template <class Integer> class RANKLIST {
 public:
   Integer index;
-  Integer *lid;
+  int *lid;
 };
 
 template <class Integer> class NrankMaxsize {
@@ -108,16 +109,16 @@ void init_recv(const Integer np, const Integer comm_info[],
 
 template <class Integer, class Real>
 void send(CommBuf<Integer, Real> &comm_send_data,
-          const GpositionValue<Integer, Real> sendbuf[], const MPI_Comm comm) {
-  auto ncount = sizeof(GpositionValue<Integer, Real>) * comm_send_data.Ndata;
+          const GpositionValue<Real> sendbuf[], const MPI_Comm comm) {
+  auto ncount = sizeof(GpositionValue<Real>) * comm_send_data.Ndata;
   auto srank = comm_send_data.rank;
   comm_send_data.flag = false;
   MPI_Send((void *)sendbuf, ncount, MPI_BYTE, srank, 1, comm);
 }
 template <class Integer, class Real>
 void irecv(CommBuf<Integer, Real> &comm_recv_data,
-           GpositionValue<Integer, Real> recvbuf[], const MPI_Comm comm) {
-  auto ncount = sizeof(GpositionValue<Integer, Real>) * comm_recv_data.Ndata;
+           GpositionValue<Real> recvbuf[], const MPI_Comm comm) {
+  auto ncount = sizeof(GpositionValue<Real>) * comm_recv_data.Ndata;
   auto rrank = comm_recv_data.rank;
   comm_recv_data.flag = false;
   MPI_Irecv((void *)recvbuf, ncount, MPI_BYTE, rrank, 1, comm,
@@ -137,14 +138,12 @@ Integer FS_nbroc_max(const char comp, const Integer n,
   return FS_nbroc;
 }
 template <class Integer, class Real>
-Integer get_FS_nbrow_max(const Integer n,
-                         const bt_node<Integer, Real> &subtree,
+Integer get_FS_nbrow_max(const Integer n, const bt_node<Integer, Real> &subtree,
                          const Integer FS_nbrow, const Integer FS_myrow) {
   return FS_nbroc_max('R', n, subtree, FS_nbrow, FS_myrow);
 }
 template <class Integer, class Real>
-Integer get_FS_nbcol_max(const Integer n,
-                         const bt_node<Integer, Real> &subtree,
+Integer get_FS_nbcol_max(const Integer n, const bt_node<Integer, Real> &subtree,
                          const Integer FS_nbcol, const Integer FS_mycol) {
   return FS_nbroc_max('C', n, subtree, FS_nbcol, FS_mycol);
 }
@@ -251,10 +250,9 @@ namespace dc2_FS {
  * @note This routine is modified from ScaLAPACK PDLASRT.f
  */
 template <class Integer, class Real>
-Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq,
-                         Real q[], const bt_node<Integer, Real> &subtree,
-                         Integer ibuf[], Real rbuf[],
-                         FS2eigen::GpositionValue<Integer, Real> tbuf[],
+Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
+                         const bt_node<Integer, Real> &subtree, int ibuf[],
+                         Real rbuf[], FS2eigen::GpositionValue<Real> tbuf[],
                          Integer indx[], FS_prof &prof) {
   double prof_time[40];
   for (Integer i = 0; i < 40; i++) {
@@ -409,12 +407,12 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq,
   Integer pointer = 0;
   std::unique_ptr<FS2eigen::CommBuf<Integer, Real>[]> comm_send_data;
   std::unique_ptr<FS2eigen::RANKLIST<Integer>[]> sendrank_list;
-  FS2eigen::GpositionValue<Integer, Real> *sendbuf;
+  FS2eigen::GpositionValue<Real> *sendbuf;
 
   if (send_nrank != 0) {
     comm_send_data.reset(new FS2eigen::CommBuf<Integer, Real>[send_nrank]);
     FS2eigen::init_send<Integer, Real>(eigen_np, comm_send_info,
-                                        comm_send_data.get());
+                                       comm_send_data.get());
 
     sendrank_list.reset(new FS2eigen::RANKLIST<Integer>[send_nrank]);
 
@@ -458,7 +456,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq,
   if (recv_nrank != 0) {
     comm_recv_data.reset(new FS2eigen::CommBuf<Integer, Real>[recv_nrank]);
     FS2eigen::init_recv<Integer, Real>(eigen_np, comm_recv_info.get(),
-                                        comm_recv_data.get());
+                                       comm_recv_data.get());
     for (Integer k = 0; k < recv_nrank; k++) {
       if (comm_recv_data[k].rank + 1 != eigen_myrank) {
         comm_recv_data[k].bufp = &tbuf[pointer];
@@ -541,10 +539,10 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq,
         for (Integer i = 0; i < comm_send_data[k0].Ndata; i++) {
           const auto gcol = sendbuf[i].GCol;
           const auto grow = sendbuf[i].GRow;
-          const auto lcol =
-              eigen_libs0_wrapper::eigen_translate_g2l(gcol, eigen_npcol);
-          const auto lrow =
-              eigen_libs0_wrapper::eigen_translate_g2l(grow, eigen_nprow);
+          const auto lcol = eigen_libs0_wrapper::eigen_translate_g2l<Integer>(
+              gcol, eigen_npcol);
+          const auto lrow = eigen_libs0_wrapper::eigen_translate_g2l<Integer>(
+              grow, eigen_nprow);
           q[lcol * ldq + lrow] = sendbuf[i].MatrixValue;
         }
         break;
@@ -558,10 +556,10 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq,
         for (Integer i = 0; i < Ndata; i++) {
           const auto gcol = comm_recv_data[k].bufp[i].GCol;
           const auto grow = comm_recv_data[k].bufp[i].GRow;
-          const auto lcol =
-              eigen_libs0_wrapper::eigen_translate_g2l(gcol, eigen_npcol);
-          const auto lrow =
-              eigen_libs0_wrapper::eigen_translate_g2l(grow, eigen_nprow);
+          const auto lcol = eigen_libs0_wrapper::eigen_translate_g2l<Integer>(
+              gcol, eigen_npcol);
+          const auto lrow = eigen_libs0_wrapper::eigen_translate_g2l<Integer>(
+              grow, eigen_nprow);
           q[lcol * ldq + lrow] = comm_recv_data[k].bufp[i].MatrixValue;
         }
       }
@@ -575,10 +573,10 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq,
         for (Integer i = 0; i < Ndata; i++) {
           const auto gcol = comm_recv_data[k].bufp[i].GCol;
           const auto grow = comm_recv_data[k].bufp[i].GRow;
-          const auto lcol =
-              eigen_libs0_wrapper::eigen_translate_g2l(gcol, eigen_npcol);
-          const auto lrow =
-              eigen_libs0_wrapper::eigen_translate_g2l(grow, eigen_nprow);
+          const auto lcol = eigen_libs0_wrapper::eigen_translate_g2l<Integer>(
+              gcol, eigen_npcol);
+          const auto lrow = eigen_libs0_wrapper::eigen_translate_g2l<Integer>(
+              grow, eigen_nprow);
           q[lcol * ldq + lrow] = comm_recv_data[k].bufp[i].MatrixValue;
         }
       }
