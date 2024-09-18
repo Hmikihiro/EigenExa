@@ -1,4 +1,3 @@
-#define SINGLE_PRECISION 32
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     
 ! Subroutine: eigen_FS
@@ -27,7 +26,7 @@
 !
 !--------*---------*---------*---------*---------*---------*---------*-*
       subroutine eigen_FS(n, nvec, a, lda, w, z, ldz,
-     &     m_forward, m_backward, mode, precision)
+     &     m_forward, m_backward, mode)
 
       !
       ! Trick to avoid a conflict between func-name and interface
@@ -56,13 +55,11 @@
       integer,   intent(in), optional :: m_forward
       integer,   intent(in), optional :: m_backward
       character(*), intent(in), optional :: mode
-      integer,   intent(in), optional :: precision
 
       real(8), allocatable   :: d(:), e(:), e2(:)
 
       integer                :: m_f, m_b
       character              :: mode_
-      integer                :: precision_
 
       real(8)                :: SIGMA
       integer                :: nm, ny, nb
@@ -128,12 +125,6 @@
         m_b = m_backward
       else
         m_b = eigen_NB_b
-      end if
-
-      if (present(precision)) then
-         precision_ = precision
-      else
-         precision_ = 64
       end if
 !-
 !-------------------------------------------------------------------
@@ -205,26 +196,14 @@
         end if
         d (1:n) = w(1:n)
         e2(1:n) = e(1:n)
-        
-        if (precision_ == SINGLE_PRECISION) then
-          call dc2_FS_fp32(n, ABS(nvec), w , e2(2:), 
-     &                     z, ldz, ny, INFO, ret_2)
-        else
-          call dc2_FS(n, ABS(nvec), w , e2(2:), z, ldz, INFO, ret_2)
-        end if
-
+        call dc2_FS(n, ABS(nvec), w , e2(2:), z, ldz, INFO, ret_2)
         ERROR_INFO = INFO
         call eigen_bisect(d, e, w, n, 1)
         deallocate( e2 )
       end if
       if (mode_ == 'A') then
-         d (1:n) = e(1:n)
-         if (precision_ == SINGLE_PRECISION) then
-            call dc2_FS_fp32(n, ABS(nvec), w, d(2:),
-     &                       z, ldz, ny, INFO, ret_2)
-         else
-            call dc2_FS(n, ABS(nvec), w, d(2:), z, ldz, INFO, ret_2)
-         end if
+        d (1:n) = e(1:n)
+        call dc2_FS(n, ABS(nvec), w, d(2:), z, ldz, INFO, ret_2)
         ERROR_INFO = INFO
       end if
       if (mode_ == 'S' ) then
@@ -239,14 +218,8 @@
 #if TIMER_PRINT
       s1 = eigen_get_wtime()
       if (my_rank == 0) then
-         if (precision_ == SINGLE_PRECISION) then
-            print 10000,"D&C c32 ",
+        print 10000,"D&C C++ fp64 ",
      &  n, s1-s0, ret_2, 1D-9*ret_2/(s1-s0), "GFLOPS"
-         else 
-            print 10000,"D&C c64 ",
-     &  n, s1-s0, ret_2, 1D-9*ret_2/(s1-s0), "GFLOPS"
-         endif
-        
       end if
       call flush(6)
 #endif

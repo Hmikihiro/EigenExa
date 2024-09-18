@@ -63,7 +63,7 @@ module FS_libs_mod
   interface
 
        subroutine eigen_FS(n, nvec, a, lda, w, z, ldz, &
-          m_forward, m_backward, mode, precision)
+          m_forward, m_backward, mode)
        integer,   intent(in)           :: n
        integer,   intent(in)           :: nvec
        real(8),   intent(inout)        :: a(lda,*)
@@ -74,7 +74,6 @@ module FS_libs_mod
        integer,   intent(in), optional :: m_forward
        integer,   intent(in), optional :: m_backward
        character(*), intent(in), optional :: mode
-       integer,   intent(in), optional :: precision
        end subroutine eigen_FS
 
 

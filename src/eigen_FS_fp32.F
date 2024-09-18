@@ -226,7 +226,7 @@
 #if TIMER_PRINT
       s1 = eigen_get_wtime()
       if (my_rank == 0) then
-        print 10000,"D&C single float",
+        print 10000,"D&C C++ fp32 ",
      &  n, s1-s0, ret_2, 1D-9*ret_2/(s1-s0), "GFLOPS"
       end if
       call flush(6)
