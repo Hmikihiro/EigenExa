@@ -12,10 +12,6 @@
 #include "FS_pdlasrt.hpp"
 #include "FS_prof.hpp"
 
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
-
 namespace {
 /**
  * subroutine FS_PDLAED0
@@ -138,6 +134,8 @@ Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[],
         const auto pq = root_node.FS_info_G2L(id, id);
         Integer info = 0;
         if (id < n - 1) {
+          // iworkに残された情報はdstedcの外部で使用しないため、キャストして問題ない
+          // sizeof(Integer) >= sizeof(eigen_mathlib_int)
           info = lapacke::stedc<Float>(
               'I', mat_size, &d[id], &e[id], &q[pq.row + pq.col * ldq], ldq,
               work, lwork, reinterpret_cast<eigen_mathlib_int *>(iwork),

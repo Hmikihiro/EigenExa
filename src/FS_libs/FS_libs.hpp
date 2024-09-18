@@ -1,11 +1,9 @@
 #pragma once
 
-#include <cstdint>
 #include <mpi.h>
 
 #include "../eigen_libs0.hpp"
 #include "eigen_libs_FS_wrapper.hpp"
-#include <algorithm>
 #include <cmath>
 
 namespace FS_libs {
