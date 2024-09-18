@@ -36,7 +36,7 @@ public:
   Integer mycol;
 };
 
-template <class Integer, class Float> class bt_node {
+template <class Integer, class Real> class bt_node {
 public:
   Integer bt_id = 0;
   Integer layer_ = 0;
@@ -50,8 +50,8 @@ public:
   Integer proc_jend_ = 1;   //  process end   number of direction j
   Integer block_start_ = 0; //  merge block start number(refer to procs_i/j)
   Integer block_end_ = 1;   //  merge block end   number(refer to procs_i/j)
-  std::unique_ptr<bt_node<Integer, Float>[]> sub_bt_node_; //  sub tree node
-  bt_node<Integer, Float> *parent_node_;                   //  parent node
+  std::unique_ptr<bt_node<Integer, Real>[]> sub_bt_node_; //  sub tree node
+  bt_node<Integer, Real> *parent_node_;                   //  parent node
   Integer *procs_i_;       //  process No. list of row
   Integer *procs_j_;       //  process No. list of column
   Integer nnod_ = 0;       //  nprocs of communicator
@@ -73,10 +73,10 @@ public:
   std::unique_ptr<eigen_mpi_int[]> group_Y_processranklist_;
 
 public:
-  Integer FS_dividing(Integer n, Float d[], const Float e[],
+  Integer FS_dividing(Integer n, Real d[], const Real e[],
                       std::unique_ptr<bool[]> hint, FS_prof &prof);
 
-  Integer FS_dividing_recursive(Integer n, Float d[], const Float e[],
+  Integer FS_dividing_recursive(Integer n, Real d[], const Real e[],
                                 std::unique_ptr<bool[]> &hint, FS_prof &prof,
                                 Integer bt_id = 0);
 
@@ -93,7 +93,7 @@ public:
     return true;
   }
 
-  std::pair<const bt_node<Integer, Float> *, Integer>
+  std::pair<const bt_node<Integer, Real> *, Integer>
   FS_dividing_getleaf(Integer info) const {
     const FS_libs::Nod inod = FS_libs::FS_get_id();
     if (inod.x - 1 == this->proc_istart_ && inod.x == this->proc_iend_ &&
@@ -103,7 +103,7 @@ public:
 
     if (this->sub_bt_node_ != nullptr) {
       for (Integer i = 0; i < 2; i++) {
-        const bt_node<Integer, Float> &sub_bt_node = this->sub_bt_node_[i];
+        const bt_node<Integer, Real> &sub_bt_node = this->sub_bt_node_[i];
         const auto leaf_and_info = sub_bt_node.FS_dividing_getleaf(info);
         if (leaf_and_info.first != nullptr) {
           return leaf_and_info;
@@ -239,9 +239,9 @@ inline void FS_create_hint(bool hint[]) {
 /**
  * \brief main routine of dividing tree
  */
-template <class Integer, class Float>
-Integer bt_node<Integer, Float>::FS_dividing(Integer n, Float d[],
-                                             const Float e[],
+template <class Integer, class Real>
+Integer bt_node<Integer, Real>::FS_dividing(Integer n, Real d[],
+                                             const Real e[],
                                              std::unique_ptr<bool[]> hint,
                                              FS_prof &prof) {
 #if TIMER_PRINT
@@ -295,9 +295,9 @@ Integer bt_node<Integer, Float>::FS_dividing(Integer n, Float d[],
 /**
  * \brief create sub-tree recursive
  */
-template <class Integer, class Float>
-Integer bt_node<Integer, Float>::FS_dividing_recursive(
-    const Integer n, Float d[], const Float e[], std::unique_ptr<bool[]> &hint,
+template <class Integer, class Real>
+Integer bt_node<Integer, Real>::FS_dividing_recursive(
+    const Integer n, Real d[], const Real e[], std::unique_ptr<bool[]> &hint,
     FS_prof &prof, Integer bt_id) {
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
   const auto x_lnod = this->proc_iend_ - this->proc_istart_;
@@ -330,13 +330,13 @@ Integer bt_node<Integer, Float>::FS_dividing_recursive(
     return -2;
   } else {
     Integer info;
-    this->sub_bt_node_.reset(new bt_node<Integer, Float>[2]);
+    this->sub_bt_node_.reset(new bt_node<Integer, Real>[2]);
 
     for (Integer i = 0; i < 2; i++) {
       const auto this_nstart = this->nstart_;
       const auto this_nend = this->nend_;
       const auto this_nstep = (this_nend - this_nstart) / 2;
-      bt_node<Integer, Float> &subptr = this->sub_bt_node_[i];
+      bt_node<Integer, Real> &subptr = this->sub_bt_node_[i];
 
       subptr.layer_ = this->layer_ + 1;
       subptr.direction_horizontal_ = hint[subptr.layer_];
@@ -381,8 +381,8 @@ Integer bt_node<Integer, Float>::FS_dividing_recursive(
 /**
  * \brief set bit stream of tree dividing direction of all child node to leaf
  */
-template <class Integer, class Float>
-void bt_node<Integer, Float>::dividing_setBitStream() {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::dividing_setBitStream() {
   if (this->sub_bt_node_ == nullptr) {
     return;
   }
@@ -393,7 +393,7 @@ void bt_node<Integer, Float>::dividing_setBitStream() {
   }
 
   this->div_nbit_ = 1;
-  bt_node<Integer, Float> *node = &(this->sub_bt_node_[0]);
+  bt_node<Integer, Real> *node = &(this->sub_bt_node_[0]);
   while (node->sub_bt_node_ != nullptr) {
     this->div_bit_ <<= 1; // ISHIFT
     if (node->direction_horizontal_ == false) {
@@ -407,8 +407,8 @@ void bt_node<Integer, Float>::dividing_setBitStream() {
 /**
  * \brief create local merge X,Y group
  */
-template <class Integer, class Float>
-void bt_node<Integer, Float>::FS_create_mergeXY_group() {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::FS_create_mergeXY_group() {
   const char order = FS_libs::FS_get_grid_major();
   const FS_libs::Nod inod = FS_libs::FS_get_id();
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
@@ -481,8 +481,8 @@ void bt_node<Integer, Float>::FS_create_mergeXY_group() {
   }
 }
 
-template <class Integer, class Float>
-void bt_node<Integer, Float>::FS_create_merge_comm(FS_prof &prof) {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::FS_create_merge_comm(FS_prof &prof) {
   const FS_libs::Nod inod = FS_libs::FS_get_id();
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
 
@@ -513,8 +513,8 @@ void bt_node<Integer, Float>::FS_create_merge_comm(FS_prof &prof) {
 #endif
 }
 
-template <class Integer, class Float>
-void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::FS_create_merge_comm_recursive() {
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
   const char order = FS_libs::FS_get_grid_major();
 
@@ -523,7 +523,7 @@ void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
   }
 
   for (Integer n = 0; n < 2; n++) {
-    bt_node<Integer, Float> &node = this->sub_bt_node_[n];
+    bt_node<Integer, Real> &node = this->sub_bt_node_[n];
 
     const auto ni = node.proc_iend_ - node.proc_istart_;
     const auto nj = node.proc_jend_ - node.proc_jstart_;
@@ -592,15 +592,15 @@ void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
   }
 
   for (Integer n = 0; n < 2; n++) {
-    bt_node<Integer, Float> &node = this->sub_bt_node_[n];
+    bt_node<Integer, Real> &node = this->sub_bt_node_[n];
     if (node.FS_node_included()) {
       node.FS_create_merge_comm_recursive();
     }
   }
 }
 
-template <class Integer, class Float>
-void bt_node<Integer, Float>::FS_dividing_free() {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::FS_dividing_free() {
   if (this->sub_bt_node_ != nullptr) {
     this->sub_bt_node_[0].FS_dividing_free();
     this->sub_bt_node_[1].FS_dividing_free();
@@ -635,8 +635,8 @@ void bt_node<Integer, Float>::FS_dividing_free() {
   }
 }
 
-template <class Integer, class Float>
-g1l<Integer> bt_node<Integer, Float>::FS_info_G1L(char comp,
+template <class Integer, class Real>
+g1l<Integer> bt_node<Integer, Real>::FS_info_G1L(char comp,
                                                   Integer g_index) const {
   const auto NB = this->FS_get_NB();
   const auto IBLK = (g_index) / NB;
@@ -667,8 +667,8 @@ g1l<Integer> bt_node<Integer, Float>::FS_info_G1L(char comp,
   return {l_index, rocsrc};
 }
 
-template <class Integer, class Float>
-GridIndex<Integer> bt_node<Integer, Float>::FS_get_QTOP() const {
+template <class Integer, class Real>
+GridIndex<Integer> bt_node<Integer, Real>::FS_get_QTOP() const {
   const auto grid_info = this->FS_grid_info();
   const auto n = this->FS_get_N();
   const auto nb = this->FS_get_NB();
@@ -705,8 +705,8 @@ GridIndex<Integer> bt_node<Integer, Float>::FS_get_QTOP() const {
   return {root_node->FS_index_G2L('R', II), root_node->FS_index_G2L('C', JJ)};
 }
 
-template <class Integer, class Float>
-Integer bt_node<Integer, Float>::FS_index_L2G(char comp, Integer l_index,
+template <class Integer, class Real>
+Integer bt_node<Integer, Real>::FS_index_L2G(char comp, Integer l_index,
                                               Integer my_roc) const {
   // 1ブロックの次数
   const auto nb = this->FS_get_NB();
@@ -744,8 +744,8 @@ Integer bt_node<Integer, Float>::FS_index_L2G(char comp, Integer l_index,
   return g_index;
 }
 
-template <class Integer, class Float>
-void bt_node<Integer, Float>::print_tree() const {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::print_tree() const {
   const auto nnod = FS_libs::FS_get_procs();
   const auto inod = FS_libs::FS_get_id();
 
@@ -766,8 +766,8 @@ void bt_node<Integer, Float>::print_tree() const {
     */
 }
 
-template <class Integer, class Float>
-void bt_node<Integer, Float>::print_node() const {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::print_node() const {
   FS_libs::Nod nnod = FS_libs::FS_get_procs();
   std::cout << "******************************" << std::endl;
   std::cout << "layer               = " << this->layer_ << std::endl;

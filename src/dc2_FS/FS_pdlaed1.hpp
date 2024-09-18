@@ -40,10 +40,10 @@ namespace dc2_FS {
  *              = 0: successuful exit @n
  *              !=0: error exit
  */
-template <class Integer, class Float>
-Integer FS_pdlaed1(const Integer n, const Integer n1, Float d[], Float q[],
-                   const Integer ldq, const bt_node<Integer, Float> &subtree,
-                   const Float rho, Float work[], Integer iwork[],
+template <class Integer, class Real>
+Integer FS_pdlaed1(const Integer n, const Integer n1, Real d[], Real q[],
+                   const Integer ldq, const bt_node<Integer, Real> &subtree,
+                   const Real rho, Real work[], Integer iwork[],
                    FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
@@ -107,7 +107,7 @@ Integer FS_pdlaed1(const Integer n, const Integer n1, Float d[], Float q[],
 #if TIMER_PRINT
     prof.start(31);
 #endif
-    FS_merge_d<Integer, Float>(n, d, subtree, &work[idwork]);
+    FS_merge_d<Integer, Real>(n, d, subtree, &work[idwork]);
 #if TIMER_PRINT
     prof.end(31);
 #endif
@@ -115,15 +115,15 @@ Integer FS_pdlaed1(const Integer n, const Integer n1, Float d[], Float q[],
     // Form the z-vector which consists of the last row of Q_1 and the
     // first row of Q_2.
     //
-    FS_pdlaedz<Integer, Float>(n, n1, q, ldq, subtree, &work[izwork], prof);
+    FS_pdlaedz<Integer, Real>(n, n1, q, ldq, subtree, &work[izwork], prof);
     //
     // MPI_allreduce d and z
     //
-    FS_reduce_zd<Integer, Float>(n, subtree, &work[izwork], &work[iz], d, prof);
+    FS_reduce_zd<Integer, Real>(n, subtree, &work[izwork], &work[iz], d, prof);
     //
     // Deflate eigenvalues.
     //
-    const auto result = FS_pdlaed2<Integer, Float>(
+    const auto result = FS_pdlaed2<Integer, Real>(
         n, n1, d, q, ldq, subtree, rho, z, w, dlamda, ldq2, q2, &iwork[indx],
         &iwork[ictot], buf, &iwork[coltyp], &iwork[indcol], &iwork[indxc],
         &iwork[indxp], &iwork[ipsm], prof);
@@ -134,7 +134,7 @@ Integer FS_pdlaed1(const Integer n, const Integer n1, Float d[], Float q[],
     const Integer lctot = subtree.y_nnod_;
     Integer info = 0;
     if (result.k != 0) {
-      info = FS_pdlaed3<Integer, Float>(
+      info = FS_pdlaed3<Integer, Real>(
           result.k, n, n1, d, result.rho, dlamda, w, ldq, q, subtree, ldq2, q2,
           ldu, u, &iwork[indx], lctot, &iwork[ictot], sendq2, recvq2, z, buf,
           &iwork[indrow], &iwork[indcol], &iwork[indxc], &iwork[indxr], prof);

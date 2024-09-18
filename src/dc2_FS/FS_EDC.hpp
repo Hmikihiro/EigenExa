@@ -70,9 +70,9 @@ using FS_const::ZERO;
  * @note This routine is modified from ScaLAPACK PDSTEDC.f
  */
 
-template <class Integer, class Float>
-Integer FS_EDC(const Integer n, Float *d, Float *e, Float *q, const Integer ldq,
-               Float *work, const Integer lwork, Integer *iwork,
+template <class Integer, class Real>
+Integer FS_EDC(const Integer n, Real *d, Real *e, Real *q, const Integer ldq,
+               Real *work, const Integer lwork, Integer *iwork,
                const Integer liwork, FS_prof *prof) {
 
   FS_prof prof_tmp = {};
@@ -105,14 +105,14 @@ Integer FS_EDC(const Integer n, Float *d, Float *e, Float *q, const Integer ldq,
     // 何もしない
   } else if (n == 1) {
     if (x_inod == 1 && y_inod == 1) {
-      q[0] = ONE<Float>;
+      q[0] = ONE<Real>;
     }
   } else if (x_nnod * y_nnod == 1) {
     // If P=NPROW*NPCOL=1, solve the problem with DSTEDC.
 #if TIMER_PRINT
     prof_tmp.start(11);
 #endif
-    info = lapacke::stedc<Float>('I', n, d, e, q, ldq, work, lwork,
+    info = lapacke::stedc<Real>('I', n, d, e, q, ldq, work, lwork,
                                  reinterpret_cast<eigen_mathlib_int *>(iwork),
                                  liwork);
 
@@ -121,22 +121,22 @@ Integer FS_EDC(const Integer n, Float *d, Float *e, Float *q, const Integer ldq,
 #endif
   } else {
     // Scale matrix to allowable range, if necessary.
-    auto orgnrm = lapacke::lanst<Float>('M', n, d, e);
+    auto orgnrm = lapacke::lanst<Real>('M', n, d, e);
     if (std::isnan(orgnrm)) {
-      orgnrm = ZERO<Float>;
+      orgnrm = ZERO<Real>;
     }
-    if (orgnrm != ZERO<Float>) {
-      info = lapacke::lascl<Float>('G', 0, 0, orgnrm, ONE<Float>, n, 1, d, n);
+    if (orgnrm != ZERO<Real>) {
+      info = lapacke::lascl<Real>('G', 0, 0, orgnrm, ONE<Real>, n, 1, d, n);
       if (n - 1 >= 1) {
-        info = lapacke::lascl<Float>('G', 0, 0, orgnrm, ONE<Float>, n - 1, 1, e,
+        info = lapacke::lascl<Real>('G', 0, 0, orgnrm, ONE<Real>, n - 1, 1, e,
                                      n - 1);
       }
     }
-    info = FS_pdlaed0<Integer, Float>(n, d, e, q, ldq, work, lwork, iwork,
+    info = FS_pdlaed0<Integer, Real>(n, d, e, q, ldq, work, lwork, iwork,
                                       liwork, prof_tmp);
     // Scale back.
-    if (info == 0 && orgnrm != ZERO<Float>) {
-      info = lapacke::lascl<Float>('G', 0, 0, ONE<Float>, orgnrm, n, 1, d, n);
+    if (info == 0 && orgnrm != ZERO<Real>) {
+      info = lapacke::lascl<Real>('G', 0, 0, ONE<Real>, orgnrm, n, 1, d, n);
     }
   }
 

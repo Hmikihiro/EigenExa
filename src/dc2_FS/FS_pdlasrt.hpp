@@ -72,10 +72,10 @@ namespace dc2_FS {
  * @note This routine is modified from ScaLAPACK PDLASRT.f
  */
 
-template <class Integer, class Float>
-void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
-                const bt_node<Integer, Float> &subtree, Float q2[],
-                const Integer ldq2, Float sendq[], Float recvq[], Float buf[],
+template <class Integer, class Real>
+void FS_pdlasrt(const Integer n, Real d[], Real q[], const Integer ldq,
+                const bt_node<Integer, Real> &subtree, Real q2[],
+                const Integer ldq2, Real sendq[], Real recvq[], Real buf[],
                 Integer indrow[], Integer indcol[], Integer indx[],
                 Integer indrcv[], FS_prof &prof) {
 #ifdef _DEBUGLOG
@@ -171,14 +171,14 @@ void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
     // irecv
     MPI_Request req;
     if (nrecv > 0) {
-      MPI_Irecv(recvq, np * nrecv, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+      MPI_Irecv(recvq, np * nrecv, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                 subtree.group_Y_processranklist_[pjcol], 1,
                 FS_libs::FS_COMM_WORLD, &req);
     }
 
     // send
     if (nsend > 0) {
-      MPI_Send(sendq, np * nsend, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+      MPI_Send(sendq, np * nsend, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                subtree.group_Y_processranklist_[pjcol], 1,
                FS_libs::FS_COMM_WORLD);
     }
@@ -217,7 +217,7 @@ void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
         const auto il = subtree.FS_index_G2L('R', i);
 
         // 送信バッファに格納
-        lapacke::copy<Float>(nq, &q2[il], ldq2, &sendq[nsend * nq], 1);
+        lapacke::copy<Real>(nq, &q2[il], ldq2, &sendq[nsend * nq], 1);
         nsend += 1;
       }
 
@@ -233,14 +233,14 @@ void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
     MPI_Request req;
     // irecv
     if (nrecv > 0) {
-      MPI_Irecv(recvq, nrecv * nq, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+      MPI_Irecv(recvq, nrecv * nq, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                 subtree.group_X_processranklist_[pjrow], 1,
                 FS_libs::FS_COMM_WORLD, &req);
     }
 
     // send
     if (nsend > 0) {
-      MPI_Send(sendq, nsend * nq, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+      MPI_Send(sendq, nsend * nq, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                subtree.group_X_processranklist_[pjrow], 1,
                FS_libs::FS_COMM_WORLD);
     }
@@ -253,7 +253,7 @@ void FS_pdlasrt(const Integer n, Float d[], Float q[], const Integer ldq,
 #pragma omp parallel for
       for (Integer i = 0; i < nrecv; i++) {
         const auto il = indrcv[i];
-        lapacke::copy<Float>(nq, &recvq[i * nq], 1, &q[il], ldq);
+        lapacke::copy<Real>(nq, &recvq[i * nq], 1, &q[il], ldq);
       }
     }
   }

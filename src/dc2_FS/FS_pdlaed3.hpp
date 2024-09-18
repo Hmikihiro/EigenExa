@@ -234,15 +234,15 @@ ComputeArea<Integer> get_np12(const Integer n, const Integer n1,
  *
  * @note This routine is modified from ScaLAPACK PDLAED3.f
  */
-template <class Integer, class Float>
+template <class Integer, class Real>
 Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
-                   Float d[], const Float rho, Float dlamda[], const Float w[],
-                   const Integer ldq, Float q[],
-                   const bt_node<Integer, Float> &subtree, const Integer ldq2,
-                   Float q2[], const Integer ldu, Float u[],
+                   Real d[], const Real rho, Real dlamda[], const Real w[],
+                   const Integer ldq, Real q[],
+                   const bt_node<Integer, Real> &subtree, const Integer ldq2,
+                   Real q2[], const Integer ldu, Real u[],
                    const Integer indx[], const Integer lctot,
-                   const Integer ctot[], Float q2buf1[], Float q2buf2[],
-                   Float z[], Float buf[], Integer indrow[], Integer indcol[],
+                   const Integer ctot[], Real q2buf1[], Real q2buf2[],
+                   Real z[], Real buf[], Integer indrow[], Integer indcol[],
                    Integer indxc[], Integer indxr[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
@@ -291,12 +291,12 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 
 #pragma omp parallel for
     for (Integer i = 0; i < k; i++) {
-      dlamda[i] = lapacke::lamc3<Float>(dlamda[i], dlamda[i]) - dlamda[i];
+      dlamda[i] = lapacke::lamc3<Real>(dlamda[i], dlamda[i]) - dlamda[i];
     }
 
 #pragma omp parallel for
     for (Integer i = 0; i < 4 * k; i++) {
-      buf[i] = FS_const::ZERO<Float>;
+      buf[i] = FS_const::ZERO<Real>;
     }
 
 #if TIMER_PRINT > 1
@@ -306,18 +306,18 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
     if (myklr > 0) {
 #pragma omp parallel reduction(max : sinfo)
       {
-        std::unique_ptr<Float[]> sz(new Float[k]);
-        std::fill_n(sz.get(), k, FS_const::ONE<Float>);
-        std::unique_ptr<Float[]> sbuf(new Float[k]);
+        std::unique_ptr<Real[]> sz(new Real[k]);
+        std::fill_n(sz.get(), k, FS_const::ONE<Real>);
+        std::unique_ptr<Real[]> sbuf(new Real[k]);
 #pragma omp for schedule(static, 1)
         for (Integer i = 0; i < myklr; i++) {
           const Integer kk = pdr + i;
           const auto buf_index = (pdr - pdc + i);
-          Float aux;
+          Real aux;
           Integer iinfo =
-              lapacke::laed4<Float>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
+              lapacke::laed4<Real>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
           if (k == 1 || k == 2) {
-            buf[buf_index] = FS_const::ZERO<Float>;
+            buf[buf_index] = FS_const::ZERO<Real>;
             buf[mykl + buf_index] = aux;
           } else {
             auto sbufD_min = sbuf[kk];
@@ -343,7 +343,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
           for (Integer j = 0; j < k; j++) {
             auto temp = dlamda[j] - dlamda[kk];
             if (j == kk) {
-              temp = FS_const::ONE<Float>;
+              temp = FS_const::ONE<Real>;
             } else {
               temp = temp;
             }
@@ -374,7 +374,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
     } else {
 #pragma omp parallel for
       for (Integer i = 0; i < k; i++) {
-        z[i] = FS_const::ONE<Float>;
+        z[i] = FS_const::ONE<Real>;
       }
     }
 #if TIMER_PRINT > 1
@@ -390,19 +390,19 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
       buf[2 * k + i] = z[i];
     }
 
-    MPI_Group_Allreduce<Float>(&buf[2 * k], z, k,
-                               MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_PROD,
+    MPI_Group_Allreduce<Real>(&buf[2 * k], z, k,
+                               MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_PROD,
                                FS_COMM_WORLD, subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
     for (Integer i = 0; i < k; i++) {
-      const auto sign = static_cast<Float>((w[i] >= 0) ? 1 : -1);
+      const auto sign = static_cast<Real>((w[i] >= 0) ? 1 : -1);
       z[i] = sign * std::abs(std::sqrt(-z[i]));
     }
 
     if (mykl > 0) {
-      MPI_Group_Allreduce<Float>(buf, &buf[2 * k], 2 * mykl,
-                                 MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_SUM,
+      MPI_Group_Allreduce<Real>(buf, &buf[2 * k], 2 * mykl,
+                                 MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM,
                                  FS_COMM_WORLD, subtree.MERGE_GROUP_X_);
     }
 
@@ -410,7 +410,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
     {
 #pragma omp for
       for (Integer i = 0; i < 2 * mykl; i++) {
-        buf[i] = FS_const::ZERO<Float>;
+        buf[i] = FS_const::ZERO<Real>;
       }
 #pragma omp for
       for (Integer i = 0; i < mykl; i++) {
@@ -419,14 +419,14 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
       }
     }
 
-    MPI_Group_Allreduce<Float>(buf, &buf[2 * k], 2 * k,
-                               MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_SUM,
+    MPI_Group_Allreduce<Real>(buf, &buf[2 * k], 2 * k,
+                               MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM,
                                FS_COMM_WORLD, subtree.MERGE_GROUP_Y_);
 
     // Copy of D at the good place
 
-    Float *sbufd = &buf[2 * k];
-    Float *sbufb = &buf[3 * k];
+    Real *sbufd = &buf[2 * k];
+    Real *sbufb = &buf[3 * k];
     if (k == 1 || k == 2) {
       for (Integer i = 0; i < k; i++) {
         const auto gi = indx[i];
@@ -470,7 +470,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 #pragma omp for collapse(2)
     for (Integer j = 0; j < mykl; j++) {
       for (Integer i = 0; i < np; i++) {
-        q[j * ldq + i] = FS_const::ZERO<Float>;
+        q[j * ldq + i] = FS_const::ZERO<Real>;
       }
     }
 #pragma omp for collapse(2)
@@ -490,8 +490,8 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
     Integer nrecv = 0;
     Integer nsend = 0;
     for (Integer pj = 0; pj < npcol; pj++) {
-      Float *sendq2 = nullptr;
-      Float *recvq2 = nullptr;
+      Real *sendq2 = nullptr;
+      Real *recvq2 = nullptr;
 
       // 送受信バッファのポインタ
       if (pj % 2 == 0) {
@@ -594,7 +594,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
         if (nsend > 0) {
           const auto dstcol = (mycol + npcol - 1) % npcol; // 左側に送信
           const auto dest = subtree.group_Y_processranklist_[dstcol];
-          MPI_Isend(sendq2, nsend, MPI_Datatype_wrapper::MPI_TYPE<Float>, dest,
+          MPI_Isend(sendq2, nsend, MPI_Datatype_wrapper::MPI_TYPE<Real>, dest,
                     1, FS_libs::FS_COMM_WORLD, &req[0]);
         }
 
@@ -605,7 +605,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
         if (nrecv > 0) {
           const auto srccol = (mycol + npcol + 1) % npcol; // 右側から受信
           const auto source = subtree.group_Y_processranklist_[srccol];
-          MPI_Irecv(recvq2, nrecv, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+          MPI_Irecv(recvq2, nrecv, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                     source, 1, FS_libs::FS_COMM_WORLD, &req[1]);
         }
 #ifdef _MPITEST
@@ -629,15 +629,15 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 #endif
 #pragma omp parallel
         {
-          std::unique_ptr<Float[]> sbuf(new Float[k]);
+          std::unique_ptr<Real[]> sbuf(new Real[k]);
 #pragma omp for
           for (Integer j = 0; j < mykl; j++) {
             const auto kk = indxc[j];
             const auto ju = indx[kk];
             const auto jju = subtree.FS_index_G2L('C', ju);
-            Float aux;
+            Real aux;
             if (k == 1 || k == 2) {
-              lapacke::laed4<Float>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
+              lapacke::laed4<Real>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
             } else {
               for (Integer i = 0; i < k; i++) {
                 sbuf[i] = dlamda[i] - sbufb[kk];
@@ -657,7 +657,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
             for (Integer i = 0; i < k; i++) {
               sbuf[i] = z[i] / sbuf[i];
             }
-            const auto temp = lapacke::nrm2<Float>(k, sbuf.get(), 1);
+            const auto temp = lapacke::nrm2<Real>(k, sbuf.get(), 1);
 
             for (Integer i = 0; i < klr; i++) {
               const auto kk = indxr[i];
@@ -675,9 +675,9 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 #if TIMER_PRINT > 1
           prof.start(67);
 #endif
-          lapacke::gemm<Float>(CblasNoTrans, CblasNoTrans, np1, mykl, n12,
-                               FS_const::ONE<Float>, q2, ldq2, u, ldu,
-                               FS_const::ONE<Float>, q, ldq);
+          lapacke::gemm<Real>(CblasNoTrans, CblasNoTrans, np1, mykl, n12,
+                               FS_const::ONE<Real>, q2, ldq2, u, ldu,
+                               FS_const::ONE<Real>, q, ldq);
           eigen_dc_interface::flops += 2 * static_cast<double>(np1) *
                                        static_cast<double>(mykl) *
                                        static_cast<double>(n12);
@@ -698,10 +698,10 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 #if TIMER_PRINT > 1
           prof.start(67);
 #endif
-          lapacke::gemm<Float>(CblasNoTrans, CblasNoTrans, np2, mykl, n23,
-                               FS_const::ONE<Float>, &q2[jq2 * ldq2 + iq2],
+          lapacke::gemm<Real>(CblasNoTrans, CblasNoTrans, np2, mykl, n23,
+                               FS_const::ONE<Real>, &q2[jq2 * ldq2 + iq2],
                                ldq2, &u[jju * ldu + iiu], ldu,
-                               FS_const::ONE<Float>, &q[jq * ldq + iq], ldq);
+                               FS_const::ONE<Real>, &q[jq * ldq + iq], ldq);
           eigen_dc_interface::flops += 2 * static_cast<double>(np2) *
                                        static_cast<double>(mykl) *
                                        static_cast<double>(n23);
