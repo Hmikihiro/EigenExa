@@ -1,8 +1,8 @@
 #pragma once
-/**>
- *> @file   FS_merge_d.hpp
- *> @brief  subroutine FS_merge_d
- **/
+/**
+ * @file   FS_merge_d.hpp
+ * @brief  subroutine FS_merge_d
+ */
 #include <algorithm>
 
 #include "../cblas_lapacke_wrapper.hpp"
@@ -11,28 +11,28 @@
 
 namespace {
 /**
- *> subroutine FS_merge_d
- *>
- *> @brief  @n
- *> Purpose @n
- *> ======= @n
- *> gather D of sub-matrix.
+ * subroutine FS_merge_d
+ *
+ * @brief  @n
+ * Purpose @n
+ * ======= @n
+ * gather D of sub-matrix.
  *
  *  Arguments
  *  =========
- *>
- *> @param[in]     N        (global input) INTEGER @n
- *>                         The order of the tridiagonal matrix T.  N >= 0.
- *>
- *> @param[in]     D        (local input) DOUBLE PRECISION array, dimension(N)
- *@n > The diagonal elements of the tridiagonal matrix.
- *>
- *> @param[in]     SUBTREE  (input) type(bt_node) @n
- *>                         sub-tree information of merge block.
- *>
- *> @param[out]    DOUT     (local output) DOUBLE PRECISION array, dimension (N)
- *>                         generated D before MPI_ALLREDUCE.
- *>
+ *
+ * @param[in]     N        (global input) INTEGER @n
+ *                         The order of the tridiagonal matrix T.  N = 0.
+ *
+ * @param[in]     D        (local input) DOUBLE PRECISION array, dimension(N)
+ *@n  The diagonal elements of the tridiagonal matrix.
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param[out]    DOUT     (local output) DOUBLE PRECISION array, dimension (N)
+ *                         generated D before MPI_ALLREDUCE.
+ *
  */
 template <class Integer, class Float>
 void FS_merge_d(const Integer n, const Float d[],

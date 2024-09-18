@@ -1,4 +1,9 @@
 #pragma once
+/**
+ * @file FS2eigen_pdlasrt.hpp
+ * @brief fn FS2eigen_pdlasrt
+ */
+
 #include <mpi.h>
 
 #include <algorithm>
@@ -187,6 +192,62 @@ select_first_communicater(const Integer send_nrank, const Integer eigen_np,
 } // namespace FS2eigen
 } // namespace
 namespace {
+/**
+ * subroutine FS2eigen_PDLASRT
+ *
+ *  @brief @n
+ *  Purpose @n
+ *  ======= @n
+ *  FS2eigen_PDLASRT Sort the numbers in D in increasing order and the @n
+ *  corresponding vectors in Q.
+ *
+ *  Arguments
+ *  =========
+ *
+ * @param[in]     N        (global input) INTEGER @n
+ *                         The number of columns to be operated on i.e the @n
+ *                         number of columns of the distributed submatrix @n
+ *                         sub( Q ). N >= 0.
+ *
+ * @param[in,out] D        (global input/output) DOUBLE PRECISION array,
+ dimension (N) @n
+ *                         On exit, the number in D are sorted in increasing
+ order.
+ *
+ * @param[in,out] Q        (input/output) DOUBLE PRECISION pointer into the
+ local memory @n
+ *                         to an array of dimension (LDQ, NQ). This array
+ contains the   @n
+ *                         local pieces of the distributed matrix sub( A ) to be
+ copied  @n
+ *                         from.
+ *
+ * @param[in]     LDQ      (local input) INTEGER @n
+ *                         The leading dimension of the array Q.  LDQ >=
+ max(1,NP).
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param         IBUF     (workspace) INTEGR array, dimension
+ (FS_NBROW*FS_NBCOL)
+ *
+ * @param         RBUF     (workspace) DOUBLE PRECISION array, dimension (N)
+ *
+ * @param         TBUF     (workspace) TYPE(GpositionValue) array, dimension
+ (FS_NBROW*FS_NBCOL)
+ *
+ * @param         INDX     (workspace) INTEGER array, dimension (N)
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ *
+ * @return                 INFO     (global output) INTEGER @n
+ *                          = 0: successful exit    @n
+ *                         /=0: error exit
+ *
+ * @note This routine is modified from ScaLAPACK PDLASRT.f
+ */
 template <class Integer, class Float>
 Integer FS2eigen_pdlasrt(const Integer n, Float d[], const Integer ldq,
                          Float q[], const bt_node<Integer, Float> &subtree,
@@ -336,7 +397,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Float d[], const Integer ldq,
 
   const auto send_nrank_maxsize =
       FS2eigen::get_nrank_maxsize<Integer>((Integer)eigen_np, comm_send_info);
-  const auto send_nrank = send_nrank_maxsize.nrank;
+  const auto send_nrank = send_nrank_maxsize.nrank; // 送信相手の総数
   const auto send_maxsize = send_nrank_maxsize.maxsize;
 
   etime = MPI_Wtime();
@@ -381,7 +442,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Float d[], const Integer ldq,
 
   const auto recv_nrank_maxsize = FS2eigen::get_nrank_maxsize<Integer>(
       (Integer)eigen_np, comm_recv_info.get());
-  const auto recv_nrank = recv_nrank_maxsize.nrank;
+  const auto recv_nrank = recv_nrank_maxsize.nrank; // 受信相手の総数
 
   etime = MPI_Wtime();
   prof_time[5] = etime - stime;
