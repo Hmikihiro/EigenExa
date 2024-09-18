@@ -135,6 +135,7 @@
 
       ! special constants
       public  :: get_constant_eps
+      public  :: get_constant_eps_fp32
       public  :: get_constant_nan
       public  :: get_constant_pai
       public  :: get_constant_2pai
@@ -2073,12 +2074,12 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       integer function eigen_translate_g2l_(ictr, nnod, inod)
-     &     result(ret) 
+     &     result(ret)
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_translate_g2l_
 
-        integer,value, intent(in)    ::  ictr
-        integer,value, intent(in)    ::  nnod
-        integer,value, intent(in)    ::  inod
+      integer, intent(in)    ::  ictr
+      integer, intent(in)    ::  nnod
+      integer, intent(in)    ::  inod
 
       ret = (ictr-1)/nnod+1
 
@@ -2157,12 +2158,12 @@
 !--------*---------*---------*---------*---------*---------*---------*-*
 
       integer function eigen_owner_node_(ictr, nnod, inod)
-     &     result(ret) 
+     &     result(ret)
 !DIR$ ATTRIBUTES FORCEINLINE :: eigen_owner_node_
 
-      integer, value, intent(in)    ::  ictr
-      integer, value, intent(in)    ::  nnod
-      integer, value, intent(in)    ::  inod
+      integer, intent(in)    ::  ictr
+      integer, intent(in)    ::  nnod
+      integer, intent(in)    ::  inod
 
       ret = mod(ictr-1, nnod)+1
 
@@ -2462,6 +2463,36 @@
       return
 
       end function get_constant_eps
+
+!--------*---------*---------*---------*---------*---------*---------*-*
+!     
+! Function: get_constant_eps_fp32
+!
+! Purpose
+! =======
+!
+! Constant number machine_epsilon in fp32
+!
+!
+! Arguments
+! =========
+!
+!--------*---------*---------*---------*---------*---------*---------*-*
+
+      real(4) function get_constant_eps_fp32()
+     &     result(r)
+!DIR$ ATTRIBUTES FORCEINLINE :: get_constant_eps_fp32
+ 
+      integer(4), target :: const_eps_i4
+      real(4), pointer   :: const_eps_r4
+      data const_eps_i4 / z'34000000' /
+ 
+      call c_f_pointer( c_loc(const_eps_i4), const_eps_r4 )
+      r = const_eps_r4
+ 
+      return
+ 
+      end function get_constant_eps_fp32
    
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     

@@ -1,8 +1,14 @@
 #pragma once
+/**
+ * @file FS_pdlaed3.hpp
+ * @brief FS_pdlaed3
+ */
+
 #include <mpi.h>
 #include <omp.h>
 
 #include <cmath>
+#include <cstdio>
 #include <memory>
 
 #include "../MPI_Allreduce_group.hpp"
@@ -13,16 +19,13 @@
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
 
-namespace FS_pdlaed3 {
+namespace {
+namespace dc2_FS {
 using FS_libs::FS_COMM_WORLD;
-using std::abs;
-using std::max;
-using std::min;
-using std::sqrt;
 
 template <class Integer>
-Integer get_pdc(Integer lctot, const Integer ctot[], Integer npcol,
-                Integer mycol) {
+Integer get_pdc(const Integer lctot, const Integer ctot[], const Integer npcol,
+                const Integer mycol) {
   Integer pdc = 0;
   for (Integer col = 0; col != mycol; col = (col + 1) % npcol) {
     pdc +=
@@ -32,8 +35,8 @@ Integer get_pdc(Integer lctot, const Integer ctot[], Integer npcol,
 }
 
 template <class Integer>
-Integer get_pdr(Integer pdc, Integer klr, Integer mykl, Integer nprow,
-                Integer myrow) {
+Integer get_pdr(const Integer pdc, const Integer klr, const Integer mykl,
+                const Integer nprow, const Integer myrow) {
   auto pdr = pdc;
   auto kl = klr + (mykl % nprow);
   for (Integer row = 0; row != myrow; row = (row + 1) % nprow) {
@@ -47,8 +50,8 @@ Integer get_pdr(Integer pdc, Integer klr, Integer mykl, Integer nprow,
  * \brief pjcolのrowインデックスリストを作成
  */
 template <class Integer>
-Integer get_klr(Integer k, const Integer indx[], const Integer indcol[],
-                Integer pjcol, Integer indxr[]) {
+Integer get_klr(const Integer k, const Integer indx[], const Integer indcol[],
+                const Integer pjcol, Integer indxr[]) {
   Integer klr = 0;
   for (Integer i = 0; i < k; i++) {
     const auto gi = indx[i];
@@ -65,8 +68,8 @@ Integer get_klr(Integer k, const Integer indx[], const Integer indcol[],
  * \brief 自身のCOLインデクスリストを作成
  */
 template <class Integer>
-void set_indxc(Integer k, const Integer indx[], const Integer indcol[],
-               Integer mycol, Integer indxc[]) {
+void set_indxc(const Integer k, const Integer indx[], const Integer indcol[],
+               const Integer mycol, Integer indxc[]) {
   Integer klc = 0;
   for (Integer i = 0; i < k; i++) {
     const auto gi = indx[i];
@@ -78,13 +81,22 @@ void set_indxc(Integer k, const Integer indx[], const Integer indcol[],
   }
 }
 
+/**
+ * @brief return of get_np12
+ *
+ * @tparam Integer
+ */
 template <class Integer> class ComputeArea {
 public:
-  Integer np1; // 行列の上側
-  Integer np2; // 行列の下側
+  /** 上側の行列の次数 */
+  Integer np1;
+  /** 下側の行列の次数 */
+  Integer np2;
 };
+
 template <class Integer>
-ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
+ComputeArea<Integer> get_np12(const Integer n, const Integer n1,
+                              const Integer np, const Integer myrow,
                               const Integer indrow[]) {
   Integer minrow = n - 1;
   Integer maxrow = 0;
@@ -95,8 +107,8 @@ ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
     reduction(+ : npa)
   for (Integer i = 0; i < n; i++) {
     if (indrow[i] == myrow) {
-      minrow = min(minrow, (Integer)i);
-      maxrow = max(maxrow, (Integer)i);
+      minrow = std::min(minrow, (Integer)i);
+      maxrow = std::max(maxrow, (Integer)i);
       npa += 1;
     }
   }
@@ -116,18 +128,125 @@ ComputeArea<Integer> get_np12(Integer n, Integer n1, Integer np, Integer myrow,
   return ComputeArea<Integer>{np1, np2};
 }
 
-template <class Integer, class Float>
-Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
-                   Float dlamda[], Float w[], Integer ldq, Float q[],
-                   const FS_dividing::bt_node<Integer, Float> &subtree,
-                   Integer ldq2, Float q2[], Integer ldu, Float u[],
-                   Integer indx[], Integer lctot, const Integer ctot[],
-                   Float q2buf1[], Float q2buf2[], Float z[], Float buf[],
-                   Integer indrow[], Integer indcol[], Integer indxc[],
-                   Integer indxr[], Integer indxcb[], FS_prof::FS_prof &prof) {
+/**
+ * subroutine FS_PDLAED3
+ *
+ * @brief @n
+ *  Purpose @n
+ *  ======= @n
+ *  FS_PDLAED3 finds the roots of the secular equation, as defined by the @n
+ *  values in D, W, and RHO, between 1 and K.  It makes the               @n
+ *  appropriate calls to DLAED4                                           @n
+ *                                                                        @n
+ *  The final stage consists of computing the updated eigenvectors        @n
+ *  directly using the updated eigenvalues.  The eigenvectors for         @n
+ *  the current problem are multiplied with the eigenvectors from         @n
+ *  the overall problem.
+!
+!  Arguments
+!  =========
+ *
+ * @param[in]     K        (output) INTEGER @n
+ *                         The number of non-deflated eigenvalues, and the order of the @n
+ *                         related secular equation. 0 <= K <=N.
+ *
+ * @param[in]     N        (input) INTEGER @n
+ *                         The dimension of the symmetric tridiagonal matrix.  N >= 0.
+ *
+ * @param[in]     N1       (input) INTEGER @n
+ *                         The location of the last eigenvalue in the leading sub-matrix. @n
+ *                         min(1,N) <= N1 <= N.
+ *
+ * @param[in,out] D        (input/output) DOUBLE PRECISION array, dimension (N)        @n
+ *                         On entry, D contains the trailing (N-K) updated eigenvalues @n
+ *                         (those which were deflated) sorted into increasing order.   @n
+ *                         On exit, D contains the updated eigenvalues.
+ *
+ * @param[in]     RHO      (global output) DOUBLE PRECISION                        @n
+ *                         The off-diagonal element associated with the rank-1 cut @n
+ *                         cut which modified to the value for this subroutine.
+ *
+ * @param[in,out] DLAMDA   (global input) DOUBLE PRECISION array, dimension (K)   @n
+ *                         A copy of the first K eigenvalues.
+ *
+ * @param[in]     W        (global input) DOUBLE PRECISION array, dimension (K)        @n
+ *                         The first k values of the final deflation-altered z-vector. @n
+ *
+ * @param[out]    Q        (output) DOUBLE PRECISION array, dimension (LDQ, NQ)  @n
+ *                         On exit, Q contains the updated eigenvectors.
+ *
+ * @param[in]     LDQ      (local input) INTEGER @n
+ *                         The leading dimension of the array Q.  LDQ >= max(1,NP).
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param[in,out] Q2       (input/workspace) DOUBLE PRECISION array, dimension (LDQ2, NQ) @n
+ *                         On entry, The eigen vectors which sorted by COLTYP             @n
+ *                         On exit, Q2 has been destroyed.
+ *
+ * @param[in]     LDQ2     (input) INTEGER @n
+ *                         The leading dimension of the array Q2.
+ *
+ * @param         U        (workspace) DOUBLE PRECISION array, dimension (LDU, NQ) @n
+ *                         delta.
+ *
+ * @param[in]     LDU      (input) INTEGER @n
+ *                         The leading dimension of the array U.
+ *
+ * @param[in]     SC       (input) INTEGER @n
+ *                         blocking size.
+ *
+ * @param[in]     INDX     (input) INTEGER array, dimension (N)                     @n
+ *                         The permutation used to sort the contents of DLAMDA into @n
+ *                         ascending order.
+ *
+ * @param[in]     CTOT     (input) INTEGER array, dimension (NPCOL, 4) @n
+ *                         The number of COLTYP of each process column.
+ *
+ * @param         Q2BUF1   (workspace) DOUBLE PRECISION array, dimension (LQ2BUF)
+ *
+ * @param         Q2BUF2   (workspace) DOUBLE PRECISION array, dimension (LQ2BUF)
+ *
+ * @param         LQ2BUF   (input) INTEGER @n
+ *                         The leading dimension of the array LQ2BUF (=NP*NQ)
+ *
+ * @param         Z        (workspace) DOUBLE PRECISION array, dimension (K)
+ *
+ * @param         BUF      (workspace) DOUBLE PRECISION array, dimension (4*K)
+ *
+ * @param         INDROW   (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDCOL   (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDXC    (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDXR    (workspace) INTEGER array, dimension (N)
+ *
+ *
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ *
+ * @return    INFO     (global output) INTEGER @n
+ *                         = 0: successful exit    @n
+ *                         /=0: error exit
+ *
+ * @note This routine is modified from ScaLAPACK PDLAED3.f
+ */
+template <class Integer, class Real>
+Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
+                   Real d[], const Real rho, Real dlamda[], const Real w[],
+                   const Integer ldq, Real q[],
+                   const bt_node<Integer, Real> &subtree, const Integer ldq2,
+                   Real q2[], const Integer ldu, Real u[],
+                   const Integer indx[], const Integer lctot,
+                   const Integer ctot[], Real q2buf1[], Real q2buf2[],
+                   Real z[], Real buf[], Integer indrow[], Integer indcol[],
+                   Integer indxc[], Integer indxr[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    printf("FS_pdlaed3 start\n");
+    std::cout << "FS_pdlaed3 start" << std::endl;
   }
 #endif
   Integer info = 0;
@@ -167,17 +286,17 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
     const auto klr = mykl / nprow;
     const auto myklr = (myrow == 0) ? klr + (mykl % nprow) : klr;
 
-    const auto pdc = get_pdc(lctot, ctot, npcol, mycol);
-    const auto pdr = get_pdr(pdc, klr, mykl, nprow, myrow);
+    const auto pdc = get_pdc<Integer>(lctot, ctot, npcol, mycol);
+    const auto pdr = get_pdr<Integer>(pdc, klr, mykl, nprow, myrow);
 
 #pragma omp parallel for
     for (Integer i = 0; i < k; i++) {
-      dlamda[i] = lapacke::lamc3<Float>(dlamda[i], dlamda[i]) - dlamda[i];
+      dlamda[i] = lapacke::lamc3<Real>(dlamda[i], dlamda[i]) - dlamda[i];
     }
 
 #pragma omp parallel for
     for (Integer i = 0; i < 4 * k; i++) {
-      buf[i] = FS_const::ZERO<Float>;
+      buf[i] = FS_const::ZERO<Real>;
     }
 
 #if TIMER_PRINT > 1
@@ -187,24 +306,24 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
     if (myklr > 0) {
 #pragma omp parallel reduction(max : sinfo)
       {
-        std::unique_ptr<Float[]> sz(new Float[k]);
-        std::fill_n(sz.get(), k, FS_const::ONE<Float>);
-        std::unique_ptr<Float[]> sbuf(new Float[k]);
+        std::unique_ptr<Real[]> sz(new Real[k]);
+        std::fill_n(sz.get(), k, FS_const::ONE<Real>);
+        std::unique_ptr<Real[]> sbuf(new Real[k]);
 #pragma omp for schedule(static, 1)
         for (Integer i = 0; i < myklr; i++) {
           const Integer kk = pdr + i;
           const auto buf_index = (pdr - pdc + i);
-          Float aux;
-          eigen_int iinfo = lapacke::laed4<eigen_int, Float>(
-              k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
+          Real aux;
+          Integer iinfo =
+              lapacke::laed4<Real>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
           if (k == 1 || k == 2) {
-            buf[buf_index] = FS_const::ZERO<Float>;
+            buf[buf_index] = FS_const::ZERO<Real>;
             buf[mykl + buf_index] = aux;
           } else {
             auto sbufD_min = sbuf[kk];
             auto sbufB_min = dlamda[kk];
             if ((kk + 1) < k) {
-              if (abs(sbuf[kk + 1]) < abs(sbufD_min)) {
+              if (std::abs(sbuf[kk + 1]) < std::abs(sbufD_min)) {
                 sbufD_min = sbuf[kk + 1];
                 sbufB_min = dlamda[kk + 1];
               }
@@ -215,14 +334,16 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
           }
           if (iinfo != 0) {
             sinfo = kk;
-            printf("error");
+            std::cout << "error" << std::endl;
           }
           // ..Compute part of z
+
+// このpragmaはFujitsuコンパイラのtradにおいて有効になる
 #pragma loop nofp_relaxed nofp_contract noeval
           for (Integer j = 0; j < k; j++) {
             auto temp = dlamda[j] - dlamda[kk];
             if (j == kk) {
-              temp = FS_const::ONE<Float>;
+              temp = FS_const::ONE<Real>;
             } else {
               temp = temp;
             }
@@ -253,7 +374,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
     } else {
 #pragma omp parallel for
       for (Integer i = 0; i < k; i++) {
-        z[i] = FS_const::ONE<Float>;
+        z[i] = FS_const::ONE<Real>;
       }
     }
 #if TIMER_PRINT > 1
@@ -269,18 +390,19 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
       buf[2 * k + i] = z[i];
     }
 
-    MPI_Group_Allreduce<Float>(&buf[2 * k], z, k,
-                               MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_PROD,
+    MPI_Group_Allreduce<Real>(&buf[2 * k], z, k,
+                               MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_PROD,
                                FS_COMM_WORLD, subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
     for (Integer i = 0; i < k; i++) {
-      z[i] = abs(sqrt(-z[i])) * ((w[i] >= 0) ? 1 : -1);
+      const auto sign = static_cast<Real>((w[i] >= 0) ? 1 : -1);
+      z[i] = sign * std::abs(std::sqrt(-z[i]));
     }
 
     if (mykl > 0) {
-      MPI_Group_Allreduce<Float>(buf, &buf[2 * k], 2 * mykl,
-                                 MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_SUM,
+      MPI_Group_Allreduce<Real>(buf, &buf[2 * k], 2 * mykl,
+                                 MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM,
                                  FS_COMM_WORLD, subtree.MERGE_GROUP_X_);
     }
 
@@ -288,7 +410,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
     {
 #pragma omp for
       for (Integer i = 0; i < 2 * mykl; i++) {
-        buf[i] = FS_const::ZERO<Float>;
+        buf[i] = FS_const::ZERO<Real>;
       }
 #pragma omp for
       for (Integer i = 0; i < mykl; i++) {
@@ -297,14 +419,14 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
       }
     }
 
-    MPI_Group_Allreduce<Float>(buf, &buf[2 * k], 2 * k,
-                               MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_SUM,
+    MPI_Group_Allreduce<Real>(buf, &buf[2 * k], 2 * k,
+                               MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM,
                                FS_COMM_WORLD, subtree.MERGE_GROUP_Y_);
 
     // Copy of D at the good place
 
-    Float *sbufd = &buf[2 * k];
-    Float *sbufb = &buf[3 * k];
+    Real *sbufd = &buf[2 * k];
+    Real *sbufb = &buf[3 * k];
     if (k == 1 || k == 2) {
       for (Integer i = 0; i < k; i++) {
         const auto gi = indx[i];
@@ -348,7 +470,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
 #pragma omp for collapse(2)
     for (Integer j = 0; j < mykl; j++) {
       for (Integer i = 0; i < np; i++) {
-        q[j * ldq + i] = FS_const::ZERO<Float>;
+        q[j * ldq + i] = FS_const::ZERO<Real>;
       }
     }
 #pragma omp for collapse(2)
@@ -368,8 +490,8 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
     Integer nrecv = 0;
     Integer nsend = 0;
     for (Integer pj = 0; pj < npcol; pj++) {
-      Float *sendq2 = nullptr;
-      Float *recvq2 = nullptr;
+      Real *sendq2 = nullptr;
+      Real *recvq2 = nullptr;
 
       // 送受信バッファのポインタ
       if (pj % 2 == 0) {
@@ -409,7 +531,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
 #pragma omp parallel for
           for (Integer jq2 = 0; jq2 < n12; jq2++) {
             const auto js = jq2 * np1;
-            std::copy_n(&recvq2[js], np1, &q2[jq2 * ldq2 + 0]);
+            lapacke::copy(np1, &recvq2[js], 1, &q2[jq2 * ldq2 + 0], 1);
           }
         }
         // 下側
@@ -418,7 +540,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
           for (Integer j = 0; j < n23; j++) {
             const auto jq2 = j + ctot[0 * lctot + pjcol];
             const auto js = n12 * np1 + j * np2;
-            std::copy_n(&recvq2[js], np2, &q2[jq2 * ldq2 + np1]);
+            lapacke::copy(np2, &recvq2[js], 1, &q2[jq2 * ldq2 + np1], 1);
           }
         }
 
@@ -454,7 +576,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
 #pragma omp parallel for
             for (Integer jq2 = 0; jq2 < n12; jq2++) {
               const auto js = jq2 * np1;
-              std::copy_n(&q2[jq2 * ldq2 + 0], np1, &sendq2[js]);
+              lapacke::copy(np1, &q2[jq2 * ldq2 + 0], 1, &sendq2[js], 1);
             }
           }
           // 下側
@@ -463,7 +585,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
             for (Integer j = 0; j < n23; j++) {
               const auto jq2 = j + ctot[0 * lctot + pjcol];
               const auto js = n12 * np1 + j * np2;
-              std::copy_n(&q2[jq2 * ldq2 + np1], np2, &sendq2[js]);
+              lapacke::copy(np2, &q2[jq2 * ldq2 + np1], 1, &sendq2[js], 1);
             }
           }
         }
@@ -472,7 +594,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
         if (nsend > 0) {
           const auto dstcol = (mycol + npcol - 1) % npcol; // 左側に送信
           const auto dest = subtree.group_Y_processranklist_[dstcol];
-          MPI_Isend(sendq2, nsend, MPI_Datatype_wrapper::MPI_TYPE<Float>, dest,
+          MPI_Isend(sendq2, nsend, MPI_Datatype_wrapper::MPI_TYPE<Real>, dest,
                     1, FS_libs::FS_COMM_WORLD, &req[0]);
         }
 
@@ -483,7 +605,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
         if (nrecv > 0) {
           const auto srccol = (mycol + npcol + 1) % npcol; // 右側から受信
           const auto source = subtree.group_Y_processranklist_[srccol];
-          MPI_Irecv(recvq2, nrecv, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+          MPI_Irecv(recvq2, nrecv, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                     source, 1, FS_libs::FS_COMM_WORLD, &req[1]);
         }
 #ifdef _MPITEST
@@ -507,16 +629,15 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
 #endif
 #pragma omp parallel
         {
-          std::unique_ptr<Float[]> sbuf(new Float[k]);
+          std::unique_ptr<Real[]> sbuf(new Real[k]);
 #pragma omp for
           for (Integer j = 0; j < mykl; j++) {
             const auto kk = indxc[j];
             const auto ju = indx[kk];
             const auto jju = subtree.FS_index_G2L('C', ju);
-            Float aux;
+            Real aux;
             if (k == 1 || k == 2) {
-              lapacke::laed4<eigen_int, Float>(k, kk + 1, dlamda, w, sbuf.get(),
-                                               rho, aux);
+              lapacke::laed4<Real>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
             } else {
               for (Integer i = 0; i < k; i++) {
                 sbuf[i] = dlamda[i] - sbufb[kk];
@@ -536,7 +657,7 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
             for (Integer i = 0; i < k; i++) {
               sbuf[i] = z[i] / sbuf[i];
             }
-            const auto temp = lapacke::nrm2<Integer, Float>(k, sbuf.get(), 1);
+            const auto temp = lapacke::nrm2<Real>(k, sbuf.get(), 1);
 
             for (Integer i = 0; i < klr; i++) {
               const auto kk = indxr[i];
@@ -554,9 +675,9 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
 #if TIMER_PRINT > 1
           prof.start(67);
 #endif
-          lapacke::gemm<eigen_int, Float>(CblasNoTrans, CblasNoTrans, np1, mykl,
-                                          n12, FS_const::ONE<Float>, q2, ldq2,
-                                          u, ldu, FS_const::ONE<Float>, q, ldq);
+          lapacke::gemm<Real>(CblasNoTrans, CblasNoTrans, np1, mykl, n12,
+                               FS_const::ONE<Real>, q2, ldq2, u, ldu,
+                               FS_const::ONE<Real>, q, ldq);
           eigen_dc_interface::flops += 2 * static_cast<double>(np1) *
                                        static_cast<double>(mykl) *
                                        static_cast<double>(n12);
@@ -577,10 +698,10 @@ Integer FS_pdlaed3(Integer k, Integer n, Integer n1, Float d[], Float rho,
 #if TIMER_PRINT > 1
           prof.start(67);
 #endif
-          lapacke::gemm<Integer, Float>(
-              CblasNoTrans, CblasNoTrans, np2, mykl, n23, FS_const::ONE<Float>,
-              &q2[jq2 * ldq2 + iq2], ldq2, &u[jju * ldu + iiu], ldu,
-              FS_const::ONE<Float>, &q[jq * ldq + iq], ldq);
+          lapacke::gemm<Real>(CblasNoTrans, CblasNoTrans, np2, mykl, n23,
+                               FS_const::ONE<Real>, &q2[jq2 * ldq2 + iq2],
+                               ldq2, &u[jju * ldu + iiu], ldu,
+                               FS_const::ONE<Real>, &q[jq * ldq + iq], ldq);
           eigen_dc_interface::flops += 2 * static_cast<double>(np2) *
                                        static_cast<double>(mykl) *
                                        static_cast<double>(n23);
@@ -602,9 +723,10 @@ FS_pdlead3_end:
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    printf("FS_pdlaed3 end. info= %d\n", info);
+    std::cout << "FS_pdlaed3 end. info= " << info << std::endl;
   }
 #endif
   return info;
 }
-} // namespace FS_pdlaed3
+} // namespace dc2_FS
+} // namespace

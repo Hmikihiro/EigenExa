@@ -1,40 +1,49 @@
 #pragma once
+/**
+ * @file FS2eigen_pdlasrt.hpp
+ * @brief FS2eigen_pdlasrt
+ */
+
 #include <mpi.h>
 
-#define int_for_mpi int
-
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <numeric>
 
 #include "../FS_libs/FS_libs.hpp"
 #include "../MPI_Datatype_wrapper.hpp"
+#include "../cblas_lapacke_wrapper.hpp"
 #include "../eigen_libs0.hpp"
 #include "FS_dividing.hpp"
 
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
-
-namespace eigen_FS {
+namespace {
+namespace dc2_FS {
 namespace FS2eigen {
-using FS_dividing::bt_node;
 
-template <class Integer, class Float> class GpositionValue {
+/**
+ * @brief GpositionValueの大きさ @n <int, float> 4 + 4 + 4 @n <int, double> 4 +
+ * 4 + 8 @n <long, float> 8 + 8 + 4 + padding(4) = 24 @n <long, double> 8 + 8 +
+ * 8
+ *
+ * @tparam Integer
+ * @tparam Real
+ */
+template <class Integer, class Real> class GpositionValue {
 public:
   Integer GRow;
   Integer GCol;
-  Float MatrixValue;
+  Real MatrixValue;
 };
 
-template <class Integer, class Float> class CommBuf {
+template <class Integer, class Real> class CommBuf {
 public:
   Integer rank;
   Integer Ndata;
   MPI_Request req;
   MPI_Status sta;
   bool flag;
-  GpositionValue<Integer, Float> *bufp;
+  GpositionValue<Integer, Real> *bufp;
 };
 
 template <class Integer> class RANKLIST {
@@ -51,7 +60,8 @@ public:
 
 template <class Integer>
 NrankMaxsize<Integer>
-get_nrank_maxsize(Integer eigen_np, const Integer comm_send_or_recv_info[]) {
+get_nrank_maxsize(const Integer eigen_np,
+                  const Integer comm_send_or_recv_info[]) {
   Integer send_or_recv_nrank = 0;
   Integer send_or_recv_maxsize = 1;
 #pragma omp parallel for reduction(+ : send_or_recv_nrank)                     \
@@ -67,9 +77,9 @@ get_nrank_maxsize(Integer eigen_np, const Integer comm_send_or_recv_info[]) {
   return NrankMaxsize<Integer>{send_or_recv_nrank, send_or_recv_maxsize};
 }
 
-template <class Integer, class Float>
-void init_send(Integer np, const Integer comm_info[],
-               CommBuf<Integer, Float> comm_buf[]) {
+template <class Integer, class Real>
+void init_send(const Integer np, const Integer comm_info[],
+               CommBuf<Integer, Real> comm_buf[]) {
   Integer nrank = 0;
   for (Integer i = 0; i < np; i++) {
     if (comm_info[i] != 0) {
@@ -81,9 +91,9 @@ void init_send(Integer np, const Integer comm_info[],
     }
   }
 }
-template <class Integer, class Float>
-void init_recv(Integer np, const Integer comm_info[],
-               CommBuf<Integer, Float> comm_buf[]) {
+template <class Integer, class Real>
+void init_recv(const Integer np, const Integer comm_info[],
+               CommBuf<Integer, Real> comm_buf[]) {
   Integer nrank = 0;
   for (Integer i = 0; i < np; i++) {
     if (comm_info[i] != 0) {
@@ -96,27 +106,27 @@ void init_recv(Integer np, const Integer comm_info[],
   }
 }
 
-template <class Integer, class Float>
-void send(CommBuf<Integer, Float> &comm_send_data,
-          GpositionValue<Integer, Float> sendbuf[], MPI_Comm comm) {
-  auto ncount = sizeof(GpositionValue<Integer, Float>) * comm_send_data.Ndata;
+template <class Integer, class Real>
+void send(CommBuf<Integer, Real> &comm_send_data,
+          const GpositionValue<Integer, Real> sendbuf[], const MPI_Comm comm) {
+  auto ncount = sizeof(GpositionValue<Integer, Real>) * comm_send_data.Ndata;
   auto srank = comm_send_data.rank;
   comm_send_data.flag = false;
   MPI_Send((void *)sendbuf, ncount, MPI_BYTE, srank, 1, comm);
 }
-template <class Integer, class Float>
-void irecv(CommBuf<Integer, Float> &comm_recv_data,
-           GpositionValue<Integer, Float> recvbuf[], MPI_Comm comm) {
-  auto ncount = sizeof(GpositionValue<Integer, Float>) * comm_recv_data.Ndata;
+template <class Integer, class Real>
+void irecv(CommBuf<Integer, Real> &comm_recv_data,
+           GpositionValue<Integer, Real> recvbuf[], const MPI_Comm comm) {
+  auto ncount = sizeof(GpositionValue<Integer, Real>) * comm_recv_data.Ndata;
   auto rrank = comm_recv_data.rank;
   comm_recv_data.flag = false;
   MPI_Irecv((void *)recvbuf, ncount, MPI_BYTE, rrank, 1, comm,
             &comm_recv_data.req);
 }
-template <class Integer, class Float>
-Integer FS_nbroc_max(char comp, Integer n,
-                     const bt_node<Integer, Float> &subtree, Integer FS_nbroc,
-                     Integer FS_myroc) {
+template <class Integer, class Real>
+Integer FS_nbroc_max(const char comp, const Integer n,
+                     const bt_node<Integer, Real> &subtree,
+                     const Integer FS_nbroc, const Integer FS_myroc) {
   for (Integer i = 0; i < FS_nbroc; i++) {
     auto lroc = i;
     auto groc = subtree.FS_index_L2G(comp, lroc, FS_myroc);
@@ -126,19 +136,22 @@ Integer FS_nbroc_max(char comp, Integer n,
   }
   return FS_nbroc;
 }
-template <class Integer, class Float>
-Integer get_FS_nbrow_max(Integer n, const bt_node<Integer, Float> &subtree,
-                         Integer FS_nbrow, Integer FS_myrow) {
+template <class Integer, class Real>
+Integer get_FS_nbrow_max(const Integer n,
+                         const bt_node<Integer, Real> &subtree,
+                         const Integer FS_nbrow, const Integer FS_myrow) {
   return FS_nbroc_max('R', n, subtree, FS_nbrow, FS_myrow);
 }
-template <class Integer, class Float>
-Integer get_FS_nbcol_max(Integer n, const bt_node<Integer, Float> &subtree,
-                         Integer FS_nbcol, Integer FS_mycol) {
+template <class Integer, class Real>
+Integer get_FS_nbcol_max(const Integer n,
+                         const bt_node<Integer, Real> &subtree,
+                         const Integer FS_nbcol, const Integer FS_mycol) {
   return FS_nbroc_max('C', n, subtree, FS_nbcol, FS_mycol);
 }
 
 template <class Integer>
-Integer eigen_rank_xy2comm(char grid_major, Integer x_inod, Integer y_inod) {
+Integer eigen_rank_xy2comm(const char grid_major, const Integer x_inod,
+                           const Integer y_inod) {
   const auto procs = eigen_libs0_wrapper::eigen_get_procs();
   const auto x_nnod = procs.x_procs;
   const auto y_nnod = procs.y_procs;
@@ -153,11 +166,11 @@ Integer eigen_rank_xy2comm(char grid_major, Integer x_inod, Integer y_inod) {
 /**
  * \brief 送信先が被らないように初回の通信相手を選択する
  */
-template <class Integer, class Float>
+template <class Integer, class Real>
 Integer
-select_first_communicater(Integer send_nrank, Integer eigen_np,
-                          Integer eigen_myrank,
-                          const CommBuf<Integer, Float> comm_send_data[]) {
+select_first_communicater(const Integer send_nrank, const Integer eigen_np,
+                          const Integer eigen_myrank,
+                          const CommBuf<Integer, Real> comm_send_data[]) {
   Integer i0 = 0;
   if (0 < send_nrank) {
     i0 = -1;
@@ -177,20 +190,79 @@ select_first_communicater(Integer send_nrank, Integer eigen_np,
   }
   return i0;
 }
+} // namespace FS2eigen
+} // namespace dc2_FS
 
-template <class Integer, class Float>
-Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
-                         const FS_dividing::bt_node<Integer, Float> &subtree,
-                         Integer ibuf[], Float rbuf[],
-                         GpositionValue<Integer, Float> tbuf[], Integer indx[],
-                         FS_prof::FS_prof &prof) {
+namespace dc2_FS {
+/**
+ * subroutine FS2eigen_PDLASRT
+ *
+ *  @brief @n
+ *  Purpose @n
+ *  ======= @n
+ *  FS2eigen_PDLASRT Sort the numbers in D in increasing order and the @n
+ *  corresponding vectors in Q.
+ *
+ *  Arguments
+ *  =========
+ *
+ * @param[in]     N        (global input) INTEGER @n
+ *                         The number of columns to be operated on i.e the @n
+ *                         number of columns of the distributed submatrix @n
+ *                         sub( Q ). N >= 0.
+ *
+ * @param[in,out] D        (global input/output) DOUBLE PRECISION array,
+ *                         dimension (N) @n
+ *                         On exit, the number in D are sorted in increasing
+ order.
+ *
+ * @param[in,out] Q        (input/output) DOUBLE PRECISION pointer into the
+ *                          local memory @n
+ *                         to an array of dimension (LDQ, NQ). This array
+ *                          contains the   @n
+ *                         local pieces of the distributed matrix sub( A ) to be
+ *                          copied  @n
+ *                         from.
+ *
+ * @param[in]     LDQ      (local input) INTEGER @n
+ *                         The leading dimension of the array Q.  LDQ >=
+ *                          max(1,NP).
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param         IBUF     (workspace) INTEGR array, dimension
+ *                          (FS_NBROW*FS_NBCOL)
+ *
+ * @param         RBUF     (workspace) DOUBLE PRECISION array, dimension (N)
+ *
+ * @param         TBUF     (workspace) TYPE(GpositionValue) array, dimension
+ *                          (FS_NBROW*FS_NBCOL)
+ *
+ * @param         INDX     (workspace) INTEGER array, dimension (N)
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ *
+ * @return                 INFO     (global output) INTEGER @n
+ *                          = 0: successful exit    @n
+ *                         /=0: error exit
+ *
+ * @note This routine is modified from ScaLAPACK PDLASRT.f
+ */
+template <class Integer, class Real>
+Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq,
+                         Real q[], const bt_node<Integer, Real> &subtree,
+                         Integer ibuf[], Real rbuf[],
+                         FS2eigen::GpositionValue<Integer, Real> tbuf[],
+                         Integer indx[], FS_prof &prof) {
   double prof_time[40];
   for (Integer i = 0; i < 40; i++) {
     prof_time[i] = 0;
   }
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS2eigen_PDLASRT start.");
+    std::cout << "FS2eigen_PDLASRT start." << std::endl;
   }
 #endif
 #if TIMER_PRINT
@@ -198,10 +270,10 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
 #endif
 
   const auto eigen_procs = eigen_libs0_wrapper::eigen_get_procs();
-  const auto eigen_np = eigen_procs.procs;
-  const auto eigen_nprow = eigen_procs.x_procs;
-  const auto eigen_npcol = eigen_procs.y_procs;
-  const auto eigen_myrank = eigen_libs0_wrapper::eigen_get_id().id;
+  const Integer eigen_np = eigen_procs.procs;
+  const Integer eigen_nprow = eigen_procs.x_procs;
+  const Integer eigen_npcol = eigen_procs.y_procs;
+  const Integer eigen_myrank = eigen_libs0_wrapper::eigen_get_id().id;
   const char eigen_grid_major = eigen_libs0_wrapper::eigen_get_grid_major();
   const auto eigen_comm = eigen_libs0_wrapper::eigen_get_comm().eigen_comm;
 
@@ -213,7 +285,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
     comm_send_info[i] = 0;
     comm_recv_info[i] = -1;
   }
-  MPI_Bcast(d, n, MPI_Datatype_wrapper::MPI_TYPE<Float>, 0, eigen_comm);
+  MPI_Bcast(d, n, MPI_Datatype_wrapper::MPI_TYPE<Real>, 0, eigen_comm);
 
   std::iota(indx, indx + n, 0);
   std::sort(indx, &indx[n],
@@ -235,9 +307,8 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
 
   const auto FS_comm_member = FS_libs::is_FS_comm_member();
 
-  const auto FS_grid_info = FS_comm_member
-                                ? subtree.FS_grid_info()
-                                : FS_dividing::GridInfo<Integer>{0, 0, 0, 0};
+  const auto FS_grid_info =
+      FS_comm_member ? subtree.FS_grid_info() : GridInfo<Integer>{0, 0, 0, 0};
   const Integer FS_nblk = FS_comm_member ? subtree.FS_get_NBLK() : 0;
   const Integer FS_nb = FS_comm_member ? subtree.FS_get_NB() : 0;
   const Integer FS_nbrow =
@@ -246,12 +317,12 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
       FS_comm_member ? (FS_nblk / FS_grid_info.npcol) * FS_nb : 0;
   const Integer FS_nbrow_max =
       FS_comm_member
-          ? get_FS_nbrow_max(n, subtree, FS_nbrow, FS_grid_info.myrow)
+          ? FS2eigen::get_FS_nbrow_max(n, subtree, FS_nbrow, FS_grid_info.myrow)
           : 0;
   // プロセス数で割り切れない場合に拡張した領域を除いた計算領域の総数
   const Integer FS_nbcol_max =
       FS_comm_member
-          ? get_FS_nbcol_max(n, subtree, FS_nbcol, FS_grid_info.mycol)
+          ? FS2eigen::get_FS_nbcol_max(n, subtree, FS_nbcol, FS_grid_info.mycol)
           : 0;
 
   auto etime = MPI_Wtime();
@@ -307,7 +378,8 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
         const auto grow = lrow2grow_index[lrow];
         const auto prow =
             eigen_libs0_wrapper::eigen_owner_node(grow, eigen_nprow);
-        const auto pn = eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
+        const auto pn =
+            FS2eigen::eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
         comm_send_info[pn] += 1;
       }
     }
@@ -326,8 +398,8 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   stime = etime;
 
   const auto send_nrank_maxsize =
-      get_nrank_maxsize<Integer>((Integer)eigen_np, comm_send_info);
-  const auto send_nrank = send_nrank_maxsize.nrank;
+      FS2eigen::get_nrank_maxsize<Integer>((Integer)eigen_np, comm_send_info);
+  const auto send_nrank = send_nrank_maxsize.nrank; // 送信相手の総数
   const auto send_maxsize = send_nrank_maxsize.maxsize;
 
   etime = MPI_Wtime();
@@ -335,15 +407,16 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   stime = etime;
 
   Integer pointer = 0;
-  std::unique_ptr<CommBuf<Integer, Float>[]> comm_send_data;
-  std::unique_ptr<RANKLIST<Integer>[]> sendrank_list;
-  GpositionValue<Integer, Float> *sendbuf;
+  std::unique_ptr<FS2eigen::CommBuf<Integer, Real>[]> comm_send_data;
+  std::unique_ptr<FS2eigen::RANKLIST<Integer>[]> sendrank_list;
+  FS2eigen::GpositionValue<Integer, Real> *sendbuf;
 
   if (send_nrank != 0) {
-    comm_send_data.reset(new CommBuf<Integer, Float>[send_nrank]);
-    init_send<Integer, Float>(eigen_np, comm_send_info, comm_send_data.get());
+    comm_send_data.reset(new FS2eigen::CommBuf<Integer, Real>[send_nrank]);
+    FS2eigen::init_send<Integer, Real>(eigen_np, comm_send_info,
+                                        comm_send_data.get());
 
-    sendrank_list.reset(new RANKLIST<Integer>[send_nrank]);
+    sendrank_list.reset(new FS2eigen::RANKLIST<Integer>[send_nrank]);
 
     for (Integer k = 0; k < send_nrank; k++) {
       sendrank_list[k].lid = &ibuf[pointer];
@@ -369,9 +442,9 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   prof_time[4] = etime - stime;
   stime = etime;
 
-  const auto recv_nrank_maxsize =
-      get_nrank_maxsize<Integer>((Integer)eigen_np, comm_recv_info.get());
-  const auto recv_nrank = recv_nrank_maxsize.nrank;
+  const auto recv_nrank_maxsize = FS2eigen::get_nrank_maxsize<Integer>(
+      (Integer)eigen_np, comm_recv_info.get());
+  const auto recv_nrank = recv_nrank_maxsize.nrank; // 受信相手の総数
 
   etime = MPI_Wtime();
   prof_time[5] = etime - stime;
@@ -381,11 +454,11 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
   if (!FS_comm_member) {
     pointer = 0;
   }
-  std::unique_ptr<CommBuf<Integer, Float>[]> comm_recv_data;
+  std::unique_ptr<FS2eigen::CommBuf<Integer, Real>[]> comm_recv_data;
   if (recv_nrank != 0) {
-    comm_recv_data.reset(new CommBuf<Integer, Float>[recv_nrank]);
-    init_recv<Integer, Float>(eigen_np, comm_recv_info.get(),
-                              comm_recv_data.get());
+    comm_recv_data.reset(new FS2eigen::CommBuf<Integer, Real>[recv_nrank]);
+    FS2eigen::init_recv<Integer, Real>(eigen_np, comm_recv_info.get(),
+                                        comm_recv_data.get());
     for (Integer k = 0; k < recv_nrank; k++) {
       if (comm_recv_data[k].rank + 1 != eigen_myrank) {
         comm_recv_data[k].bufp = &tbuf[pointer];
@@ -411,7 +484,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
         auto grow = lrow2grow_index[lrow];
         auto prow = eigen_libs0_wrapper::eigen_owner_node(grow, eigen_nprow);
 
-        auto pn = eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
+        auto pn = FS2eigen::eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
 
         const auto &info = comm_send_info[pn];
 
@@ -425,7 +498,7 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
     prof_time[11] = etime - stime;
     stime = etime;
 
-    const auto i0 = select_first_communicater<Integer>(
+    const auto i0 = FS2eigen::select_first_communicater<Integer>(
         send_nrank, eigen_np, eigen_myrank, comm_send_data.get());
     for (Integer k0 = i0; k0 < send_nrank + i0; k0++) {
       const auto k = (k0 + 1) % send_nrank;
@@ -525,11 +598,11 @@ Integer FS2eigen_pdlasrt(Integer n, Float d[], Integer ldq, Float q[],
 #endif
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlasrt end.");
+    std::cout << "FS_pdlasrt end." << std::endl;
   }
 #endif
   return 0;
 }
 
-} // namespace FS2eigen
-} // namespace eigen_FS
+} // namespace dc2_FS
+} // namespace

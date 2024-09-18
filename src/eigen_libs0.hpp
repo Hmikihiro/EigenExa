@@ -58,8 +58,13 @@ inline char eigen_get_grid_major() {
   return eigen_libs0_interface::eigen_get_grid_major();
 }
 
-inline int eigen_translate_g2l(int ictr, int nnod) { return ictr / nnod; }
-inline int eigen_owner_node(int ictr, int nnod) { return ictr % nnod; }
+template <class Integer>
+Integer eigen_translate_g2l(Integer ictr, Integer nnod) {
+  return ictr / nnod;
+}
+template <class Integer> Integer eigen_owner_node(Integer ictr, Integer nnod) {
+  return ictr % nnod;
+}
 
 } // namespace eigen_libs0_wrapper
 

@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file FS_pdlasrt.hpp
+ * @brief FS_pdlasrt
+ */
 
 #include <mpi.h>
 
@@ -11,20 +15,72 @@
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
 
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
+namespace {
+namespace dc2_FS {
+/**
+ * subroutine FS_PDLASRT
+ *
+ * @brief @n
+ *  Purpose @n
+ *  ======= @n
+ *  FS_PDLASRT Sort the numbers in D in increasing order and the @n
+ *  corresponding vectors in Q.
+!
+!  Arguments
+!  =========
+ *
+ * @param[in]     N        (global input) INTEGER @n
+ *                         The number of columns to be operated on i.e the number of @n
+ *                         columns of the distributed submatrix sub( Q ). N >= 0.
+ *
+ * @param[in,out] D        (global input/output) DOUBLE PRECISION array, dimension (N) @n
+ *                         On exit, the number in D are sorted in increasing order.
+ *
+ * @param[in,out] Q        (input/output) DOUBLE PRECISION pointer into the local memory @n
+ *                         to an array of dimension (LDQ, NQ). This array contains the   @n
+ *                         local pieces of the distributed matrix sub( A ) to be copied  @n
+ *                         from.
+ *
+ * @param[in]     LDQ      (local input) INTEGER @n
+ *                         The leading dimension of the array Q.  LDQ >= max(1,NP).
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param         Q2       (workspace) DOUBLE PRECISION array, dimension (LDQ2, NQ)
+ *
+ * @param[in]     LDQ2     (input) INTEGER @n
+ *                         The leading dimension of the array Q2. (=NP)
+ *
+ * @param         SENDQ    (workspace) DOUBLE PRECISION array, dimension (LDQ2*NQ)
+ *
+ * @param         RECVQ    (workspace) DOUBLE PRECISION array, dimension (LDQ2*NQ)
+ *
+ * @param         BUF      (workspace) DOUBLE PRECISION array, dimension (N)
+ *
+ * @param         INDROW   (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDCOL   (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDX     (workspace) INTEGER array, dimension (N)
+ *
+ * @param         INDRCV   (workspace) INTEGER array, dimension (N)
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ *
+ * @note This routine is modified from ScaLAPACK PDLASRT.f
+ */
 
-namespace FS_pdlasrt {
-template <class Integer, class Float>
-void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
-                const FS_dividing::bt_node<Integer, Float> &subtree, Float q2[],
-                Integer ldq2, Float sendq[], Float recvq[], Float buf[],
+template <class Integer, class Real>
+void FS_pdlasrt(const Integer n, Real d[], Real q[], const Integer ldq,
+                const bt_node<Integer, Real> &subtree, Real q2[],
+                const Integer ldq2, Real sendq[], Real recvq[], Real buf[],
                 Integer indrow[], Integer indcol[], Integer indx[],
-                Integer indrcv[], FS_prof::FS_prof &prof) {
+                Integer indrcv[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlasrt start.");
+    std::cout << "FS_pdlasrt start." << std::endl;
   }
 #endif
 #if TIMER_PRINT
@@ -97,7 +153,8 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
         const auto jl = subtree.FS_index_G2L('C', gi);
 
         // 送信バッファに格納
-        std::copy_n(&q[jl * ldq], np, &sendq[nsend * np]);
+
+        lapacke::copy(np, &q[jl * ldq], 1, &sendq[nsend * np], 1);
         nsend += 1;
       }
 
@@ -114,14 +171,14 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
     // irecv
     MPI_Request req;
     if (nrecv > 0) {
-      MPI_Irecv(recvq, np * nrecv, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+      MPI_Irecv(recvq, np * nrecv, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                 subtree.group_Y_processranklist_[pjcol], 1,
                 FS_libs::FS_COMM_WORLD, &req);
     }
 
     // send
     if (nsend > 0) {
-      MPI_Send(sendq, np * nsend, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+      MPI_Send(sendq, np * nsend, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                subtree.group_Y_processranklist_[pjcol], 1,
                FS_libs::FS_COMM_WORLD);
     }
@@ -133,7 +190,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
 #pragma omp parallel for
       for (Integer j = 0; j < nrecv; j++) {
         const auto jl = indrcv[j];
-        std::copy_n(&recvq[j * np], np, &q2[jl * ldq2]);
+        lapacke::copy(np, &recvq[j * np], 1, &q2[jl * ldq2], 1);
       }
     }
   }
@@ -160,7 +217,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
         const auto il = subtree.FS_index_G2L('R', i);
 
         // 送信バッファに格納
-        lapacke::copy<Integer, Float>(nq, &q2[il], ldq2, &sendq[nsend * nq], 1);
+        lapacke::copy<Real>(nq, &q2[il], ldq2, &sendq[nsend * nq], 1);
         nsend += 1;
       }
 
@@ -176,14 +233,14 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
     MPI_Request req;
     // irecv
     if (nrecv > 0) {
-      MPI_Irecv(recvq, nrecv * nq, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+      MPI_Irecv(recvq, nrecv * nq, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                 subtree.group_X_processranklist_[pjrow], 1,
                 FS_libs::FS_COMM_WORLD, &req);
     }
 
     // send
     if (nsend > 0) {
-      MPI_Send(sendq, nsend * nq, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+      MPI_Send(sendq, nsend * nq, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                subtree.group_X_processranklist_[pjrow], 1,
                FS_libs::FS_COMM_WORLD);
     }
@@ -196,7 +253,7 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
 #pragma omp parallel for
       for (Integer i = 0; i < nrecv; i++) {
         const auto il = indrcv[i];
-        lapacke::copy<Integer, Float>(nq, &recvq[i * nq], 1, &q[il], ldq);
+        lapacke::copy<Real>(nq, &recvq[i * nq], 1, &q[il], ldq);
       }
     }
   }
@@ -207,8 +264,9 @@ void FS_pdlasrt(Integer n, Float d[], Float q[], Integer ldq,
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlasrt end.");
+    std::cout << "FS_pdlasrt end." << std::endl;
   }
 #endif
 }
-} // namespace FS_pdlasrt
+} // namespace dc2_FS
+} // namespace

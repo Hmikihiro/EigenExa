@@ -1,19 +1,23 @@
 #pragma once
-
+/**
+ * @file FS_dividing.hpp
+ * @brief FS_dividing
+ */
 #include <mpi.h>
 
 #include <algorithm>
-#include <cstdio>
+#include <iostream>
 #include <memory>
 #include <numeric>
 #include <utility>
 
-#define int_for_mpi int
+#define eigen_mpi_int int
 
 #include "../FS_libs/FS_libs.hpp"
 #include "FS_prof.hpp"
 
-namespace FS_dividing {
+namespace {
+namespace dc2_FS {
 template <class Integer> struct g1l {
   Integer l_index;
   Integer rocsrc;
@@ -32,7 +36,7 @@ public:
   Integer mycol;
 };
 
-template <class Integer, class Float> class bt_node {
+template <class Integer, class Real> class bt_node {
 public:
   Integer bt_id = 0;
   Integer layer_ = 0;
@@ -46,38 +50,95 @@ public:
   Integer proc_jend_ = 1;   //  process end   number of direction j
   Integer block_start_ = 0; //  merge block start number(refer to procs_i/j)
   Integer block_end_ = 1;   //  merge block end   number(refer to procs_i/j)
-  std::unique_ptr<bt_node<Integer, Float>[]> sub_bt_node_; //  sub tree node
-  bt_node<Integer, Float> *parent_node_;                   //  parent node
-  Integer *procs_i_;     //  process No. list of row
-  Integer *procs_j_;     //  process No. list of column
-  Integer nnod_ = 0;     //  nprocs of communicator
-  Integer x_nnod_ = 0;   //  nprocs of X direction communicator
-  Integer y_nnod_ = 0;   //  nprocs of Y direction communicator
-  int_for_mpi inod_ = 0; //  inod in MERGE_COMM(1～)
-  Integer x_inod_ = 0;   //  x_inod in MERGE_COMM_X(1～)
-  Integer y_inod_ = 0;   //  y_inod in MERGE_COMM_Y(1～)
-  Integer div_bit_ = -1; //  bit stream of divided direction
-  Integer div_nbit_ = 0; //  number of dights of div_bit
+  std::unique_ptr<bt_node<Integer, Real>[]> sub_bt_node_; //  sub tree node
+  bt_node<Integer, Real> *parent_node_;                   //  parent node
+  Integer *procs_i_;       //  process No. list of row
+  Integer *procs_j_;       //  process No. list of column
+  Integer nnod_ = 0;       //  nprocs of communicator
+  Integer x_nnod_ = 0;     //  nprocs of X direction communicator
+  Integer y_nnod_ = 0;     //  nprocs of Y direction communicator
+  eigen_mpi_int inod_ = 0; //  inod in MERGE_COMM(1～)
+  Integer x_inod_ = 0;     //  x_inod in MERGE_COMM_X(1～)
+  Integer y_inod_ = 0;     //  y_inod in MERGE_COMM_Y(1～)
+  Integer div_bit_ = -1;   //  bit stream of divided direction
+  Integer div_nbit_ = 0;   //  number of dights of div_bit
 
   MPI_Group MERGE_GROUP_ = MPI_GROUP_NULL;   //  MERGE_COMM group
   MPI_Group MERGE_GROUP_X_ = MPI_GROUP_NULL; //  MERGE_COMM_X group
   MPI_Group MERGE_GROUP_Y_ = MPI_GROUP_NULL; //  MERGE_COMM_Y group
-  std::unique_ptr<int_for_mpi[]>
+  std::unique_ptr<eigen_mpi_int[]>
       group_processranklist_; //  list to convert from group
                               //  rank to communicator rank
-  std::unique_ptr<int_for_mpi[]> group_X_processranklist_;
-  std::unique_ptr<int_for_mpi[]> group_Y_processranklist_;
+  std::unique_ptr<eigen_mpi_int[]> group_X_processranklist_;
+  std::unique_ptr<eigen_mpi_int[]> group_Y_processranklist_;
 
 public:
-  Integer FS_dividing(Integer n, Float d[], const Float e[],
-                      std::unique_ptr<bool[]> hint, FS_prof::FS_prof &prof);
+  /**
+   * @brief main routine of dividing tree
+   *
+   * @param[in]     n      (global input) INTEGER @n
+   *                       The order of the tridiagonal matrix T.  N >= 0.
+   *
+   * @param[in,out] d      (global input/output) DOUBLE PRECISION array, dimension (N) @n
+   *                       On entry, the diagonal elements of the tridiagonal matrix.  @n
+   *                       On exit, rank-1 modification.
+   *
+   * @param[in]     e      (global input) DOUBLE PRECISION array, dimension (N-1) @n
+   *                       the subdiagonal elements of the tridiagonal matrix.
+   *
+   * @param[in]     hint   (input) LOGICAL array, dimension = number of tree layer @n
+   *                       tree divide pattern
+   *
+   * @param[out]    prof   (global output) type(FS_prof) @n
+   *                       profiling information of each subroutines.
+   *
+   * @return       info   (global output) INTEGER @n
+   *                       = 0: successful exit   @n
+   *                       /=0: error exit
+   *
+   */
+  Integer FS_dividing(Integer n, Real d[], const Real e[],
+                      std::unique_ptr<bool[]> hint, FS_prof &prof);
 
-  Integer FS_dividing_recursive(Integer n, Float d[], const Float e[],
-                                std::unique_ptr<bool[]> &hint,
-                                FS_prof::FS_prof &prof, Integer bt_id = 0);
+  /**
+   * @brief create sub-tree recursive
+   *
+   * @param[in]     n      (global input) INTEGER @n
+   *                       The order of the tridiagonal matrix T.  N >= 0.
+   *
+   * @param[in,out] d      (global input/output) DOUBLE PRECISION array, dimension (N) @n
+   *                       On entry, the diagonal elements of the tridiagonal matrix.  @n
+   *                       On exit, rank-1 modification.
+   *
+   * @param[in]     e      (global input) DOUBLE PRECISION array, dimension (N-1) @n
+   *                       the subdiagonal elements of the tridiagonal matrix.
+   *
+   * @param[in]     hint   (input) LOGICAL array, dimension = number of tree layer @n
+   *                       tree divide pattern
+   *
+   * @param[out]    prof   (global output) type(FS_prof) @n
+   *                       profiling information of each subroutines.
+   *
+   * @return    info   (global output) INTEGER @n
+   *                       = 0: successful exit   @n
+   *                       /=0: error exit
+   *
+   */
+  Integer FS_dividing_recursive(Integer n, Real d[], const Real e[],
+                                std::unique_ptr<bool[]> &hint, FS_prof &prof,
+                                Integer bt_id = 0);
 
+  /**
+   * @brief set bit stream of tree dividing direction of all child node to leaf
+   */
   void dividing_setBitStream();
 
+   /**
+   * @brief 自プロセスがノードに含まれるかチェックする
+   * @param[in] node   (input) tree node
+   * @retval    true    含まれる
+   * @retval    false   含まれない
+   */
   inline bool FS_node_included() const {
     const FS_libs::Nod inod = FS_libs::FS_get_id();
     if (inod.x < this->proc_istart_ || inod.x > this->proc_iend_) {
@@ -89,7 +150,18 @@ public:
     return true;
   }
 
-  std::pair<const bt_node<Integer, Float> *, Integer>
+
+  /**
+   * @brief search leaf node of own process recursive.
+   *
+   * @param[out]    leaf   (output) type(bt_node) @n
+   *                       leaf node pointer
+   *
+   * @return       info   (global output) INTEGER @n
+   *                       = 0: successful exit   @n
+   *                       /=0: error exit
+   */
+  std::pair<const bt_node<Integer, Real> *, Integer>
   FS_dividing_getleaf(Integer info) const {
     const FS_libs::Nod inod = FS_libs::FS_get_id();
     if (inod.x - 1 == this->proc_istart_ && inod.x == this->proc_iend_ &&
@@ -99,7 +171,7 @@ public:
 
     if (this->sub_bt_node_ != nullptr) {
       for (Integer i = 0; i < 2; i++) {
-        const bt_node<Integer, Float> &sub_bt_node = this->sub_bt_node_[i];
+        const bt_node<Integer, Real> &sub_bt_node = this->sub_bt_node_[i];
         const auto leaf_and_info = sub_bt_node.FS_dividing_getleaf(info);
         if (leaf_and_info.first != nullptr) {
           return leaf_and_info;
@@ -114,24 +186,83 @@ public:
     return std::make_pair(nullptr, info);
   }
 
-  void FS_create_merge_comm(FS_prof::FS_prof &prof);
+  /**
+   * @brief create local merge group
+   */
+  void FS_create_merge_comm(FS_prof &prof);
 
+/**
+ * @brief create local merge X,Y group
+ */
   void FS_create_mergeXY_group();
 
+/**
+ * @brief create local merge group (recursive)
+ * 
+ */
   void FS_create_merge_comm_recursive();
 
+ /**
+  * @brief deallocate tree information
+  */
   void FS_dividing_free();
 
-  inline Integer FS_get_N() const { return this->nend_ - this->nstart_; }
+  /**
+   * @brief get matrix size of merge block @n
+   * マージブロックのNを取得 @n
+   * 全体次数Nが割り切れないとき、拡張したNの範囲で取得する
+   *
+   * @return matrix size of merge block
+   */
+  Integer FS_get_N() const { return this->nend_ - this->nstart_; }
 
+  /**
+   * @brief get matrix size of merge block @n
+   * マージブロックのNを取得 @n
+   * 全体次数Nが割り切れないとき、本来の次数Nの範囲で取得する
+   *
+   * @return matrix size of merge block
+   */
   Integer FS_get_N_active() const { return this->nend_active_ - this->nstart_; }
 
+  /**
+   * @brief get number of row/col block @n
+   * マージブロック内の行/列ブロック数を取得 @n
+   *
+   * @return number of row/col block
+   */
   Integer FS_get_NBLK() const { return this->block_end_ - this->block_start_; }
 
+  /**
+   * @brief get matrix size of one block @n
+   * マージブロックの1ブロックの行/列次数 @n
+   *
+   * @return matrix size of one block
+   *
+    */
   Integer FS_get_NB() const { return this->FS_get_N() / this->FS_get_NBLK(); }
 
+  /**
+   * @brief get top index of Q in merge block @n
+   * マージブロックにおける自プロセス担当のQの全体先頭インデクスを取得 @n
+   * subroutine FS_get_QTOP
+   *
+   *
+   * @return     row IPQ top index of 1st dimension. @n
+   *             col JPQ top index of 2nd dimension.
+   */
   GridIndex<Integer> FS_get_QTOP() const;
 
+  /**
+   * @brief get process grid information @n
+   * マージブロック内のプロセス情報を取得 @n
+   *
+   *
+   * @return     NPROW number of process grid row @n
+   *             NPCOL   number of process grid column @n
+   *             MYROW row process index of own process (>=0) @n
+   *             MYCOL colum
+   */
   const GridInfo<Integer> FS_grid_info() const {
     return GridInfo<Integer>{.nprow = this->x_nnod_,
                              .npcol = this->y_nnod_,
@@ -139,8 +270,40 @@ public:
                              .mycol = this->y_inod_};
   }
 
+  /**
+   * @brief convert index global to local @n
+   * 自プロセスに含まれないときでもLINDXにはROCSRCにおけるローカルインデクスが格納される @n
+   * ROCSRCにはCOMM_X/Yにおけるランク番号(0～)が入る
+   *
+   * @param[in]     COMP   (input) character @n
+   *                       set flag. 'R':row, 'C':columun
+   *
+   * @param[in]     GINDX  (input) INTEGER @n
+   *                       global index
+   *
+   * @param[in]     node   (input) type(bt_node) @n
+   *                       node pointer of merge block
+   *
+   * @return   LINDX local index @n
+   *           ROCSRC row/column index of process grid include GINDX
+   *
+   */
   g1l<Integer> FS_info_G1L(char comp, Integer g_index) const;
 
+  /**
+   * subroutine FS_INFOG2L
+   * @brief convert index global to local
+   *
+   * @param[in]     GRINDX (input) INTEGER @n
+   *                       global row index
+   *
+   * @param[in]     GCINDX (input) INTEGER @n
+   *                       global column index
+   *
+   *
+   * @return     LRINDX local row index
+   *             LCINDX local column index
+   */
   inline const GridIndex<Integer> FS_info_G2L(Integer gr_index,
                                               Integer gc_index) const {
     const auto r = this->FS_info_G1L('R', gr_index);
@@ -148,36 +311,75 @@ public:
     return GridIndex<Integer>{.row = r.l_index, .col = i.l_index};
   }
 
+   /**
+   * @brief convert index global to local
+   *
+   * @param[in]     COMP   (input) character @n
+   *                       set flag. 'R':row, 'C':columun
+   *
+   * @param[in]     G_INDEX  (input) INTEGER @n
+   *                       global index
+   *
+   *
+   * @return local index
+   */
   Integer FS_index_G2L(char comp, Integer g_index) const {
     const auto g1l = this->FS_info_G1L(comp, g_index);
     return g1l.l_index;
   }
 
+  /**
+   * @brief convert index local to global
+   *
+   * @param[in]     COMP   (input) character @n
+   *                       set flag. 'R':row, 'C':columun
+   *
+   * @param[in]     L_INDX  (input) INTEGER @n
+   *                       local index
+   *
+   * @param[in]     MY_ROC  (input) INTEGER @n
+   *                       row/column index of process grid include L_INDX
+   *
+   *
+   * @return global index
+   */
   Integer FS_index_L2G(char comp, Integer l_indx, Integer my_roc) const;
 
+  /**
+   * @brief  output log of tree information recursive
+   * 
+   */
   void print_tree() const;
 
+ /**
+  * @brief output log of node information
+  * 
+  */
   void print_node() const;
 };
 
-void FS_create_hint(bool[]);
+/**
+ *  @brief  create default hint of dividind tree
+ *  @param[out] hint   (output) creted hint. dimension = number of tree layer
+ */
+void FS_create_hint(bool hint[]);
 
 template <class Integer>
 void bitprint(Integer kout, Integer title, Integer ibit, Integer nbit);
 
-} // namespace FS_dividing
+} // namespace dc2_FS
+} // namespace
 
-namespace FS_dividing {
-using std::abs;
-using std::max;
-using std::min;
+
+namespace {
+namespace dc2_FS {
 
 inline void FS_create_hint(bool hint[]) {
   FS_libs::Nod nnod = FS_libs::FS_get_procs();
-  size_t layer_debug;
+  size_t layer = 0;
 
 #if _TREEDIV == 1
-  for (size_t layer = 0; nnod.x * nnod.y >= 1; layer++) {
+  for (layer = 0; nnod.x * nnod.y >= 1; layer++) {
     if (nnod.y >= nnod.x) {
       hint[layer] = false;
       nnod.y = nnod.y / 2;
@@ -185,11 +387,10 @@ inline void FS_create_hint(bool hint[]) {
       hint[layer] = true;
       nnod.x = nnod.x / 2;
     }
-    layer_debug = layer;
   }
 
 #elif _TREEDIV == 2
-  for (size_t layer = 0; nnod.x * nnod.y >= 1; layer++) {
+  for (layer = 0; nnod.x * nnod.y >= 1; layer++) {
     if (nnod.x >= 2) {
       hint[layer] = true;
       nnod.x = nnod.x / 2;
@@ -197,10 +398,9 @@ inline void FS_create_hint(bool hint[]) {
       hint[layer] = false;
       nnod.y = nnod.y / 2;
     }
-    layer_debug = layer;
   }
 #elif _TREEDIV == 3
-  for (size_t layer = 0; nnod.x * nnod.y >= 1; layer++) {
+  for (layer = 0; nnod.x * nnod.y >= 1; layer++) {
     if (nnod.y >= 2) {
       hint[layer] = false;
       nnod.y = nnod.y / 2;
@@ -208,10 +408,9 @@ inline void FS_create_hint(bool hint[]) {
       hint[layer] = true;
       nnod.x = nnod.x / 2;
     }
-    layer_debug = layer;
   }
 #else
-  for (size_t layer = 0; nnod.x * nnod.y >= 1; layer++) {
+  for (layer = 0; nnod.x * nnod.y >= 1; layer++) {
     if (nnod.x >= nnod.y) {
       hint[layer] = true;
       nnod.x = nnod.x / 2;
@@ -219,17 +418,16 @@ inline void FS_create_hint(bool hint[]) {
       hint[layer] = false;
       nnod.y = nnod.y / 2;
     }
-    layer_debug = layer;
   }
 #endif
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    for (size_t i = 0; i < layer_debug; i++) {
+    for (size_t i = 0; i < layer; i++) {
       const char hint_char = hint[i] ? 'T' : 'F';
-      std::printf("%c ", hint_char);
+      std::cout << hint_char << " ";
     }
-    std::printf("\n");
+    std::cout << std::endl;
   }
 #endif
 }
@@ -237,11 +435,11 @@ inline void FS_create_hint(bool hint[]) {
 /**
  * \brief main routine of dividing tree
  */
-template <class Integer, class Float>
-Integer bt_node<Integer, Float>::FS_dividing(Integer n, Float d[],
-                                             const Float e[],
+template <class Integer, class Real>
+Integer bt_node<Integer, Real>::FS_dividing(Integer n, Real d[],
+                                             const Real e[],
                                              std::unique_ptr<bool[]> hint,
-                                             FS_prof::FS_prof &prof) {
+                                             FS_prof &prof) {
 #if TIMER_PRINT
   prof.start(21);
 #endif
@@ -293,10 +491,10 @@ Integer bt_node<Integer, Float>::FS_dividing(Integer n, Float d[],
 /**
  * \brief create sub-tree recursive
  */
-template <class Integer, class Float>
-Integer bt_node<Integer, Float>::FS_dividing_recursive(
-    const Integer n, Float d[], const Float e[], std::unique_ptr<bool[]> &hint,
-    FS_prof::FS_prof &prof, Integer bt_id) {
+template <class Integer, class Real>
+Integer bt_node<Integer, Real>::FS_dividing_recursive(
+    const Integer n, Real d[], const Real e[], std::unique_ptr<bool[]> &hint,
+    FS_prof &prof, Integer bt_id) {
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
   const auto x_lnod = this->proc_iend_ - this->proc_istart_;
   const auto y_lnod = this->proc_jend_ - this->proc_jstart_;
@@ -315,8 +513,8 @@ Integer bt_node<Integer, Float>::FS_dividing_recursive(
         this->block_end_ = i + 1;
         const auto nend = this->nend_;
         if (nend < n) {
-          d[nend - 1] = d[nend - 1] - abs(e[nend - 1]);
-          d[nend] = d[nend] - abs(e[nend - 1]);
+          d[nend - 1] = d[nend - 1] - std::abs(e[nend - 1]);
+          d[nend] = d[nend] - std::abs(e[nend - 1]);
         }
         break;
       }
@@ -328,19 +526,19 @@ Integer bt_node<Integer, Float>::FS_dividing_recursive(
     return -2;
   } else {
     Integer info;
-    this->sub_bt_node_.reset(new bt_node<Integer, Float>[2]);
+    this->sub_bt_node_.reset(new bt_node<Integer, Real>[2]);
 
     for (Integer i = 0; i < 2; i++) {
       const auto this_nstart = this->nstart_;
       const auto this_nend = this->nend_;
       const auto this_nstep = (this_nend - this_nstart) / 2;
-      bt_node<Integer, Float> &subptr = this->sub_bt_node_[i];
+      bt_node<Integer, Real> &subptr = this->sub_bt_node_[i];
 
       subptr.layer_ = this->layer_ + 1;
       subptr.direction_horizontal_ = hint[subptr.layer_];
       subptr.nstart_ = this_nstart + i * this_nstep;
       subptr.nend_ = this_nend - (1 - i) * this_nstep;
-      subptr.nend_active_ = max(min(subptr.nend_, n), subptr.nstart_);
+      subptr.nend_active_ = std::max(std::min(subptr.nend_, n), subptr.nstart_);
       subptr.sub_bt_node_.reset(nullptr);
       subptr.parent_node_ = this;
       subptr.procs_i_ = this->procs_i_;
@@ -367,10 +565,10 @@ Integer bt_node<Integer, Float>::FS_dividing_recursive(
       }
     }
 
-    this->block_start_ = min(this->sub_bt_node_[0].block_start_,
-                             this->sub_bt_node_[1].block_start_);
-    this->block_end_ =
-        max(this->sub_bt_node_[0].block_end_, this->sub_bt_node_[1].block_end_);
+    this->block_start_ = std::min(this->sub_bt_node_[0].block_start_,
+                                  this->sub_bt_node_[1].block_start_);
+    this->block_end_ = std::max(this->sub_bt_node_[0].block_end_,
+                                this->sub_bt_node_[1].block_end_);
     this->dividing_setBitStream();
     return info;
   }
@@ -379,8 +577,8 @@ Integer bt_node<Integer, Float>::FS_dividing_recursive(
 /**
  * \brief set bit stream of tree dividing direction of all child node to leaf
  */
-template <class Integer, class Float>
-void bt_node<Integer, Float>::dividing_setBitStream() {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::dividing_setBitStream() {
   if (this->sub_bt_node_ == nullptr) {
     return;
   }
@@ -391,7 +589,7 @@ void bt_node<Integer, Float>::dividing_setBitStream() {
   }
 
   this->div_nbit_ = 1;
-  bt_node<Integer, Float> *node = &(this->sub_bt_node_[0]);
+  bt_node<Integer, Real> *node = &(this->sub_bt_node_[0]);
   while (node->sub_bt_node_ != nullptr) {
     this->div_bit_ <<= 1; // ISHIFT
     if (node->direction_horizontal_ == false) {
@@ -405,12 +603,12 @@ void bt_node<Integer, Float>::dividing_setBitStream() {
 /**
  * \brief create local merge X,Y group
  */
-template <class Integer, class Float>
-void bt_node<Integer, Float>::FS_create_mergeXY_group() {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::FS_create_mergeXY_group() {
   const char order = FS_libs::FS_get_grid_major();
   const FS_libs::Nod inod = FS_libs::FS_get_id();
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
-  std::unique_ptr<int_for_mpi[]> ranklist_group(new int_for_mpi[nnod.nod]);
+  std::unique_ptr<eigen_mpi_int[]> ranklist_group(new eigen_mpi_int[nnod.nod]);
 
   {
     const auto proc_istart = this->proc_istart_;
@@ -439,7 +637,7 @@ void bt_node<Integer, Float>::FS_create_mergeXY_group() {
 
     std::iota(ranklist_group.get(), ranklist_group.get() + ii_nrank, 0);
 
-    this->group_X_processranklist_.reset(new int_for_mpi[ii_nrank]);
+    this->group_X_processranklist_.reset(new eigen_mpi_int[ii_nrank]);
 
     MPI_Group_translate_ranks(this->MERGE_GROUP_X_, ii_nrank,
                               ranklist_group.get(), FS_libs::FS_get_group(),
@@ -472,15 +670,15 @@ void bt_node<Integer, Float>::FS_create_mergeXY_group() {
 
     std::iota(ranklist_group.get(), ranklist_group.get() + jj_nrank, 0);
 
-    this->group_Y_processranklist_.reset(new int_for_mpi[jj_nrank]);
+    this->group_Y_processranklist_.reset(new eigen_mpi_int[jj_nrank]);
     MPI_Group_translate_ranks(this->MERGE_GROUP_Y_, jj_nrank,
                               ranklist_group.get(), FS_libs::FS_get_group(),
                               this->group_Y_processranklist_.get());
   }
 }
 
-template <class Integer, class Float>
-void bt_node<Integer, Float>::FS_create_merge_comm(FS_prof::FS_prof &prof) {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::FS_create_merge_comm(FS_prof &prof) {
   const FS_libs::Nod inod = FS_libs::FS_get_id();
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
 
@@ -511,8 +709,8 @@ void bt_node<Integer, Float>::FS_create_merge_comm(FS_prof::FS_prof &prof) {
 #endif
 }
 
-template <class Integer, class Float>
-void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::FS_create_merge_comm_recursive() {
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
   const char order = FS_libs::FS_get_grid_major();
 
@@ -521,14 +719,15 @@ void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
   }
 
   for (Integer n = 0; n < 2; n++) {
-    bt_node<Integer, Float> &node = this->sub_bt_node_[n];
+    bt_node<Integer, Real> &node = this->sub_bt_node_[n];
 
     const auto ni = node.proc_iend_ - node.proc_istart_;
     const auto nj = node.proc_jend_ - node.proc_jstart_;
     const auto ranklist_nrank = ni * nj;
-    std::unique_ptr<int_for_mpi[]> ranklist(new int_for_mpi[ranklist_nrank]);
-    std::unique_ptr<int_for_mpi[]> ranklist_group(
-        new int_for_mpi[ranklist_nrank]);
+    std::unique_ptr<eigen_mpi_int[]> ranklist(
+        new eigen_mpi_int[ranklist_nrank]);
+    std::unique_ptr<eigen_mpi_int[]> ranklist_group(
+        new eigen_mpi_int[ranklist_nrank]);
 
     const auto nrank = [&]() mutable {
       Integer incl_nrank = 0;
@@ -560,7 +759,7 @@ void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
       MPI_Group_incl(FS_libs::FS_get_group(), nrank, ranklist_group.get(),
                      &node.MERGE_GROUP_);
 
-      node.group_processranklist_.reset(new int_for_mpi[nrank]);
+      node.group_processranklist_.reset(new eigen_mpi_int[nrank]);
       std::iota(ranklist_group.get(), ranklist_group.get() + nrank, 0);
 
       MPI_Group_translate_ranks(node.MERGE_GROUP_, nrank, ranklist_group.get(),
@@ -589,15 +788,15 @@ void bt_node<Integer, Float>::FS_create_merge_comm_recursive() {
   }
 
   for (Integer n = 0; n < 2; n++) {
-    bt_node<Integer, Float> &node = this->sub_bt_node_[n];
+    bt_node<Integer, Real> &node = this->sub_bt_node_[n];
     if (node.FS_node_included()) {
       node.FS_create_merge_comm_recursive();
     }
   }
 }
 
-template <class Integer, class Float>
-void bt_node<Integer, Float>::FS_dividing_free() {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::FS_dividing_free() {
   if (this->sub_bt_node_ != nullptr) {
     this->sub_bt_node_[0].FS_dividing_free();
     this->sub_bt_node_[1].FS_dividing_free();
@@ -632,8 +831,8 @@ void bt_node<Integer, Float>::FS_dividing_free() {
   }
 }
 
-template <class Integer, class Float>
-g1l<Integer> bt_node<Integer, Float>::FS_info_G1L(char comp,
+template <class Integer, class Real>
+g1l<Integer> bt_node<Integer, Real>::FS_info_G1L(char comp,
                                                   Integer g_index) const {
   const auto NB = this->FS_get_NB();
   const auto IBLK = (g_index) / NB;
@@ -664,8 +863,8 @@ g1l<Integer> bt_node<Integer, Float>::FS_info_G1L(char comp,
   return {l_index, rocsrc};
 }
 
-template <class Integer, class Float>
-GridIndex<Integer> bt_node<Integer, Float>::FS_get_QTOP() const {
+template <class Integer, class Real>
+GridIndex<Integer> bt_node<Integer, Real>::FS_get_QTOP() const {
   const auto grid_info = this->FS_grid_info();
   const auto n = this->FS_get_N();
   const auto nb = this->FS_get_NB();
@@ -702,8 +901,8 @@ GridIndex<Integer> bt_node<Integer, Float>::FS_get_QTOP() const {
   return {root_node->FS_index_G2L('R', II), root_node->FS_index_G2L('C', JJ)};
 }
 
-template <class Integer, class Float>
-Integer bt_node<Integer, Float>::FS_index_L2G(char comp, Integer l_index,
+template <class Integer, class Real>
+Integer bt_node<Integer, Real>::FS_index_L2G(char comp, Integer l_index,
                                               Integer my_roc) const {
   // 1ブロックの次数
   const auto nb = this->FS_get_NB();
@@ -741,16 +940,16 @@ Integer bt_node<Integer, Float>::FS_index_L2G(char comp, Integer l_index,
   return g_index;
 }
 
-template <class Integer, class Float>
-void bt_node<Integer, Float>::print_tree() const {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::print_tree() const {
   const auto nnod = FS_libs::FS_get_procs();
   const auto inod = FS_libs::FS_get_id();
 
   if (this->layer_ == 0) {
-    std::printf("nnod, (x_nnod, y_nnod) = %d (%d, %d)\n", nnod.nod, nnod.x,
-                nnod.y);
-    std::printf("inod, (x_inod, y_inod) = %d (%d, %d)\n", inod.nod, inod.x,
-                inod.y);
+    std::cout << "nnod, (x_nnod, y_nnod) = " << nnod.nod << " (" << nnod.x
+              << ", " << nnod.y << ")" << std::endl;
+    std::cout << "inod, (x_inod, y_inod) = " << inod.nod << " (" << inod.x
+              << ", " << inod.y << ")" << std::endl;
   }
 
   this->print_node();
@@ -763,38 +962,40 @@ void bt_node<Integer, Float>::print_tree() const {
     */
 }
 
-template <class Integer, class Float>
-void bt_node<Integer, Float>::print_node() const {
+template <class Integer, class Real>
+void bt_node<Integer, Real>::print_node() const {
   FS_libs::Nod nnod = FS_libs::FS_get_procs();
-  std::printf("******************************\n");
-  std::printf("layer               = %d\n", this->layer_);
-  std::printf("direction_horizontal= %d\n", this->direction_horizontal_);
-  std::printf("nstart              = %d\n", this->nstart_);
-  std::printf("nend                = %d\n", this->nend_);
-  std::printf("nend_active         = %d\n", this->nend_active_);
-  std::printf("proc_istart         = %d\n", this->proc_istart_);
-  std::printf("proc_iend           = %d\n", this->proc_iend_);
-  std::printf("proc_jstart         = %d\n", this->proc_jstart_);
-  std::printf("proc_jend           = %d\n", this->proc_jend_);
-  std::printf("block_start         = %d\n", this->block_start_);
-  std::printf("block_end           = %d\n", this->block_end_);
-  std::printf("parent_node = %p\n", this->parent_node_);
-  std::printf("child_node  = %p\n", this->sub_bt_node_);
-  std::printf("procs_i = ");
+  std::cout << "******************************" << std::endl;
+  std::cout << "layer               = " << this->layer_ << std::endl;
+  std::cout << "direction_horizontal= " << this->direction_horizontal_
+            << std::endl;
+  std::cout << "nstart              = " << this->nstart_ << std::endl;
+  std::cout << "nend                = " << this->nend_ << std::endl;
+  std::cout << "nend_active         = " << this->nend_active_ << std::endl;
+  std::cout << "proc_istart         = " << this->proc_istart_ << std::endl;
+  std::cout << "proc_iend           = " << this->proc_iend_ << std::endl;
+  std::cout << "proc_jstart         = " << this->proc_jstart_ << std::endl;
+  std::cout << "proc_jend           = " << this->proc_jend_ << std::endl;
+  std::cout << "block_start         = " << this->block_start_ << std::endl;
+  std::cout << "block_end           = " << this->block_end_ << std::endl;
+  std::cout << "parent_node = " << this->parent_node_ << std::endl;
+  std::cout << "child_node  = " << this->sub_bt_node_ << std::endl;
+  std::cout << "procs_i = ";
   for (Integer i = 0; i < nnod.nod; i++) {
-    std::printf("%d ", this->procs_i_[i]);
+    std::cout << this->procs_i_[i] << " ";
   }
-  std::printf("\nprocs_j = ");
+  std::cout << "\nprocs_j = ";
   for (Integer j = 0; j < nnod.nod; j++) {
-    std::printf("%d ", this->procs_j_[j]);
+    std::cout << this->procs_j_[j] << " ";
   }
-  std::printf("\nmerge procs    = %d\n ", this->nnod_);
-  std::printf("merge procs X  = %d\n ", this->x_nnod_);
-  std::printf("merge procs Y  = %d\n ", this->y_nnod_);
-  std::printf("merge rankid   = %d\n ", this->inod_);
-  std::printf("merge rankid X = %d\n ", this->x_inod_);
-  std::printf("merge rankid Y = %d\n ", this->y_inod_);
-  std::printf("bit stream     = %d\n ", this->div_bit_);
-  std::printf("#dights of bit = %d\n ", this->div_nbit_);
+  std::cout << "\nmerge procs    = " << this->nnod_ << std::endl;
+  std::cout << "merge procs X  = " << this->x_nnod_ << std::endl;
+  std::cout << "merge procs Y  = " << this->y_nnod_ << std::endl;
+  std::cout << "merge rankid   = " << this->inod_ << std::endl;
+  std::cout << "merge rankid X = " << this->x_inod_ << std::endl;
+  std::cout << "merge rankid Y = " << this->y_inod_ << std::endl;
+  std::cout << "bit stream     = " << this->div_bit_ << std::endl;
+  std::cout << "#dights of bit = " << this->div_nbit_ << std::endl;
 }
-} // namespace FS_dividing
+} // namespace dc2_FS
+} // namespace

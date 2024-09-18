@@ -1,4 +1,10 @@
 #pragma once
+/**
+ * @file FS_reduce_zd.hpp
+ * @brief FS_reduce_zd
+ */
+
+#include <iostream>
 
 #include "../FS_libs/FS_libs.hpp"
 #include "../MPI_Allreduce_group.hpp"
@@ -6,20 +12,44 @@
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
 
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
-
-namespace eigen_FS {
-using FS_dividing::bt_node;
+namespace {
+namespace dc2_FS {
 using FS_libs::FS_COMM_WORLD;
-using FS_prof::FS_prof;
-template <class Integer, class Float>
-void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
-                  Float work[], Float z[], Float d[], FS_prof &prof) {
+
+/**
+ * subroutine FS_REDUCE_ZD
+ *
+ * @brief  @n
+ * Purpose @n
+ * ======= @n
+ * MPI_ALLREDUCE Z and D
+ *
+ * @param[in]     N        (global input) INTEGER @n
+ *                         The order of the tridiagonal matrix T.  N >= 0.
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param[in]     WORK     (input) DOUBLE PRECISION array, dimension (N,2)         @n
+ *                         WORK(:,1) is the updating vector before MPI_ALLREDUCE.  @n
+ *                         WORK(:,2) is the generated D before MPI_ALLREDUCE.
+ *
+ * @param[out]    Z        (local output) DOUBLE PRECISION array, dimension (N)                   @n
+ *                         The updating vector (the last row of the first sub-eigenvector  @n
+ *                         matrix and the first row of the second sub-eigenvector matrix).
+ *
+ * @param[out]    D        (local output) DOUBLE PRECISION array, dimension (N)
+ *                         generated D.
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ */
+template <class Integer, class Real>
+void FS_reduce_zd(const Integer n, const bt_node<Integer, Real> &subtree,
+                  Real work[], Real z[], Real d[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_reduce_zd start.\n");
+    std::cout << "FS_reduce_zd start." << std::endl;
   }
 #endif
 #if TIMER_PRINT
@@ -35,7 +65,7 @@ void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
 #endif
 
   // reduce
-  MPI_Group_Allreduce(work, z, n * 2, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+  MPI_Group_Allreduce(work, z, n * 2, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                       MPI_SUM, FS_COMM_WORLD, subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
@@ -55,9 +85,10 @@ void FS_reduce_zd(Integer n, const bt_node<Integer, Float> &subtree,
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_reduce_zd end.\n");
+    std::cout << "FS_reduce_zd end." << std::endl;
   }
 #endif
 }
 
-} // namespace eigen_FS
+} // namespace dc2_FS
+} // namespace

@@ -77,21 +77,6 @@ module FS_libs_mod
        integer,   intent(in), optional :: precision
        end subroutine eigen_FS
 
-
-      subroutine eigen_FS_single_float(n, nvec, a, lda, w, z, ldz, &
-         m_forward, m_backward, mode)
-         integer,   intent(in)           :: n
-         integer,   intent(in)           :: nvec
-         real(8),   intent(inout)        :: a(lda,*)
-         integer,   intent(in)           :: lda
-         real(8),   intent(out)          :: w(1:n)
-         real(8),   intent(out)          :: z(ldz,*)
-         integer,   intent(in)           :: ldz
-         integer,   intent(in), optional :: m_forward
-         integer,   intent(in), optional :: m_backward
-         character(*), intent(in), optional :: mode
-      end subroutine eigen_FS_single_float
-
        subroutine FS_init(comm,order) bind(c, name="FS_init")
          use, intrinsic :: iso_c_binding
      
@@ -113,11 +98,11 @@ module FS_libs_mod
          use, intrinsic ::iso_c_binding
        end function
 
-      subroutine FS_WorkSize(N, LWORK, LIWORK) bind(c, name="FS_WorkSize")
+      integer(c_int) function FS_byte_data_context(N, int_size, real_size) &
+         bind(c, name="FS_byte_data_context")
         use, intrinsic :: iso_c_binding
-        integer(c_int), intent(in), value :: N
-        integer(c_long), intent(out) :: LWORK, LIWORK
-      end subroutine
+        integer(c_int), intent(in), value :: N, int_size, real_size
+      end function
 
   end interface
 

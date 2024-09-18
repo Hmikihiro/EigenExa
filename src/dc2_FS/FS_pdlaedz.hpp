@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file FS_pdlaedz.hpp
+ * @brief FS_pdlaedz
+ */
 
 #include <algorithm>
 
@@ -7,19 +11,59 @@
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
 
-#if defined(_DEBUGLOG)
 #include "../FS_libs/FS_libs.hpp"
-#include <cstdio>
-#endif
 
-namespace FS_pdlaedz {
-template <class Integer, class Float>
-void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
-                const FS_dividing::bt_node<Integer, Float> &subtree, Float z[],
-                FS_prof::FS_prof &prof) {
+namespace {
+namespace dc2_FS {
+/**
+ * subroutine FS_PDLAEDZ
+ *
+ * @brief  @n
+ * Purpose @n
+ * ======= @n
+ * FS_PDLAEDZ Form the z-vector which consists of the last row of Q_1 @n
+ * and the first row of Q_2.
+!
+!  Arguments
+!  =========
+ *
+ * @param[in]     N        (global input) INTEGER @n
+ *                         The order of the tridiagonal matrix T.  N >= 0.
+ *
+ * @param[in]     N1       (input) INTEGER @n
+ *                         The location of the last eigenvalue in the leading sub-matrix. @n
+ *                         min(1,N) <= N1 <= N.
+ *
+ * @param[in]     Q        (local output) DOUBLE PRECISION array,                    @n
+ *                         global dimension (N, N),                                  @n
+ *                         local dimension (LDQ, NQ)                                 @n
+ *                         Q  contains the orthonormal eigenvectors of the symmetric @n
+ *                         tridiagonal matrix.
+ *
+ * @param[in]     LDQ      (local input) INTEGER @n
+ *                         The leading dimension of the array Q.  LDQ >= max(1,NP).
+ *
+ * @param[in]     SUBTREE  (input) type(bt_node) @n
+ *                         sub-tree information of merge block.
+ *
+ * @param[out]    Z        (input) DOUBLE PRECISION array, dimension (N)                   @n
+ *                         The updating vector before MPI_ALLREDUCE (the last row of the   @n
+ *                         first sub-eigenvector matrix and the first row of the second    @n
+ *                         sub-eigenvector matrix).
+ *
+ * @param[out]    prof     (global output) type(FS_prof) @n
+ *                         profiling information of each subroutines.
+ *
+ * @note This routine is modified from ScaLAPACK PDLAEDZ.f
+ */
+ 
+template <class Integer, class Real>
+void FS_pdlaedz(const Integer n, const Integer n1, const Real q[],
+                const Integer ldq, const bt_node<Integer, Real> &subtree,
+                Real z[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlaedz start.\n");
+    std::cout << "FS_pdlaedz start." << std::endl;
   }
 #endif
 #if TIMER_PRINT
@@ -31,7 +75,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
 
   const auto nb = subtree.FS_get_NB();
 
-  std::fill_n(z, n, FS_const::ZERO<Float>);
+  std::fill_n(z, n, FS_const::ZERO<Real>);
 
   // Z1, Z2を含むプロセス行を取得
   const auto iz1_info = subtree.FS_info_G1L('R', n1 - 1);
@@ -46,7 +90,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
       if (jz1.rocsrc == grid_info.mycol) {
         const auto nb1 = std::min(n1, j + nb) - j;
         const auto q_index = iz1 + jz1.l_index * ldq;
-        lapacke::copy<Integer, Float>(nb1, &q[q_index], ldq, &z[j], 1);
+        lapacke::copy<Real>(nb1, &q[q_index], ldq, &z[j], 1);
       }
     }
   }
@@ -65,7 +109,7 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
       if (jz2col == grid_info.mycol) {
         const auto nb1 = std::min(n, j + nb) - j;
         const auto q_index = iz2 + jz2 * ldq;
-        lapacke::copy<Integer, Float>(nb1, &q[q_index], ldq, &z[j], 1);
+        lapacke::copy<Real>(nb1, &q[q_index], ldq, &z[j], 1);
       }
     }
   }
@@ -75,8 +119,9 @@ void FS_pdlaedz(Integer n, Integer n1, const Float q[], Integer ldq,
 #endif
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_pdlaedz end.\n");
+    std::cout << "FS_pdlaedz end." << std::endl;
   }
 #endif
 }
-} // namespace FS_pdlaedz
+} // namespace dc2_FS
+} // namespace

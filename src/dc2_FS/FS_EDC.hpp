@@ -1,10 +1,11 @@
 #pragma once
 /**
  * @file FS_EDC.hpp
- * @brief template int FS_EDC
+ * @brief FS_EDC
  */
 
 #include <cmath>
+#include <iostream>
 
 #include "../cblas_lapacke_wrapper.hpp"
 #include "../eigen_libs0.hpp"
@@ -12,11 +13,8 @@
 #include "FS_pdlaed0.hpp"
 #include "FS_prof.hpp"
 
-#if defined(_DEBUGLOG)
-#include <cstdio>
-#endif
-
-namespace FS_EDC {
+namespace {
+namespace dc2_FS {
 using FS_const::ONE;
 using FS_const::ZERO;
 /**
@@ -72,17 +70,17 @@ using FS_const::ZERO;
  * @note This routine is modified from ScaLAPACK PDSTEDC.f
  */
 
-template <class Integer, class Float>
-Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
-               Float *work, Integer lwork, Integer *iwork, const Integer liwork,
-               FS_prof::FS_prof *prof) {
+template <class Integer, class Real>
+Integer FS_EDC(const Integer n, Real *d, Real *e, Real *q, const Integer ldq,
+               Real *work, const Integer lwork, Integer *iwork,
+               const Integer liwork, FS_prof *prof) {
 
-  FS_prof::FS_prof prof_tmp = {};
+  FS_prof prof_tmp = {};
 
   Integer info = 0;
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_EDC start\n");
+    std::cout << "FS_EDC start" << std::endl;
   }
 #endif
 
@@ -107,45 +105,44 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
     // 何もしない
   } else if (n == 1) {
     if (x_inod == 1 && y_inod == 1) {
-      Q[0] = ONE<Float>;
+      q[0] = ONE<Real>;
     }
   } else if (x_nnod * y_nnod == 1) {
     // If P=NPROW*NPCOL=1, solve the problem with DSTEDC.
 #if TIMER_PRINT
     prof_tmp.start(11);
 #endif
-    info = lapacke::stedc<Integer, Float>('I', n, D, E, Q, ldq, work, lwork,
-                                          iwork, liwork);
+    info = lapacke::stedc<Real>('I', n, d, e, q, ldq, work, lwork,
+                                 reinterpret_cast<eigen_mathlib_int *>(iwork),
+                                 liwork);
 
 #if TIMER_PRINT
     prof_tmp.end(11);
 #endif
   } else {
     // Scale matrix to allowable range, if necessary.
-    auto orgnrm = lapacke::lanst<Integer, Float>('M', n, D, E);
+    auto orgnrm = lapacke::lanst<Real>('M', n, d, e);
     if (std::isnan(orgnrm)) {
-      orgnrm = ZERO<Float>;
+      orgnrm = ZERO<Real>;
     }
-    if (orgnrm != ZERO<Float>) {
-      info = lapacke::lascl<Integer, Float>('G', 0, 0, orgnrm, ONE<Float>, n, 1,
-                                            D, n);
+    if (orgnrm != ZERO<Real>) {
+      info = lapacke::lascl<Real>('G', 0, 0, orgnrm, ONE<Real>, n, 1, d, n);
       if (n - 1 >= 1) {
-        info = lapacke::lascl<Integer, Float>('G', 0, 0, orgnrm, ONE<Float>,
-                                              n - 1, 1, E, n - 1);
+        info = lapacke::lascl<Real>('G', 0, 0, orgnrm, ONE<Real>, n - 1, 1, e,
+                                     n - 1);
       }
     }
-    info = eigen_FS::FS_pdlaed0<Integer, Float>(n, D, E, Q, ldq, work, lwork,
-                                                iwork, liwork, prof_tmp);
+    info = FS_pdlaed0<Integer, Real>(n, d, e, q, ldq, work, lwork, iwork,
+                                      liwork, prof_tmp);
     // Scale back.
-    if (info == 0 && orgnrm != ZERO<Float>) {
-      info = lapacke::lascl<Integer, Float>('G', 0, 0, ONE<Float>, orgnrm, n, 1,
-                                            D, n);
+    if (info == 0 && orgnrm != ZERO<Real>) {
+      info = lapacke::lascl<Real>('G', 0, 0, ONE<Real>, orgnrm, n, 1, d, n);
     }
   }
 
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
-    std::printf("FS_EDC end. INFO=%d\n", info);
+    std::cout << "FS_EDC end. INFO=" << info << std::endl;
   }
 #endif
 
@@ -159,4 +156,5 @@ Integer FS_EDC(const Integer n, Float *D, Float *E, Float *Q, const Integer ldq,
 #endif
   return info;
 }
-} // namespace FS_EDC
+} // namespace dc2_FS
+} // namespace
