@@ -244,7 +244,7 @@ Integer FS_pdlaed0(const Integer n, Float d[], Float e[], Float q[],
     } else {
       Integer *ibuf = reinterpret_cast<Integer *>(work);
       auto *tbuf = reinterpret_cast<FS2eigen::GpositionValue<Integer, Float> *>(
-          &work[std::max((Integer)0, (NP * NQ / 2))]);
+          *ibuf[std::max((Integer)0, (NP * NQ))]);
       FS2eigen_pdlasrt<Integer, Float>(n, d, ldq, q, root_node, ibuf, work,
                                        tbuf, iwork, prof);
     }
