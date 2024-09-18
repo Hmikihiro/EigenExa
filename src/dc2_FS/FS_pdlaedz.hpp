@@ -11,10 +11,10 @@
 
 namespace {
 namespace dc2_FS {
-template <class Integer, class Float>
-void FS_pdlaedz(const Integer n, const Integer n1, const Float q[],
-                const Integer ldq, const bt_node<Integer, Float> &subtree,
-                Float z[], FS_prof &prof) {
+template <class Integer, class Real>
+void FS_pdlaedz(const Integer n, const Integer n1, const Real q[],
+                const Integer ldq, const bt_node<Integer, Real> &subtree,
+                Real z[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_pdlaedz start." << std::endl;
@@ -29,7 +29,7 @@ void FS_pdlaedz(const Integer n, const Integer n1, const Float q[],
 
   const auto nb = subtree.FS_get_NB();
 
-  std::fill_n(z, n, FS_const::ZERO<Float>);
+  std::fill_n(z, n, FS_const::ZERO<Real>);
 
   // Z1, Z2を含むプロセス行を取得
   const auto iz1_info = subtree.FS_info_G1L('R', n1 - 1);
@@ -44,7 +44,7 @@ void FS_pdlaedz(const Integer n, const Integer n1, const Float q[],
       if (jz1.rocsrc == grid_info.mycol) {
         const auto nb1 = std::min(n1, j + nb) - j;
         const auto q_index = iz1 + jz1.l_index * ldq;
-        lapacke::copy<Float>(nb1, &q[q_index], ldq, &z[j], 1);
+        lapacke::copy<Real>(nb1, &q[q_index], ldq, &z[j], 1);
       }
     }
   }
@@ -63,7 +63,7 @@ void FS_pdlaedz(const Integer n, const Integer n1, const Float q[],
       if (jz2col == grid_info.mycol) {
         const auto nb1 = std::min(n, j + nb) - j;
         const auto q_index = iz2 + jz2 * ldq;
-        lapacke::copy<Float>(nb1, &q[q_index], ldq, &z[j], 1);
+        lapacke::copy<Real>(nb1, &q[q_index], ldq, &z[j], 1);
       }
     }
   }

@@ -17,9 +17,9 @@
 
 namespace {
 namespace dc2_FS {
-template <class Integer, class Float>
+template <class Integer, class Real>
 Integer get_NPA(const Integer n, const Integer nb,
-                const bt_node<Integer, Float> &subtree, const Integer myrow) {
+                const bt_node<Integer, Real> &subtree, const Integer myrow) {
   Integer npa = 0;
 #pragma omp parallel for reduction(+ : npa)
   for (Integer i = 0; i < n; i += nb) {
@@ -84,11 +84,11 @@ void set_ptt(const Integer lctot, Integer ptt[4], const Integer ctot[],
   }
 }
 
-template <class Integer, class Float>
+template <class Integer, class Real>
 void set_indxp(const Integer n, Integer &k2, const Integer nj, const Integer pj,
-               Float d[], const Float c, const Float s, Integer indxp[]) {
-  const auto c_2 = static_cast<Float>(pow(c, 2));
-  const auto s_2 = static_cast<Float>(pow(s, 2));
+               Real d[], const Real c, const Real s, Integer indxp[]) {
+  const auto c_2 = static_cast<Real>(pow(c, 2));
+  const auto s_2 = static_cast<Real>(pow(s, 2));
   const auto t = d[pj] * c_2 + d[nj] * s_2;
   d[nj] = d[pj] * s_2 + d[nj] * c_2;
   d[pj] = t;
@@ -106,11 +106,11 @@ void set_indxp(const Integer n, Integer &k2, const Integer nj, const Integer pj,
   indxp[k2 + i] = pj;
 }
 
-template <class Integer, class Float>
-void pdlaed2_comm(const Integer mycol, const Integer ldq, Float q[],
-                  const Integer npa, const bt_node<Integer, Float> &subtree,
-                  Float qbuf[], const Integer nj, const Integer pj,
-                  const Float c, const Float s, Integer indcol[]) {
+template <class Integer, class Real>
+void pdlaed2_comm(const Integer mycol, const Integer ldq, Real q[],
+                  const Integer npa, const bt_node<Integer, Real> &subtree,
+                  Real qbuf[], const Integer nj, const Integer pj, const Real c,
+                  const Real s, Integer indcol[]) {
   const auto njj_info = subtree.FS_info_G1L('C', nj);
   const auto &njj = njj_info.l_index;
   const auto &njcol = njj_info.rocsrc;
@@ -119,44 +119,44 @@ void pdlaed2_comm(const Integer mycol, const Integer ldq, Float q[],
   const auto &pjcol = pjj_info.rocsrc;
 
   if (indcol[pj] == indcol[nj] && mycol == njcol) {
-    lapacke::rot<Float>(npa, &q[pjj * ldq + 0], 1, &q[njj * ldq + 0], 1, c, s);
+    lapacke::rot<Real>(npa, &q[pjj * ldq + 0], 1, &q[njj * ldq + 0], 1, c, s);
   } else if (mycol == pjcol) {
     MPI_Request req[2];
-    MPI_Irecv(qbuf, npa, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+    MPI_Irecv(qbuf, npa, MPI_Datatype_wrapper::MPI_TYPE<Real>,
               subtree.group_Y_processranklist_[njcol], 1,
               FS_libs::FS_COMM_WORLD, &req[1]);
 
-    MPI_Isend(&q[pjj * ldq + 0], npa, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+    MPI_Isend(&q[pjj * ldq + 0], npa, MPI_Datatype_wrapper::MPI_TYPE<Real>,
               subtree.group_Y_processranklist_[njcol], 1,
               FS_libs::FS_COMM_WORLD, &req[0]);
     MPI_Waitall(2, req, MPI_STATUS_IGNORE);
-    lapacke::rot<Float>(npa, &q[pjj * ldq + 0], 1, qbuf, 1, c, s);
+    lapacke::rot<Real>(npa, &q[pjj * ldq + 0], 1, qbuf, 1, c, s);
   } else if (mycol == njcol) {
     MPI_Request req[2];
-    MPI_Irecv(qbuf, npa, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+    MPI_Irecv(qbuf, npa, MPI_Datatype_wrapper::MPI_TYPE<Real>,
               subtree.group_Y_processranklist_[pjcol], 1,
               FS_libs::FS_COMM_WORLD, &req[1]);
 
-    MPI_Isend(&q[njj * ldq + 0], npa, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+    MPI_Isend(&q[njj * ldq + 0], npa, MPI_Datatype_wrapper::MPI_TYPE<Real>,
               subtree.group_Y_processranklist_[pjcol], 1,
               FS_libs::FS_COMM_WORLD, &req[0]);
     MPI_Waitall(2, req, MPI_STATUS_IGNORE);
-    lapacke::rot<Float>(npa, qbuf, 1, &q[njj * ldq + 0], 1, c, s);
+    lapacke::rot<Real>(npa, qbuf, 1, &q[njj * ldq + 0], 1, c, s);
   }
 }
 
-template <class Integer, class Float> struct FS_pdlead2_result {
-  Float rho;
+template <class Integer, class Real> struct FS_pdlead2_result {
+  Real rho;
   Integer k;
 };
 
-template <class Integer, class Float>
-FS_pdlead2_result<Integer, Float>
-FS_pdlaed2(const Integer n, const Integer n1, Float d[], Float q[],
-           const Integer ldq, const bt_node<Integer, Float> &subtree,
-           const Float rho, Float z[], Float w[], Float dlamda[],
-           const Integer ldq2, Float q2[], Integer indx[], Integer ctot[],
-           Float qbuf[], Integer coltyp[], Integer indcol[], Integer indxc[],
+template <class Integer, class Real>
+FS_pdlead2_result<Integer, Real>
+FS_pdlaed2(const Integer n, const Integer n1, Real d[], Real q[],
+           const Integer ldq, const bt_node<Integer, Real> &subtree,
+           const Real rho, Real z[], Real w[], Real dlamda[],
+           const Integer ldq2, Real q2[], Integer indx[], Integer ctot[],
+           Real qbuf[], Integer coltyp[], Integer indcol[], Integer indxc[],
            Integer indxp[], Integer psm[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
@@ -167,7 +167,7 @@ FS_pdlaed2(const Integer n, const Integer n1, Float d[], Float q[],
   prof.start(50);
 #endif
 
-  const auto result = [&]() mutable -> FS_pdlead2_result<Integer, Float> {
+  const auto result = [&]() mutable -> FS_pdlead2_result<Integer, Real> {
     // Quick return if possible
     if (n == 0) {
       return {rho, 0};
@@ -183,25 +183,24 @@ FS_pdlaed2(const Integer n, const Integer n1, Float d[], Float q[],
     const auto n2 = n - n1;
     std::fill_n(dlamda, n, 0);
 
-    if (rho < FS_const::ZERO<Float>) {
-      lapacke::scal<Float>(n2, FS_const::MONE<Float>, &z[n1], 1);
+    if (rho < FS_const::ZERO<Real>) {
+      lapacke::scal<Real>(n2, FS_const::MONE<Real>, &z[n1], 1);
     }
     // Normalize z so that norm(z) = 1.  Since z is the concatenation of
     // two normalized vectors, norm2(z) = sqrt(2).
 
-    const auto T = FS_const::ONE<Float> / std::sqrt(FS_const::TWO<Float>);
-    lapacke::scal<Float>(n, T, z, 1);
+    const auto T = FS_const::ONE<Real> / std::sqrt(FS_const::TWO<Real>);
+    lapacke::scal<Real>(n, T, z, 1);
 
-    const auto result_rho = std::abs(FS_const::TWO<Float> * rho);
+    const auto result_rho = std::abs(FS_const::TWO<Real> * rho);
 
     // Calculate the allowable deflation tolerance
-    const auto imax = lapacke::iamax<Float>(n, z, 1);
-    const auto jmax = lapacke::iamax<Float>(n, d, 1);
+    const auto imax = lapacke::iamax<Real>(n, z, 1);
+    const auto jmax = lapacke::iamax<Real>(n, d, 1);
     const auto abs_zmax = std::abs(z[imax]);
     const auto abs_dmax = std::abs(d[jmax]);
-    const auto eps = std::numeric_limits<Float>::epsilon() / 2;
-    const auto tol =
-        FS_const::EIGHT<Float> * eps * std::max(abs_dmax, abs_zmax);
+    const auto eps = std::numeric_limits<Real>::epsilon() / 2;
+    const auto tol = FS_const::EIGHT<Real> * eps * std::max(abs_dmax, abs_zmax);
 
     // If the rank-1 modifier is small enough, no more needs to be done
     // except to reorganize Q so that its columns correspond with the
@@ -261,7 +260,7 @@ FS_pdlaed2(const Integer n, const Integer n1, Float d[], Float q[],
           const auto c_nj = z[nj];
           // Find sqrt(a**2+b**2) without overflow or
           // destructive underflow.
-          const auto tau = lapacke::lapy2<Float>(c_nj, s_pj);
+          const auto tau = lapacke::lapy2<Real>(c_nj, s_pj);
 
           const auto t = d[nj] - d[pj];
           const auto c = c_nj / tau;
@@ -269,7 +268,7 @@ FS_pdlaed2(const Integer n, const Integer n1, Float d[], Float q[],
           if (std::abs(t * c * s) <= tol) {
             // Deflation is possible.
             z[nj] = tau;
-            z[pj] = FS_const::ZERO<Float>;
+            z[pj] = FS_const::ZERO<Real>;
             if (coltyp[nj] != coltyp[pj]) {
               coltyp[nj] = 1;
             }

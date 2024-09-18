@@ -47,10 +47,10 @@ namespace lapacke {
 const CBLAS_LAYOUT FS_layout = CBLAS_LAYOUT::CblasColMajor;
 #define FS_LAPACKE_LAYOUT LAPACK_COL_MAJOR
 
-template <class Float>
+template <class Real>
 inline eigen_mathlib_int
-stedc(char compz, eigen_mathlib_int n, Float *d, Float *e, Float *z,
-      eigen_mathlib_int ldz, Float *work, int64_t lwork,
+stedc(char compz, eigen_mathlib_int n, Real *d, Real *e, Real *z,
+      eigen_mathlib_int ldz, Real *work, int64_t lwork,
       eigen_mathlib_int *iwork, eigen_mathlib_int liwork);
 
 template <>
@@ -77,11 +77,11 @@ stedc<float>(char compz, eigen_mathlib_int n, float *d, float *e, float *z,
                              lwork, iwork, liwork);
 }
 
-template <class Float>
+template <class Real>
 inline eigen_mathlib_int lascl(char type, eigen_mathlib_int kl,
-                               eigen_mathlib_int ku, Float cfrom, Float cto,
+                               eigen_mathlib_int ku, Real cfrom, Real cto,
                                eigen_mathlib_int m, eigen_mathlib_int n,
-                               Float *a, eigen_mathlib_int lda);
+                               Real *a, eigen_mathlib_int lda);
 
 template <>
 inline eigen_mathlib_int
@@ -103,9 +103,8 @@ lascl<float>(char type, eigen_mathlib_int kl, eigen_mathlib_int ku, float cfrom,
   return info;
 }
 
-template <class Float>
-inline Float lanst(char norm, eigen_mathlib_int n, const Float *D,
-                   const Float *E);
+template <class Real>
+inline Real lanst(char norm, eigen_mathlib_int n, const Real *D, const Real *E);
 
 template <>
 inline double lanst<double>(char norm, eigen_mathlib_int n, const double *D,
@@ -119,7 +118,7 @@ inline float lanst<float>(char norm, eigen_mathlib_int n, const float *D,
   return slanst_(&norm, &n, D, E);
 }
 
-template <class Float> inline Float lapy2(Float x, Float y);
+template <class Real> inline Real lapy2(Real x, Real y);
 
 template <> inline double lapy2<double>(double x, double y) {
   return LAPACKE_dlapy2(x, y);
@@ -129,12 +128,12 @@ template <> inline float lapy2<float>(float x, float y) {
   return LAPACKE_slapy2(x, y);
 }
 
-template <class Float>
+template <class Real>
 inline void gemm(const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
                  const eigen_mathlib_int M, const eigen_mathlib_int N,
-                 const eigen_mathlib_int K, const Float alpha, const Float *A,
-                 const eigen_mathlib_int lda, const Float *B,
-                 const eigen_mathlib_int ldb, const Float beta, Float *C,
+                 const eigen_mathlib_int K, const Real alpha, const Real *A,
+                 const eigen_mathlib_int lda, const Real *B,
+                 const eigen_mathlib_int ldb, const Real beta, Real *C,
                  const eigen_mathlib_int ldc);
 
 template <>
@@ -161,9 +160,9 @@ inline void gemm<float>(const CBLAS_TRANSPOSE TransA,
               C, ldc);
 }
 
-template <class Float>
-inline void copy(eigen_mathlib_int n, const Float *X, eigen_mathlib_int incX,
-                 Float *Y, eigen_mathlib_int incY);
+template <class Real>
+inline void copy(eigen_mathlib_int n, const Real *X, eigen_mathlib_int incX,
+                 Real *Y, eigen_mathlib_int incY);
 
 template <>
 inline void copy<double>(eigen_mathlib_int n, const double *X,
@@ -179,8 +178,8 @@ inline void copy<float>(eigen_mathlib_int n, const float *X,
   cblas_scopy(n, X, incX, Y, incY);
 }
 
-template <class Float>
-inline eigen_mathlib_int iamax(eigen_mathlib_int n, Float dx[],
+template <class Real>
+inline eigen_mathlib_int iamax(eigen_mathlib_int n, Real dx[],
                                eigen_mathlib_int incx);
 
 template <>
@@ -195,8 +194,8 @@ inline eigen_mathlib_int iamax<float>(eigen_mathlib_int n, float dx[],
   return cblas_isamax(n, dx, incx);
 }
 
-template <class Float>
-inline void scal(eigen_mathlib_int n, Float alpha, Float x[],
+template <class Real>
+inline void scal(eigen_mathlib_int n, Real alpha, Real x[],
                  eigen_mathlib_int incx);
 
 template <>
@@ -211,8 +210,8 @@ inline void scal(eigen_mathlib_int n, float alpha, float x[],
   cblas_sscal(n, alpha, x, incx);
 }
 
-template <class Float>
-inline Float nrm2(eigen_mathlib_int n, Float X[], eigen_mathlib_int incX);
+template <class Real>
+inline Real nrm2(eigen_mathlib_int n, Real X[], eigen_mathlib_int incX);
 
 template <>
 inline double nrm2(eigen_mathlib_int n, double X[], eigen_mathlib_int incX) {
@@ -224,10 +223,10 @@ inline float nrm2(eigen_mathlib_int n, float X[], eigen_mathlib_int incX) {
   return cblas_snrm2(n, X, incX);
 }
 
-template <class Float>
+template <class Real>
 inline eigen_mathlib_int laed4(eigen_mathlib_int n, eigen_mathlib_int i,
-                               const Float d[], const Float z[], Float delta[],
-                               Float rho, Float &dlam);
+                               const Real d[], const Real z[], Real delta[],
+                               Real rho, Real &dlam);
 
 template <>
 inline eigen_mathlib_int laed4(eigen_mathlib_int n, eigen_mathlib_int i,
@@ -247,14 +246,14 @@ inline eigen_mathlib_int laed4(eigen_mathlib_int n, eigen_mathlib_int i,
   return info;
 }
 
-template <class Float> inline Float lamc3(Float x, Float y);
+template <class Real> inline Real lamc3(Real x, Real y);
 
 template <> inline double lamc3(double x, double y) { return dlamc3_(&x, &y); }
 template <> inline float lamc3(float x, float y) { return slamc3_(&x, &y); }
 
-template <class Float>
-inline void rot(eigen_mathlib_int N, Float *X, eigen_mathlib_int incX, Float *Y,
-                eigen_mathlib_int incY, Float c, Float s);
+template <class Real>
+inline void rot(eigen_mathlib_int N, Real *X, eigen_mathlib_int incX, Real *Y,
+                eigen_mathlib_int incY, Real c, Real s);
 
 template <>
 inline void rot(eigen_mathlib_int N, double *X, eigen_mathlib_int incX,

@@ -22,15 +22,15 @@ using eigen_libs0_wrapper::eigen_get_comm;
 using eigen_libs0_wrapper::eigen_get_id;
 using eigen_libs0_wrapper::eigen_get_procs;
 
-template <class Integer, class Float> struct dc2_FS_result {
-  Float ret;
+template <class Integer, class Real> struct dc2_FS_result {
+  Real ret;
   Integer info;
 };
 
-template <class Integer, class Float>
-dc2_FS_result<Integer, Float> dc2_FS(const Integer n, const Integer nvec,
-                                     Float d[], Float e[], Float z[],
-                                     const Integer ldz) {
+template <class Integer, class Real>
+dc2_FS_result<Integer, Real> dc2_FS(const Integer n, const Integer nvec,
+                                    Real d[], Real e[], Real z[],
+                                    const Integer ldz) {
   eigen_dc_interface::flops = 0;
   eigen_dc_interface::dgemm_time = 0;
   eigen_dc_interface::p_time0 = 0;
@@ -46,7 +46,7 @@ dc2_FS_result<Integer, Float> dc2_FS(const Integer n, const Integer nvec,
   const auto iam = eigen_get_id().id - 1;
 #endif
 
-  const auto worksize = FS_libs::FS_WorkSize(n, sizeof(Integer), sizeof(Float));
+  const auto worksize = FS_libs::FS_WorkSize(n, sizeof(Integer), sizeof(Real));
   long long lwork_ = worksize.lwork;
   long long liwork_ = worksize.liwork;
 
@@ -62,7 +62,7 @@ dc2_FS_result<Integer, Float> dc2_FS(const Integer n, const Integer nvec,
 
   Integer info_fs_edc = 0;
   try {
-    std::unique_ptr<Float[]> work(new Float[lwork]);
+    std::unique_ptr<Real[]> work(new Real[lwork]);
     std::unique_ptr<Integer[]> iwork(new Integer[liwork]);
 
 #if defined(__INTEL_COMPILER) && USE_MKL
@@ -75,8 +75,8 @@ dc2_FS_result<Integer, Float> dc2_FS(const Integer n, const Integer nvec,
 
     prof.init();
 #endif
-    info_fs_edc = FS_EDC<Integer, Float>(n, d, e, z, ldz, work.get(), lwork,
-                                         iwork.get(), liwork, &prof);
+    info_fs_edc = FS_EDC<Integer, Real>(n, d, e, z, ldz, work.get(), lwork,
+                                        iwork.get(), liwork, &prof);
 #if TIMER_PRINT
     prof.finalize();
 #endif
@@ -114,9 +114,9 @@ dc2_FS_result<Integer, Float> dc2_FS(const Integer n, const Integer nvec,
   }
 #endif
 
-  Float ret_ = 0;
+  Real ret_ = 0;
   MPI_Allreduce(&eigen_dc_interface::flops, &ret_, 1,
-                MPI_Datatype_wrapper::MPI_TYPE<Float>, MPI_SUM, eigen_comm);
+                MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM, eigen_comm);
 
   return {ret_, info_fs_edc};
 }

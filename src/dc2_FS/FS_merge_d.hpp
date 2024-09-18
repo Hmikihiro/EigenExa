@@ -35,11 +35,11 @@ namespace dc2_FS {
  *                         generated D before MPI_ALLREDUCE.
  *
  */
-template <class Integer, class Float>
-void FS_merge_d(const Integer n, const Float d[],
-                const bt_node<Integer, Float> &subtree, Float d_out[]) {
+template <class Integer, class Real>
+void FS_merge_d(const Integer n, const Real d[],
+                const bt_node<Integer, Real> &subtree, Real d_out[]) {
   // reduce用バッファのゼロクリア
-  std::fill_n(d_out, n, FS_const::ZERO<Float>);
+  std::fill_n(d_out, n, FS_const::ZERO<Real>);
 
   // プロセス情報取得
   const auto grid_info = subtree.FS_grid_info();

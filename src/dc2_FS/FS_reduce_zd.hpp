@@ -11,9 +11,9 @@
 namespace {
 namespace dc2_FS {
 using FS_libs::FS_COMM_WORLD;
-template <class Integer, class Float>
-void FS_reduce_zd(const Integer n, const bt_node<Integer, Float> &subtree,
-                  Float work[], Float z[], Float d[], FS_prof &prof) {
+template <class Integer, class Real>
+void FS_reduce_zd(const Integer n, const bt_node<Integer, Real> &subtree,
+                  Real work[], Real z[], Real d[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_reduce_zd start." << std::endl;
@@ -32,7 +32,7 @@ void FS_reduce_zd(const Integer n, const bt_node<Integer, Float> &subtree,
 #endif
 
   // reduce
-  MPI_Group_Allreduce(work, z, n * 2, MPI_Datatype_wrapper::MPI_TYPE<Float>,
+  MPI_Group_Allreduce(work, z, n * 2, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                       MPI_SUM, FS_COMM_WORLD, subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
