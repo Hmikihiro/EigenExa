@@ -1,3 +1,4 @@
+
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     
 ! Subroutine: eigen_FS
@@ -25,13 +26,14 @@
 !  = 'X' : mode 'A' + improve accuracy of eigenvalues
 !
 !--------*---------*---------*---------*---------*---------*---------*-*
-      subroutine eigen_FS(n, nvec, a, lda, w, z, ldz,
-     &     m_forward, m_backward, mode)
+      subroutine eigen_FS_fp32(n, nvec, a, lda, w, z, ldz,
+     &     ldz2, m_forward, m_backward, mode)
 
       !
       ! Trick to avoid a conflict between func-name and interface
       !
-      use eigen_libs_mod, eigen_FS_interface => eigen_FS
+      use eigen_libs_mod,
+     & eigen_FS_fp32_interface => eigen_FS_fp32
       use eigen_devel_mod
       use eigen_scaling_mod
       use eigen_trd_mod
@@ -50,13 +52,14 @@
       real(8),   intent(inout)        :: a(lda,*)
       integer,   intent(in)           :: lda
       real(8),   intent(out)          :: w(1:n)
-      real(8),   intent(out)          :: z(ldz,*)
-      integer,   intent(in)           :: ldz
+      real(8),   intent(out)          :: z(ldz, ldz2)
+      integer,   intent(in)           :: ldz, ldz2
       integer,   intent(in), optional :: m_forward
       integer,   intent(in), optional :: m_backward
       character(*), intent(in), optional :: mode
 
       real(8), allocatable   :: d(:), e(:), e2(:)
+
 
       integer                :: m_f, m_b
       character              :: mode_
@@ -196,14 +199,19 @@
         end if
         d (1:n) = w(1:n)
         e2(1:n) = e(1:n)
-        call dc2_FS(n, ABS(nvec), w , e2(2:), z, ldz, INFO, ret_2)
+
+        call dc2_FS_fp32(n, ABS(nvec), w, e2(2:),
+     &    z, ldz, ldz2, INFO, ret_2)
+
         ERROR_INFO = INFO
         call eigen_bisect(d, e, w, n, 1)
         deallocate( e2 )
       end if
       if (mode_ == 'A') then
-        d (1:n) = e(1:n)
-        call dc2_FS(n, ABS(nvec), w, d(2:), z, ldz, INFO, ret_2)
+         d (1:n) = e(1:n)
+
+        call dc2_FS_fp32(n, ABS(nvec), w, d(2:),  
+     &        z, ldz, ldz2, INFO, ret_2)
         ERROR_INFO = INFO
       end if
       if (mode_ == 'S' ) then
@@ -218,7 +226,7 @@
 #if TIMER_PRINT
       s1 = eigen_get_wtime()
       if (my_rank == 0) then
-        print 10000,"D&C C++ fp64 ",
+        print 10000,"D&C C++ fp32 ",
      &  n, s1-s0, ret_2, 1D-9*ret_2/(s1-s0), "GFLOPS"
       end if
       call flush(6)
@@ -295,4 +303,4 @@
 !-
 !-------------------------------------------------------------------
 !-
-      end subroutine eigen_FS
+      end subroutine eigen_FS_fp32

@@ -63,7 +63,7 @@ module FS_libs_mod
   interface
 
        subroutine eigen_FS(n, nvec, a, lda, w, z, ldz, &
-          m_forward, m_backward, mode, precision)
+          m_forward, m_backward, mode)
        integer,   intent(in)           :: n
        integer,   intent(in)           :: nvec
        real(8),   intent(inout)        :: a(lda,*)
@@ -74,8 +74,23 @@ module FS_libs_mod
        integer,   intent(in), optional :: m_forward
        integer,   intent(in), optional :: m_backward
        character(*), intent(in), optional :: mode
-       integer,   intent(in), optional :: precision
        end subroutine eigen_FS
+
+
+      subroutine eigen_FS_fp32(n, nvec, a, lda, w, z, ldz, &
+         ldz2, m_forward, m_backward, mode)
+         integer,   intent(in)           :: n
+         integer,   intent(in)           :: nvec
+         real(8),   intent(inout)        :: a(lda,*)
+         integer,   intent(in)           :: lda
+         real(8),   intent(out)          :: w(1:n)
+         real(8),   intent(out)          :: z(ldz, ldz2)
+         integer,   intent(in)           :: ldz, ldz2
+         integer,   intent(in), optional :: m_forward
+         integer,   intent(in), optional :: m_backward
+         character(*), intent(in), optional :: mode
+      end subroutine eigen_FS_fp32
+
 
        subroutine FS_init(comm,order) bind(c, name="FS_init")
          use, intrinsic :: iso_c_binding

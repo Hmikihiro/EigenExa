@@ -104,6 +104,7 @@ libEigenExa_a_SOURCES = \
     FS_libs_C.cpp \
 	dc2_FS.F \
 	eigen_FS.F \
+	eigen_FS_fp32.F\
 	FS_memory_internal.F \
 	eigen_hrd_t1.F \
 	eigen_hrd_t2.F \
@@ -294,7 +295,7 @@ endif
 
 
 
-eigen_sx.o eigen_s.o eigen_FS.o eigen_h.o: \
+eigen_sx.o eigen_s.o eigen_FS.o eigen_FS_fp32.o eigen_h.o: \
 	eigen_scaling.o eigen_scaling_h.o \
 	eigen_trd.o eigen_prd.o eigen_hrd.o \
 	bisect.o \
@@ -377,7 +378,7 @@ hrbakwy4.o: hrbakwy4_body.o eigen_hrbak.o
 hrbakwy4_body.o: eigen_hrbak.o
 
 if !SKIP_SHARED
-eigen_sx.lo eigen_s.lo eigen_FS.lo eigen_h.lo: \
+eigen_sx.lo eigen_s.lo eigen_FS.lo eigen_FS_fp32.lo eigen_h.lo: \
 	eigen_scaling.lo eigen_scaling_h.lo \
 	eigen_trd.lo eigen_prd.lo eigen_hrd.lo \
 	bisect.lo \
@@ -403,4 +404,3 @@ trbakwy4_body.lo: eigen_trbak.lo
 hrbakwy4.lo: hrbakwy4_body.lo eigen_hrbak.lo
 hrbakwy4_body.lo: eigen_hrbak.lo
 endif
-
