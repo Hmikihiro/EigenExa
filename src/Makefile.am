@@ -345,16 +345,6 @@ MX_DC_OBJS = \
 	mx_pdlaed1.o \
 	mx_pdlaed3.o \
 	mx_pdstedc.o
-FS_DC_OBJS = \
-	FS_PDLAED0.o \
-	FS_PDLAED1.o \
-	FS_PDLAED2.o \
-	FS_PDLAED3.o \
-	FS_PDLASRT.o \
-	FS_MERGE_D.o \
-	FS_REDUCE_ZD.o \
-	FS2eigen_PDLASRT.o \
-	FS_EDC.o
 DC_COMMON_OBJS = \
 	eigen_dc.o \
 	lapack_eigen.o \
@@ -362,8 +352,7 @@ DC_COMMON_OBJS = \
 
 dcx.o: $(MY_DC_OBJS) $(DC_COMMON_OBJS)
 dc2.o: $(MX_DC_OBJS) $(DC_COMMON_OBJS)
-dc2_FS.o: $(FS_DC_OBJS)
-$(MY_DC_OBJS) $(MX_DC_OBJS) $(FS_DC_OBJS): $(DC_COMMON_OBJS)
+$(MY_DC_OBJS) $(MX_DC_OBJS): $(DC_COMMON_OBJS)
 
 my_pdsxedc.o: my_pdlasrt.o my_pdlaed0.o
 my_pdlaed0.o: my_pdlaed1.o my_pdlaedz.o
@@ -391,8 +380,7 @@ $(TRD_OBJS:.o=.lo) $(PRD_OBJS:.o=.lo) eigen_t1.lo: eigen_house.lo
 $(HRD_OBJS:.o=.lo) eigen_hrd_t1.lo: eigen_house_h.lo
 dcx.lo: $(MY_DC_OBJS:.o=.lo) $(DC_COMMON_OBJS:.o=.lo)
 dc2.lo: $(MX_DC_OBJS:.o=.lo) $(DC_COMMON_OBJS:.o=.lo)
-dc2_FS.lo: $(FS_DC_OBJS:.o=.lo)
-$(MY_DC_OBJS:.o=.lo) $(MX_DC_OBJS:.o=.lo) $(FS_DC_OBJS:.o=.lo): $(DC_COMMON_OBJS:.o=.lo)
+$(MY_DC_OBJS:.o=.lo) $(MX_DC_OBJS:.o=.lo): $(DC_COMMON_OBJS:.o=.lo)
 my_pdsxedc.lo: my_pdlasrt.lo my_pdlaed0.lo
 my_pdlaed0.lo: my_pdlaed1.lo my_pdlaedz.lo
 my_pdlaed1.lo: my_pdlaed2.lo my_pdlaed3.lo
