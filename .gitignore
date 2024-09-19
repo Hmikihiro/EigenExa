@@ -1,14 +1,15 @@
-aclocal.m4
-depcomp
-install-sh
-missing
-stamp-h1
-
 # configure
 configure
 config.*
 compile
 
+# bootstrap
+aclocal.m4
+depcomp
+install-sh
+missing
+stamp-h1
+autom4te.cache/*
 
 # Makefile
 Makefile
@@ -48,23 +49,11 @@ Makefile.in
 *.out
 *.app
 
+# Executables test files
 eigenexa_benchmark
 eigenexa_benchmark_shlib
 eigenexah_benchmark
 eigenexah_benchmark_shlib
 eigenexa_gev_benchmark
 eigenexa_gev_benchmark_shlib
-
-C/c_test
-
-autom4te.cache/*
-
-.vscode/*
-
-stdout*
-
-stderr*
-
-LOG*
-
-IN-check
+c_test

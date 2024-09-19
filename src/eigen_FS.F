@@ -196,7 +196,7 @@
         end if
         d (1:n) = w(1:n)
         e2(1:n) = e(1:n)
-        call dc2_FS(n, ABS(nvec), w , e2(2:), z, ldz, INFO, ret_2)
+        call dc2_FS(n, ABS(nvec), w, e2(2:), z, ldz, INFO, ret_2)
         ERROR_INFO = INFO
         call eigen_bisect(d, e, w, n, 1)
         deallocate( e2 )
