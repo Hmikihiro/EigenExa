@@ -1,18 +1,18 @@
 
 !--------*---------*---------*---------*---------*---------*---------*-*
 !     
-! Subroutine: eigen_FS
+! Subroutine: eigen_FS_fp32
 !
 ! Purpose
 ! =======
 !
-! implementation of interface eigen_FS (see eigen_lib.F module)
+! implementation of interface eigen_FS_fp32 (see eigen_lib.F module)
 !
 !
 ! Arguments
 ! =========
 !
-! n, nvec, lda, ldz    (input) integer
+! n, nvec, lda, ldz, ldz2    (input) integer
 !  lda and ldz are the leading dimensions corresponding to a and z,
 !  respectively. These values must be equal or larger than one obtained
 !  by calling eigen_get_matdims.
