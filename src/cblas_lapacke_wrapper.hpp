@@ -2,7 +2,7 @@
 
 #include <limits>
 
-#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
+#if (defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER))
 
 #include <mkl.h>
 
@@ -12,7 +12,18 @@ typedef MKL_INT eigen_mathlib_int;
 #include <cblas.h>
 #include <lapacke.h>
 
+#if defined(CBLAS_INT)             // netlib-blas
+typedef CBLAS_INT eigen_mathlib_int;
+#elif defined(OPENBLAS_CONST)      // openblas
+typedef blasint eigen_mathlib_int;
+#elif defined(FJ_MATHLIB_TYPE_INT) // fujitsu
 typedef FJ_MATHLIB_TYPE_INT eigen_mathlib_int;
+extern "C" {
+double dlanst_(char *norn, eigen_mathlib_int *n, const double *D,
+               const double *E);
+float slanst_(char *norn, eigen_mathlib_int *n, const float *D, const float *E);
+}
+#endif
 
 extern "C" {
 double dlaed4_(eigen_mathlib_int *n, eigen_mathlib_int *i, const double d[],
@@ -22,30 +33,14 @@ float slaed4_(eigen_mathlib_int *n, eigen_mathlib_int *i, const float d[],
               const float z[], float delta[], float *rho, float *dlam,
               eigen_mathlib_int *info);
 
-double dlanst_(char *norn, eigen_mathlib_int *n, const double *D,
-               const double *E);
-float slanst_(char *norn, eigen_mathlib_int *n, const float *D, const float *E);
-
 double dlamc3_(double *x, double *y);
 float slamc3_(float *x, float *y);
-
-void dlascl_(const char *type, const eigen_mathlib_int *kl,
-             const eigen_mathlib_int *ku, const double *cfrom,
-             const double *cto, const eigen_mathlib_int *m,
-             const eigen_mathlib_int *n, double *a,
-             const eigen_mathlib_int *lda, eigen_mathlib_int *info);
-
-void slascl_(const char *type, const eigen_mathlib_int *kl,
-             const eigen_mathlib_int *ku, const float *cfrom, const float *cto,
-             const eigen_mathlib_int *m, const eigen_mathlib_int *n, float *a,
-             const eigen_mathlib_int *lda, eigen_mathlib_int *info);
 }
 
 #endif
 
 namespace lapacke {
-const CBLAS_LAYOUT FS_layout = CBLAS_LAYOUT::CblasColMajor;
-#define FS_LAPACKE_LAYOUT LAPACK_COL_MAJOR
+const auto FS_layout = CblasColMajor;
 
 template <class Real>
 inline eigen_mathlib_int
@@ -61,8 +56,9 @@ stedc<double>(char compz, eigen_mathlib_int n, double *d, double *e, double *z,
   if (lwork > std::numeric_limits<eigen_mathlib_int>::max()) {
     lwork = std::numeric_limits<eigen_mathlib_int>::max();
   }
-  return LAPACKE_dstedc_work(FS_LAPACKE_LAYOUT, compz, n, d, e, z, ldz, work,
-                             lwork, iwork, liwork);
+
+  return LAPACKE_dstedc_work(FS_layout, compz, n, d, e, z, ldz, work, lwork,
+                             iwork, liwork);
 }
 
 template <>
@@ -73,8 +69,8 @@ stedc<float>(char compz, eigen_mathlib_int n, float *d, float *e, float *z,
   if (lwork > std::numeric_limits<eigen_mathlib_int>::max()) {
     lwork = std::numeric_limits<eigen_mathlib_int>::max();
   }
-  return LAPACKE_sstedc_work(FS_LAPACKE_LAYOUT, compz, n, d, e, z, ldz, work,
-                             lwork, iwork, liwork);
+  return LAPACKE_sstedc_work(FS_layout, compz, n, d, e, z, ldz, work, lwork,
+                             iwork, liwork);
 }
 
 template <class Real>
@@ -89,7 +85,11 @@ lascl<double>(char type, eigen_mathlib_int kl, eigen_mathlib_int ku,
               double cfrom, double cto, eigen_mathlib_int m,
               eigen_mathlib_int n, double *a, eigen_mathlib_int lda) {
   eigen_mathlib_int info = 0;
+#if defined(LAPACK_dlascl)
+  LAPACK_dlascl(&type, &kl, &ku, &cfrom, &cto, &m, &n, a, &lda, &info);
+#else
   dlascl_(&type, &kl, &ku, &cfrom, &cto, &m, &n, a, &lda, &info);
+#endif
   return info;
 }
 
@@ -99,7 +99,11 @@ lascl<float>(char type, eigen_mathlib_int kl, eigen_mathlib_int ku, float cfrom,
              float cto, eigen_mathlib_int m, eigen_mathlib_int n, float *a,
              eigen_mathlib_int lda) {
   eigen_mathlib_int info = 0;
+#if defined(LAPACK_slascl)
+  LAPACK_slascl(&type, &kl, &ku, &cfrom, &cto, &m, &n, a, &lda, &info);
+#else
   slascl_(&type, &kl, &ku, &cfrom, &cto, &m, &n, a, &lda, &info);
+#endif
   return info;
 }
 
@@ -109,13 +113,21 @@ inline Real lanst(char norm, eigen_mathlib_int n, const Real *D, const Real *E);
 template <>
 inline double lanst<double>(char norm, eigen_mathlib_int n, const double *D,
                             const double *E) {
+#if defined(LAPACK_dlanst)
+  return LAPACK_dlanst(&norm, &n, D, E);
+#else
   return dlanst_(&norm, &n, D, E);
+#endif
 }
 
 template <>
 inline float lanst<float>(char norm, eigen_mathlib_int n, const float *D,
                           const float *E) {
+#if defined(LAPACK_slanst)
+  return LAPACK_slanst(&norm, &n, D, E);
+#else
   return slanst_(&norm, &n, D, E);
+#endif
 }
 
 template <class Real> inline Real lapy2(Real x, Real y);
