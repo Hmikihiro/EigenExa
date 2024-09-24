@@ -117,8 +117,8 @@ dc2_FS_result<Integer, Real> dc2_FS(const Integer n, const Integer nvec,
     std::unique_ptr<Real[]> work(new Real[lwork]);
     std::unique_ptr<Integer[]> iwork(new Integer[liwork]);
 
-#if defined(__INTEL_COMPILER) && USE_MKL
-    const auto mkl_mode = mkl_get_Dynamic();
+#if (defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER))
+    const auto mkl_mode = MKL_Get_Dynamic();
     MKL_Set_Dynamic(0);
 #endif
 
@@ -140,7 +140,7 @@ dc2_FS_result<Integer, Real> dc2_FS(const Integer n, const Integer nvec,
     eigen_dc_interface::dgemm_time = prof.region_time[67];
     eigen_dc_interface::p_timez = prof.region_time[40];
 #endif
-#if defined(__INTEL_COMPILER) && USE_MKL
+#if (defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER))
     MKL_Set_Dynamic(mkl_mode);
 #endif
 
