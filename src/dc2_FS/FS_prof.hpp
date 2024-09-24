@@ -151,8 +151,9 @@ inline void FS_prof::finalize() {
       for (auto i = 0; i < FS_max_region; i++) {
         if (tmp_region_ecount[i] > 0) {
           std::cout << ' ' << i << ' ' << region_name[i] << ' ' << std::fixed
-                    << std::setprecision(15) << tmp_region_time[i] << ' '
-                    << tmp_region_ecount[i] << std::endl;
+                    << std::setprecision(15) << std::scientific
+                    << tmp_region_time[i] << ' ' << tmp_region_ecount[i]
+                    << std::endl;
 #ifdef COUNT_CHECK
           if (tmp_region_scount[i] != tmp_region_ecount[i]) {
             std::cout << "  Warning : start/end count are different in ["
