@@ -276,7 +276,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   const auto eigen_comm = eigen_libs0_wrapper::eigen_get_comm().eigen_comm;
 
   Integer *comm_send_info = new Integer[eigen_np];
-  std::unique_ptr<Integer[]> comm_recv_info(new Integer[eigen_np]);
+  auto comm_recv_info = std::make_unique<Integer[]>(eigen_np);
 
 #pragma omp parallel for
   for (Integer i = 0; i < eigen_np; i++) {
@@ -331,13 +331,12 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   std::unique_ptr<Integer[]> lrow2grow_index;
 
   if (FS_comm_member) {
-    lcol2gcol_index.reset(new Integer[FS_nbcol]);
+    lcol2gcol_index = std::make_unique<Integer[]>(FS_nbcol);
 #pragma omp parallel for
     for (Integer j = 0; j < FS_nbcol; j++) {
       lcol2gcol_index[j] = -1;
     }
-
-    lrow2grow_index.reset(new Integer[FS_nbrow]);
+    lrow2grow_index = std::make_unique<Integer[]>(FS_nbrow);
 #pragma omp parallel for
     for (Integer i = 0; i < FS_nbrow; i++) {
       lrow2grow_index[i] = -1;
@@ -410,11 +409,11 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   FS2eigen::GpositionValue<Real> *sendbuf;
 
   if (send_nrank != 0) {
-    comm_send_data.reset(new FS2eigen::CommBuf<Integer, Real>[send_nrank]);
+    comm_send_data = std::make_unique<FS2eigen::CommBuf<Integer, Real>[]>(send_nrank);
+
     FS2eigen::init_send<Integer, Real>(eigen_np, comm_send_info,
                                        comm_send_data.get());
-
-    sendrank_list.reset(new FS2eigen::RANKLIST<Integer>[send_nrank]);
+    sendrank_list = std::make_unique<FS2eigen::RANKLIST<Integer>[]>(send_nrank);
 
     for (Integer k = 0; k < send_nrank; k++) {
       sendrank_list[k].lid = &ibuf[pointer];
@@ -454,7 +453,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   }
   std::unique_ptr<FS2eigen::CommBuf<Integer, Real>[]> comm_recv_data;
   if (recv_nrank != 0) {
-    comm_recv_data.reset(new FS2eigen::CommBuf<Integer, Real>[recv_nrank]);
+    comm_recv_data = std::make_unique<FS2eigen::CommBuf<Integer, Real>[]>(recv_nrank);
     FS2eigen::init_recv<Integer, Real>(eigen_np, comm_recv_info.get(),
                                        comm_recv_data.get());
     for (Integer k = 0; k < recv_nrank; k++) {

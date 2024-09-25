@@ -306,9 +306,9 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
     if (myklr > 0) {
 #pragma omp parallel reduction(max : sinfo)
       {
-        std::unique_ptr<Real[]> sz(new Real[k]);
+        auto sz = std::make_unique<Real[]>(k);
         std::fill_n(sz.get(), k, FS_const::ONE<Real>);
-        std::unique_ptr<Real[]> sbuf(new Real[k]);
+        auto sbuf = std::make_unique<Real[]>(k);
 #pragma omp for schedule(static, 1)
         for (Integer i = 0; i < myklr; i++) {
           const Integer kk = pdr + i;
@@ -629,7 +629,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 #endif
 #pragma omp parallel
         {
-          std::unique_ptr<Real[]> sbuf(new Real[k]);
+          auto sbuf = std::make_unique<Real[]>(k);
 #pragma omp for
           for (Integer j = 0; j < mykl; j++) {
             const auto kk = indxc[j];

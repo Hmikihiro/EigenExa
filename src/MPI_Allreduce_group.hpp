@@ -115,9 +115,9 @@ void Group_Allreduce(MPI_Group_type<Number> &mygroup) {
   auto count = mygroup.count;
 
   auto level_size = get_level_size(mygroup.group_size);
-  std::unique_ptr<ssize_t[]> count_level(new ssize_t[level_size]);
-  std::unique_ptr<ssize_t[]> head_level(new ssize_t[level_size]);
-  std::unique_ptr<ssize_t[]> pair_level(new ssize_t[level_size]);
+  auto count_level = std::make_unique<ssize_t[]>(level_size);
+  auto head_level = std::make_unique<ssize_t[]>(level_size);
+  auto pair_level = std::make_unique<ssize_t[]>(level_size);
   std::fill_n(count_level.get(), level_size, -1);
   std::fill_n(head_level.get(), level_size, -1);
   std::fill_n(pair_level.get(), level_size, -1);
@@ -175,11 +175,11 @@ using MPI_Allreduce_main::Group_Allreduce;
 using MPI_Group_property::MPI_Group_type;
 template <typename Number>
 void set_group2comm_ranklist(MPI_Group_type<Number> &mygroup) {
-  std::unique_ptr<int[]> group_ranks(new int[mygroup.group_size]);
+  auto group_ranks = std::make_unique<int[]>(mygroup.group_size);
   mygroup.err = MPI_Comm_group(mygroup.comm, &mygroup.comm_group);
   mygroup.err = MPI_Group_size(mygroup.comm_group, &mygroup.comm_group_size);
   mygroup.err = MPI_Group_rank(mygroup.comm_group, &mygroup.comm_group_rank);
-  mygroup.comm_group_ranklist.reset(new int[mygroup.group_size]);
+  mygroup.comm_group_ranklist = std::make_unique<int[]>(mygroup.group_size);
 
   std::iota(group_ranks.get(), group_ranks.get() + mygroup.group_size, 0);
   std::fill_n(mygroup.comm_group_ranklist.get(), mygroup.group_size, -1);

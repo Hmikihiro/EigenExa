@@ -17,9 +17,9 @@ void dc2_FS_fp64(int n, int nvec, double d[], double e[], double z[], int ldz,
 
 void dc2_FS_fp32(int n, int nvec, double d[], double e[], double z[], int ldz,
                  int ldz2, long *info, double *ret) {
-  std::unique_ptr<float[]> d_fp32(new float[n]);
-  std::unique_ptr<float[]> e_fp32(new float[n - 1]);
-  std::unique_ptr<float[]> z_fp32(new float[ldz * ldz2]);
+  auto d_fp32 = std::make_unique<float[]>(n);
+  auto e_fp32 = std::make_unique<float[]>(n - 1);
+  auto z_fp32 = std::make_unique<float[]>(ldz * ldz2);
 #pragma omp parallel
   {
 #pragma omp for

@@ -114,8 +114,8 @@ dc2_FS_result<Integer, Real> dc2_FS(const Integer n, const Integer nvec,
 
   Integer info_fs_edc = 0;
   try {
-    std::unique_ptr<Real[]> work(new Real[lwork]);
-    std::unique_ptr<Integer[]> iwork(new Integer[liwork]);
+    auto work = std::make_unique<Real[]>(lwork);
+    auto iwork = std::make_unique<Integer[]>(liwork);
 
 #if (defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER))
     const auto mkl_mode = MKL_Get_Dynamic();
