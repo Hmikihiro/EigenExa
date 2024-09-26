@@ -173,14 +173,14 @@ void FS_pdlasrt(const Integer n, Real d[], Real q[], const Integer ldq,
     if (nrecv > 0) {
       MPI_Irecv(recvq, np * nrecv, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                 subtree.group_Y_processranklist_[pjcol], 1,
-                FS_libs::FS_COMM_WORLD, &req);
+                FS_libs::FS_get_comm_world(), &req);
     }
 
     // send
     if (nsend > 0) {
       MPI_Send(sendq, np * nsend, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                subtree.group_Y_processranklist_[pjcol], 1,
-               FS_libs::FS_COMM_WORLD);
+               FS_libs::FS_get_comm_world());
     }
 
     // waitと展開
@@ -235,14 +235,14 @@ void FS_pdlasrt(const Integer n, Real d[], Real q[], const Integer ldq,
     if (nrecv > 0) {
       MPI_Irecv(recvq, nrecv * nq, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                 subtree.group_X_processranklist_[pjrow], 1,
-                FS_libs::FS_COMM_WORLD, &req);
+                FS_libs::FS_get_comm_world(), &req);
     }
 
     // send
     if (nsend > 0) {
       MPI_Send(sendq, nsend * nq, MPI_Datatype_wrapper::MPI_TYPE<Real>,
                subtree.group_X_processranklist_[pjrow], 1,
-               FS_libs::FS_COMM_WORLD);
+               FS_libs::FS_get_comm_world());
     }
 
     // waitと展開

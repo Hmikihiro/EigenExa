@@ -477,7 +477,7 @@ Integer bt_node<Integer, Real>::FS_dividing(Integer n, Real d[],
 
 #if TIMER_PRINT > 1
   prof.start(23);
-  MPI_Barrier(FS_libs::FS_COMM_WORLD);
+  MPI_Barrier(FS_libs::FS_get_comm_world());
   prof.end(23);
 #endif
 
