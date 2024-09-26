@@ -3,13 +3,7 @@
 #include "FS_libs.hpp"
 
 namespace FS_libs {
-MPI_Comm FS_COMM_WORLD = MPI_COMM_WORLD;
-int FS_MYRANK = 0;
-bool FS_COMM_MEMBER = false;
-MPI_Group FS_GROUP = MPI_GROUP_NULL;
-
-process_grid FS_node = {};
-char FS_GRID_major = 'C';
+process_info FS_info;
 } // namespace FS_libs
 
 namespace FS_libs_interface {
@@ -23,7 +17,7 @@ extern "C" void FS_get_matdims(int n, int &nx, int &ny) {
   nx = dims.nx;
   ny = dims.ny;
 }
-extern "C" int FS_get_myrank() { return FS_libs::FS_MYRANK; }
+extern "C" int FS_get_myrank() { return FS_libs::FS_info.get_my_rank(); }
 
 extern "C" long FS_byte_data_context(int n, int int_size, int real_size) {
   return FS_libs::FS_byte_data_context(n, int_size, real_size);

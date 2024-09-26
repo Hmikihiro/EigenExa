@@ -26,90 +26,111 @@ extern process_grid FS_node;
 
 extern char FS_GRID_major;
 
+class process_info {
+private:
+  MPI_Comm FS_COMM_WORLD;
+  int FS_MYRANK;
+  bool FS_COMM_MEMBER;
+  MPI_Group FS_GROUP;
+  process_grid FS_node;
+  char FS_GRID_major;
+
+  inline process_grid FS_init_cartesian(char GRID_major, int nnod, int inod) {
+    auto x_nnod = int(sqrt(double(nnod)));
+    int i = 1;
+    const auto k = (nnod % i == 0) ? i : 1;
+
+    while (true) {
+      if (x_nnod <= k) {
+        break;
+      }
+      if (x_nnod % k == 0 && nnod % x_nnod == 0) {
+        break;
+      }
+      x_nnod -= 1;
+    }
+
+    const auto y_nnod = nnod / x_nnod;
+
+    int x_inod, y_inod;
+    if (GRID_major == 'R') {
+      // row-major
+      x_inod = (inod - 1) / y_nnod + 1;
+      y_inod = (inod - 1) % y_nnod + 1;
+    } else {
+      // column-major
+      x_inod = (inod - 1) % x_nnod + 1;
+      y_inod = (inod - 1) / x_nnod + 1;
+    }
+    return process_grid{.nnod = nnod,
+                        .x_nnod = x_nnod,
+                        .y_nnod = y_nnod,
+                        .inod = inod,
+                        .x_inod = x_inod,
+                        .y_inod = y_inod};
+  }
+
+public:
+  inline MPI_Comm get_comm_world() const { return FS_COMM_WORLD; }
+  inline int get_my_rank() const { return FS_MYRANK; }
+  inline bool is_comm_member() const { return FS_COMM_MEMBER; }
+  inline MPI_Group get_group() const { return FS_GROUP; }
+  inline process_grid get_node() const { return FS_node; }
+  inline char get_grid_major() const { return FS_GRID_major; }
+
+  inline void comm_free() { MPI_Comm_free(&FS_COMM_WORLD); }
+
+  process_info() = default;
+
+  process_info(char order) {
+    FS_GRID_major = (order == 'R') ? 'R' : 'C';
+    const auto eigen_comm = eigen_get_comm().eigen_comm;
+
+    // FS_COMM_WORLDの設定
+    auto nnod = eigen_get_procs().procs;
+    const auto inod = eigen_get_id().id;
+
+    const auto p = static_cast<int>(std::log2(nnod));
+    FS_COMM_MEMBER = (inod <= std::pow(2, p));
+    const int color = FS_COMM_MEMBER ? 0 : 1;
+
+    MPI_Comm_split(eigen_comm, color, inod, &FS_COMM_WORLD);
+
+    if (FS_COMM_MEMBER) {
+      MPI_Comm_rank(FS_COMM_WORLD, &FS_MYRANK);
+      MPI_Comm_group(FS_COMM_WORLD, &FS_GROUP);
+
+      MPI_Comm_size(FS_COMM_WORLD, &nnod);
+      FS_node = FS_init_cartesian(FS_GRID_major, nnod, FS_MYRANK + 1);
+    } else {
+      FS_MYRANK = -1;
+      FS_GROUP = MPI_GROUP_NULL;
+      FS_node = process_grid{
+          .nnod = -1,
+          .x_nnod = -1,
+          .y_nnod = -1,
+          .inod = -1,
+          .x_inod = -1,
+          .y_inod = -1,
+      };
+    }
+  }
+};
+
+extern process_info FS_info;
+
 namespace {
-inline void FS_init_cartesian(char GRID_major, int nnod, int inod) {
-  auto x_nnod = int(sqrt(double(nnod)));
-  int i = 1;
-  const auto k = (nnod % i == 0) ? i : 1;
-
-  while (true) {
-    if (x_nnod <= k) {
-      break;
-    }
-    if (x_nnod % k == 0 && nnod % x_nnod == 0) {
-      break;
-    }
-    x_nnod -= 1;
-  }
-
-  const auto y_nnod = nnod / x_nnod;
-
-  int x_inod, y_inod;
-  if (GRID_major == 'R') {
-    // row-major
-    x_inod = (inod - 1) / y_nnod + 1;
-    y_inod = (inod - 1) % y_nnod + 1;
-  } else {
-    // column-major
-    x_inod = (inod - 1) % x_nnod + 1;
-    y_inod = (inod - 1) / x_nnod + 1;
-  }
-
-  FS_node.nnod = nnod;
-  FS_node.x_nnod = x_nnod;
-  FS_node.y_nnod = y_nnod;
-  FS_node.inod = inod;
-  FS_node.x_inod = x_inod;
-  FS_node.y_inod = y_inod;
-}
 
 inline void FS_init(MPI_Comm comm = MPI_COMM_WORLD, char order = 'C') {
   auto comm0 = comm;
-  FS_GRID_major = order;
-  if (FS_GRID_major == 'R' || FS_GRID_major == 'r') {
-    FS_GRID_major = 'R';
-  } else {
-    FS_GRID_major = 'C';
-  }
-  eigen_libs_FS_wrapper::eigen_init0(comm0, FS_GRID_major);
-  const auto eigen_comm = eigen_get_comm().eigen_comm;
-
-  // FS_COMM_WORLDの設定
-  auto nnod = eigen_get_procs().procs;
-  const auto inod = eigen_get_id().id;
-
-  const auto p = static_cast<int>(std::log2(nnod));
-  int color = 0;
-  if (inod <= std::pow(2, p)) {
-    color = 0;
-    FS_COMM_MEMBER = true;
-  } else {
-    color = 1;
-    FS_COMM_MEMBER = false;
-  }
-
-  MPI_Comm_split(eigen_comm, color, inod, &FS_COMM_WORLD);
-
-  if (FS_COMM_MEMBER) {
-    MPI_Comm_rank(FS_COMM_WORLD, &FS_MYRANK);
-    MPI_Comm_group(FS_COMM_WORLD, &FS_GROUP);
-
-    MPI_Comm_size(FS_COMM_WORLD, &nnod);
-    FS_init_cartesian(FS_GRID_major, nnod, FS_MYRANK + 1);
-  } else {
-    FS_MYRANK = -1;
-    FS_node.nnod = -1;
-    FS_node.x_nnod = -1;
-    FS_node.y_nnod = -1;
-    FS_node.inod = -1;
-    FS_node.x_inod = -1;
-    FS_node.y_inod = -1;
-  }
+  order = (order == 'R' || order == 'r') ? 'R' : 'C';
+  eigen_libs_FS_wrapper::eigen_init0(comm0, order);
+  FS_info = process_info(order);
 }
 
 inline void FS_free() {
   eigen_libs_FS_wrapper::eigen_free0();
-  MPI_Comm_free(&FS_COMM_WORLD);
+  FS_info.comm_free();
 }
 
 struct Nod {
@@ -120,6 +141,7 @@ struct Nod {
 
 inline Nod FS_get_procs() {
   Nod nnod = {};
+  const auto FS_node = FS_info.get_node();
   nnod.nod = FS_node.nnod;
   nnod.x = FS_node.x_nnod;
   nnod.y = FS_node.y_nnod;
@@ -128,6 +150,7 @@ inline Nod FS_get_procs() {
 
 inline Nod FS_get_id() {
   Nod inod = {};
+  const auto FS_node = FS_info.get_node();
   inod.nod = FS_node.inod;
   inod.x = FS_node.x_inod;
   inod.y = FS_node.y_inod;
@@ -150,7 +173,7 @@ inline matdims FS_get_matdims(int n) {
   return {nx, ny};
 }
 
-inline char FS_get_grid_major() { return FS_GRID_major; }
+inline char FS_get_grid_major() { return FS_info.get_grid_major(); }
 
 struct fs_worksize {
   long lwork;
@@ -181,13 +204,13 @@ inline long FS_byte_data_context(int n, int int_byte_size, int real_byte_size) {
   return worksize.lwork * real_byte_size + worksize.liwork * int_byte_size;
 }
 
-inline int FS_get_comm_world() { return FS_COMM_WORLD;}
+inline int FS_get_comm_world() { return FS_info.get_comm_world(); }
 
-inline int FS_get_myrank() { return FS_MYRANK; }
+inline int FS_get_myrank() { return FS_info.get_my_rank(); }
 
-inline MPI_Group FS_get_group() { return FS_GROUP; }
+inline MPI_Group FS_get_group() { return FS_info.get_group(); }
 
-inline bool is_FS_comm_member() { return FS_COMM_MEMBER; }
+inline bool is_FS_comm_member() { return FS_info.is_comm_member(); }
 
 } // namespace
 } // namespace FS_libs
