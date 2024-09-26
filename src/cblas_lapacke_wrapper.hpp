@@ -44,8 +44,7 @@ void slascl_(const char *type, const eigen_mathlib_int *kl,
 #endif
 
 namespace lapacke {
-const CBLAS_LAYOUT FS_layout = CBLAS_LAYOUT::CblasColMajor;
-#define FS_LAPACKE_LAYOUT LAPACK_COL_MAJOR
+const auto FS_layout = CblasColMajor;
 
 template <class Real>
 inline eigen_mathlib_int
@@ -61,8 +60,8 @@ stedc<double>(char compz, eigen_mathlib_int n, double *d, double *e, double *z,
   if (lwork > std::numeric_limits<eigen_mathlib_int>::max()) {
     lwork = std::numeric_limits<eigen_mathlib_int>::max();
   }
-  return LAPACKE_dstedc_work(FS_LAPACKE_LAYOUT, compz, n, d, e, z, ldz, work,
-                             lwork, iwork, liwork);
+  return LAPACKE_dstedc_work(FS_layout, compz, n, d, e, z, ldz, work, lwork,
+                             iwork, liwork);
 }
 
 template <>
@@ -73,8 +72,8 @@ stedc<float>(char compz, eigen_mathlib_int n, float *d, float *e, float *z,
   if (lwork > std::numeric_limits<eigen_mathlib_int>::max()) {
     lwork = std::numeric_limits<eigen_mathlib_int>::max();
   }
-  return LAPACKE_sstedc_work(FS_LAPACKE_LAYOUT, compz, n, d, e, z, ldz, work,
-                             lwork, iwork, liwork);
+  return LAPACKE_sstedc_work(FS_layout, compz, n, d, e, z, ldz, work, lwork,
+                             iwork, liwork);
 }
 
 template <class Real>

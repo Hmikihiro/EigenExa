@@ -21,7 +21,6 @@
 
 namespace {
 namespace dc2_FS {
-using FS_libs::FS_COMM_WORLD;
 
 template <class Integer>
 Integer get_pdc(const Integer lctot, const Integer ctot[], const Integer npcol,
@@ -306,9 +305,9 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
     if (myklr > 0) {
 #pragma omp parallel reduction(max : sinfo)
       {
-        std::unique_ptr<Real[]> sz(new Real[k]);
+        auto sz = std::make_unique<Real[]>(k);
         std::fill_n(sz.get(), k, FS_const::ONE<Real>);
-        std::unique_ptr<Real[]> sbuf(new Real[k]);
+        auto sbuf = std::make_unique<Real[]>(k);
 #pragma omp for schedule(static, 1)
         for (Integer i = 0; i < myklr; i++) {
           const Integer kk = pdr + i;
@@ -392,7 +391,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 
     MPI_Group_Allreduce<Real>(&buf[2 * k], z, k,
                                MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_PROD,
-                               FS_COMM_WORLD, subtree.MERGE_GROUP_);
+                               FS_libs::FS_get_comm_world(), subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
     for (Integer i = 0; i < k; i++) {
@@ -403,7 +402,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
     if (mykl > 0) {
       MPI_Group_Allreduce<Real>(buf, &buf[2 * k], 2 * mykl,
                                  MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM,
-                                 FS_COMM_WORLD, subtree.MERGE_GROUP_X_);
+                                 FS_libs::FS_get_comm_world(), subtree.MERGE_GROUP_X_);
     }
 
 #pragma omp parallel
@@ -421,7 +420,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 
     MPI_Group_Allreduce<Real>(buf, &buf[2 * k], 2 * k,
                                MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM,
-                               FS_COMM_WORLD, subtree.MERGE_GROUP_Y_);
+                               FS_libs::FS_get_comm_world(), subtree.MERGE_GROUP_Y_);
 
     // Copy of D at the good place
 
@@ -595,7 +594,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
           const auto dstcol = (mycol + npcol - 1) % npcol; // 左側に送信
           const auto dest = subtree.group_Y_processranklist_[dstcol];
           MPI_Isend(sendq2, nsend, MPI_Datatype_wrapper::MPI_TYPE<Real>, dest,
-                    1, FS_libs::FS_COMM_WORLD, &req[0]);
+                    1, FS_libs::FS_get_comm_world(), &req[0]);
         }
 
         // irecv
@@ -606,7 +605,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
           const auto srccol = (mycol + npcol + 1) % npcol; // 右側から受信
           const auto source = subtree.group_Y_processranklist_[srccol];
           MPI_Irecv(recvq2, nrecv, MPI_Datatype_wrapper::MPI_TYPE<Real>,
-                    source, 1, FS_libs::FS_COMM_WORLD, &req[1]);
+                    source, 1, FS_libs::FS_get_comm_world(), &req[1]);
         }
 #ifdef _MPITEST
         bool flag;
@@ -629,7 +628,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 #endif
 #pragma omp parallel
         {
-          std::unique_ptr<Real[]> sbuf(new Real[k]);
+          auto sbuf = std::make_unique<Real[]>(k);
 #pragma omp for
           for (Integer j = 0; j < mykl; j++) {
             const auto kk = indxc[j];

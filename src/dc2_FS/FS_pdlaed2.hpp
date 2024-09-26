@@ -127,22 +127,22 @@ void pdlaed2_comm(const Integer mycol, const Integer ldq, Real q[],
     MPI_Request req[2];
     MPI_Irecv(qbuf, npa, MPI_Datatype_wrapper::MPI_TYPE<Real>,
               subtree.group_Y_processranklist_[njcol], 1,
-              FS_libs::FS_COMM_WORLD, &req[1]);
+              FS_libs::FS_get_comm_world(), &req[1]);
 
     MPI_Isend(&q[pjj * ldq + 0], npa, MPI_Datatype_wrapper::MPI_TYPE<Real>,
               subtree.group_Y_processranklist_[njcol], 1,
-              FS_libs::FS_COMM_WORLD, &req[0]);
+              FS_libs::FS_get_comm_world(), &req[0]);
     MPI_Waitall(2, req, MPI_STATUS_IGNORE);
     lapacke::rot<Real>(npa, &q[pjj * ldq + 0], 1, qbuf, 1, c, s);
   } else if (mycol == njcol) {
     MPI_Request req[2];
     MPI_Irecv(qbuf, npa, MPI_Datatype_wrapper::MPI_TYPE<Real>,
               subtree.group_Y_processranklist_[pjcol], 1,
-              FS_libs::FS_COMM_WORLD, &req[1]);
+              FS_libs::FS_get_comm_world(), &req[1]);
 
     MPI_Isend(&q[njj * ldq + 0], npa, MPI_Datatype_wrapper::MPI_TYPE<Real>,
               subtree.group_Y_processranklist_[pjcol], 1,
-              FS_libs::FS_COMM_WORLD, &req[0]);
+              FS_libs::FS_get_comm_world(), &req[0]);
     MPI_Waitall(2, req, MPI_STATUS_IGNORE);
     lapacke::rot<Real>(npa, qbuf, 1, &q[njj * ldq + 0], 1, c, s);
   }

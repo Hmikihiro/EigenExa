@@ -181,6 +181,8 @@ inline long FS_byte_data_context(int n, int int_byte_size, int real_byte_size) {
   return worksize.lwork * real_byte_size + worksize.liwork * int_byte_size;
 }
 
+inline int FS_get_comm_world() { return FS_COMM_WORLD;}
+
 inline int FS_get_myrank() { return FS_MYRANK; }
 
 inline MPI_Group FS_get_group() { return FS_GROUP; }

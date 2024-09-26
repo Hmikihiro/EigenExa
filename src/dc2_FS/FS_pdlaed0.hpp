@@ -103,7 +103,7 @@ Integer FS_pdlaed0(const Integer n, Real d[], Real e[], Real q[],
 #if TIMER_PRINT
       prof.start(20);
 #endif
-      std::unique_ptr<bool[]> hint(new bool[nnod.nod]);
+      auto hint = std::make_unique<bool[]>(nnod.nod);
       FS_create_hint(hint.get());
       const auto info_dividing =
           root_node.FS_dividing(n, d, e, std::move(hint), prof);

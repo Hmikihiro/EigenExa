@@ -107,7 +107,7 @@ inline void FS_prof::add(const FS_prof &prof_add) {
 }
 inline void FS_prof::finalize() {
   int nprocs_out;
-  MPI_Comm_size(FS_libs::FS_COMM_WORLD, &nprocs_out);
+  MPI_Comm_size(FS_libs::FS_get_comm_world(), &nprocs_out);
 #ifndef TIMER_ALLPROCS
   nprocs_out = 1;
 #endif
@@ -135,13 +135,13 @@ inline void FS_prof::finalize() {
         std::copy_n(this->region_ecount, FS_max_region, tmp_region_ecount);
       } else {
         MPI_Recv(tmp_region_time, FS_max_region, MPI_DOUBLE, n, 0,
-                 FS_libs::FS_COMM_WORLD, &stat);
+                 FS_libs::FS_get_comm_world(), &stat);
 #ifdef COUNT_CHECK
         MPI_Recv(tmp_region_scount, FS_max_region, MPI_INT, n, 0,
-                 FS_libs::FS_COMM_WORLD, &stat);
+                 FS_libs::FS_get_comm_world(), &stat);
 #endif
         MPI_Recv(tmp_region_ecount, FS_max_region, MPI_INT, n, 0,
-                 FS_libs::FS_COMM_WORLD, &stat);
+                 FS_libs::FS_get_comm_world(), &stat);
       }
 
       std::cout << "  RANK = " << n << std::endl;
@@ -151,8 +151,9 @@ inline void FS_prof::finalize() {
       for (auto i = 0; i < FS_max_region; i++) {
         if (tmp_region_ecount[i] > 0) {
           std::cout << ' ' << i << ' ' << region_name[i] << ' ' << std::fixed
-                    << std::setprecision(15) << tmp_region_time[i] << ' '
-                    << tmp_region_ecount[i] << std::endl;
+                    << std::setprecision(15) << std::scientific
+                    << tmp_region_time[i] << ' ' << tmp_region_ecount[i]
+                    << std::endl;
 #ifdef COUNT_CHECK
           if (tmp_region_scount[i] != tmp_region_ecount[i]) {
             std::cout << "  Warning : start/end count are different in ["
@@ -171,13 +172,13 @@ inline void FS_prof::finalize() {
 #ifdef TIMER_ALLPROCS
     if (nprocs_out > 1) {
       MPI_Send(this->region_time, FS_max_region, MPI_DOUBLE, 0, 0,
-               FS_libs::FS_COMM_WORLD);
+               FS_libs::FS_get_comm_world());
 #ifdef COUNT_CHECK
       MPI_Send(this->region_scount, FS_max_region, MPI_INT, 0, 0,
-               FS_libs::FS_COMM_WORLD);
+               FS_libs::FS_get_comm_world());
 #endif
       MPI_Send(this->region_ecount, FS_max_region, MPI_INT, 0, 0,
-               FS_libs::FS_COMM_WORLD);
+               FS_libs::FS_get_comm_world());
     }
 #endif
   }

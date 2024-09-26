@@ -261,8 +261,16 @@ AC_SUBST(DEBUG)
 eigenexa_default_fc="mpifrtpx mpiifort mpixlf90_r sxmpif90 mpif90"
 
 # check usablility
-AC_PROG_F77($eigenexa_default_fc)
-AC_PROG_FC($eigenexa_default_fc)
+eigenexa_f77=$eigenexa_default_fc
+eigenexa_fc=$eigenexa_default_fc
+if test x"${F77}" != x; then
+  eigenexa_f77="${F77}"
+fi
+if test x"${FC}" != x; then
+  eigenexa_fc="${FC}"
+fi
+AC_PROG_F77($eigenexa_f77)
+AC_PROG_FC($eigenexa_fc)
 
 if test x"${F77}" != x -a x"${FC}" = x; then
   FC=${F77}
@@ -321,7 +329,11 @@ fi
 eigenexa_default_cc="mpifccpx mpiicx mpiicc mpixlc_r sxmpic++ mpicc"
 
 # check usablility
-AC_PROG_CC($eigenexa_default_cc)
+eigenexa_cc=$eigenexa_default_cc
+if test x"${CC}" != x; then
+  eigenexa_cc="${CC}"
+fi
+AC_PROG_CC($eigenexa_cc)
 
 # check actual compiler
 AC_MSG_CHECKING([for actual compiler])
@@ -376,7 +388,11 @@ AC_MSG_RESULT([$CC_ACT])
 eigenexa_default_cxx="mpiFCCpx mpiicpx mpiicpc mpicxx" 
 
 # check usablility
-AC_PROG_CXX($eigenexa_default_cxx)
+eigenexa_cxx=$eigenexa_default_cxx
+if test x"${CXX}" != x; then
+  eigenexa_cxx="${CXX}"
+fi
+AC_PROG_CXX($eigenexa_cxx)
 
 # check actual compiler
 AC_MSG_CHECKING([for actual compiler])
@@ -652,7 +668,7 @@ if test x"${ac_test_CFLAGS}" = x"set"; then
 else
 
   if   test x"${FC_ACT}" = x"ifort"; then
-    CFLAGS=${I_BASE}" -O3 "${I_ARCH}" -Wall"
+    CFLAGS=${I_BASE}" -Ofast -fno-fast-math "${I_ARCH}" -Wall"
     
   elif test x"${FC_ACT}" = x"gfortran"; then
     CFLAGS=${G_BASE}" -O3 "${G_ARCH}" -Wall"
@@ -700,7 +716,7 @@ if test x"${ac_test_CXXFLAGS}" = x"set"; then
 else
 
   if   test x"${FC_ACT}" = x"ifort"; then
-    CXXFLAGS=${I_BASE}" -O3 "${I_ARCH}" -Wall"
+    CXXFLAGS=${I_BASE}" -Ofast -fno-fast-math "${I_ARCH}" -Wall"
     
   elif test x"${FC_ACT}" = x"gfortran"; then
     CXXFLAGS=${G_BASE}" -O3 "${G_ARCH}" -Wall"
@@ -721,7 +737,7 @@ fi
 # CXXFLAGS0 (special flags)
 
 if   test x"${FC_ACT}" = x"ifort"; then
-  CXXFLAGS0=${I_BASE}" -O3 -Wall -Wextra -Wpointer-arith -Wuninitialized" 
+  CXXFLAGS0=${I_BASE}" -Ofast -fno-fast-math -Wall -Wextra -Wpointer-arith -Wuninitialized" 
   
 elif test x"${FC_ACT}" = x"gfortran"; then
   CXXFLAGS0=${G_BASE}" -O0 -Wall"
