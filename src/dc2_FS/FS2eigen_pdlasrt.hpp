@@ -281,7 +281,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
           eigen_libs0_wrapper::eigen_get_grid_major());
   const auto eigen_comm = eigen_libs0_wrapper::eigen_get_comm().eigen_comm;
 
-  Integer *comm_send_info = new Integer[eigen_np];
+  auto comm_send_info = std::make_unique<Integer[]>(eigen_np);
   auto comm_recv_info = std::make_unique<Integer[]>(eigen_np);
 
 #pragma omp parallel for
@@ -360,32 +360,35 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
     // grow,
     // gcolはプロセス行で行列字数を割り切れない場合に対応するために拡張した字数の行列番号を返すので，
     // 拡張した範囲を省くために行列字数を超えたらexitする
-#pragma omp parallel for reduction(+ : comm_send_info[0 : eigen_np]) \
+    {
+      auto omp_comm_send_info = comm_send_info.get();
+#pragma omp parallel for reduction(+ : omp_comm_send_info[0 : eigen_np]) \
     schedule(dynamic, 1)
-    for (Integer lcol = 0; lcol < FS_nbcol_max; lcol++) {
-      // 固有値を並び替える前の列番号を取得
-      auto gcol = subtree.FS_index_L2G(FS_libs::FS_GRID_MAJOR::COLUMN, lcol,
-                                       FS_grid_info.mycol);
+      for (Integer lcol = 0; lcol < FS_nbcol_max; lcol++) {
+        // 固有値を並び替える前の列番号を取得
+        auto gcol = subtree.FS_index_L2G(FS_libs::FS_GRID_MAJOR::COLUMN, lcol,
+                                         FS_grid_info.mycol);
 
-      // 固有値を並び替えた後の列番号に変換
-      for (Integer k = 0; k < n; k++) {
-        if (indx[k] == gcol) {
-          gcol = k;
-          lcol2gcol_index[lcol] = k;
-          break;
+        // 固有値を並び替えた後の列番号に変換
+        for (Integer k = 0; k < n; k++) {
+          if (indx[k] == gcol) {
+            gcol = k;
+            lcol2gcol_index[lcol] = k;
+            break;
+          }
         }
-      }
 
-      // グローバル情報から再分散後に担当するノードを求める
-      const auto pcol =
-          eigen_libs0_wrapper::eigen_owner_node(gcol, eigen_npcol);
-      for (Integer lrow = 0; lrow < FS_nbrow_max; lrow++) {
-        const auto grow = lrow2grow_index[lrow];
-        const auto prow =
-            eigen_libs0_wrapper::eigen_owner_node(grow, eigen_nprow);
-        const auto pn =
-            FS2eigen::eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
-        comm_send_info[pn] += 1;
+        // グローバル情報から再分散後に担当するノードを求める
+        const auto pcol =
+            eigen_libs0_wrapper::eigen_owner_node(gcol, eigen_npcol);
+        for (Integer lrow = 0; lrow < FS_nbrow_max; lrow++) {
+          const auto grow = lrow2grow_index[lrow];
+          const auto prow =
+              eigen_libs0_wrapper::eigen_owner_node(grow, eigen_nprow);
+          const auto pn =
+              FS2eigen::eigen_rank_xy2comm(eigen_grid_major, prow, pcol);
+          omp_comm_send_info[pn] += 1;
+        }
       }
     }
   }
@@ -394,7 +397,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   prof_time[1] = etime - stime;
   stime = etime;
 
-  MPI_Alltoall(comm_send_info, 1, MPI_Datatype_wrapper::MPI_TYPE<Integer>,
+  MPI_Alltoall(comm_send_info.get(), 1, MPI_Datatype_wrapper::MPI_TYPE<Integer>,
                comm_recv_info.get(), 1, MPI_Datatype_wrapper::MPI_TYPE<Integer>,
                eigen_comm);
 
@@ -402,8 +405,8 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   prof_time[2] = etime - stime;
   stime = etime;
 
-  const auto send_nrank_maxsize =
-      FS2eigen::get_nrank_maxsize<Integer>((Integer)eigen_np, comm_send_info);
+  const auto send_nrank_maxsize = FS2eigen::get_nrank_maxsize<Integer>(
+      (Integer)eigen_np, comm_send_info.get());
   const auto send_nrank = send_nrank_maxsize.nrank;  // 送信相手の総数
   const auto send_maxsize = send_nrank_maxsize.maxsize;
 
@@ -420,7 +423,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
     comm_send_data =
         std::make_unique<FS2eigen::CommBuf<Integer, Real>[]>(send_nrank);
 
-    FS2eigen::init_send<Integer, Real>(eigen_np, comm_send_info,
+    FS2eigen::init_send<Integer, Real>(eigen_np, comm_send_info.get(),
                                        comm_send_data.get());
     sendrank_list = std::make_unique<FS2eigen::RANKLIST<Integer>[]>(send_nrank);
 
@@ -595,7 +598,6 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   etime = MPI_Wtime();
   prof_time[6] = etime - stime;
   stime = etime;
-  delete[] comm_send_info;
   etime = MPI_Wtime();
   prof_time[8] = etime - stime;
   stime = etime;

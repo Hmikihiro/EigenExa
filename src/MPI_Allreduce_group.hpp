@@ -15,6 +15,8 @@ class MPI_Group_type {
  public:
   Number *sbuf;
   Number *rbuf;
+  std::unique_ptr<Number[]> tmp_sbuf;
+  std::unique_ptr<Number[]> tmp_rbuf;
   size_t count;
   MPI_Datatype datatype;
   MPI_Op op;
@@ -194,8 +196,6 @@ void free_group(MPI_Group_type<Number> &mygroup, Number rbuf[], int count) {
   mygroup.err = MPI_Group_free(&mygroup.comm_group);
   if (count < mygroup.group_size) {
     std::copy_n(mygroup.rbuf, count, rbuf);
-    delete[] mygroup.sbuf;
-    delete[] mygroup.rbuf;
   }
 }
 template <typename Number>
@@ -212,8 +212,10 @@ void set_group(Number sbuf[], Number rbuf[], size_t count,
   MPI_Group_rank(mygroup.group, &mygroup.group_rank);
   set_group2comm_ranklist(mygroup);
   if (mygroup.count < static_cast<size_t>(mygroup.group_size)) {
-    mygroup.sbuf = new Number[mygroup.group_size];
-    mygroup.rbuf = new Number[mygroup.group_size];
+    mygroup.tmp_rbuf = std::make_unique<Number[]>(mygroup.group_size);
+    mygroup.tmp_sbuf = std::make_unique<Number[]>(mygroup.group_size);
+    mygroup.sbuf = mygroup.tmp_sbuf.get();
+    mygroup.rbuf = mygroup.tmp_rbuf.get();
 
     std::fill_n(mygroup.rbuf, mygroup.group_size, 0);
     std::copy_n(sbuf, mygroup.count, mygroup.sbuf);

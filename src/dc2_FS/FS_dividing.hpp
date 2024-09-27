@@ -42,11 +42,14 @@ class GridInfo {
 
 template <class Integer, class Real>
 class bt_node {
- public:
   Integer bt_id = 0;
   Integer layer_ = 0;
+
+ public:
   bool direction_horizontal_ = true;
   Integer nstart_ = 0;
+
+ private:
   Integer nend_ = 1;
   Integer nend_active_ = 1;
   Integer proc_istart_ = 0;  //  process start number of direction i
@@ -55,24 +58,27 @@ class bt_node {
   Integer proc_jend_ = 1;    //  process end   number of direction j
   Integer block_start_ = 0;  //  merge block start number(refer to procs_i/j)
   Integer block_end_ = 1;    //  merge block end   number(refer to procs_i/j)
+  std::unique_ptr<Integer[]> ownership_procs_i_;  //  process No. list of row
+  std::unique_ptr<Integer[]> ownership_procs_j_;  //  process No. list of column
+  Integer *procs_i_;                              //  process No. list of row
+  Integer *procs_j_;                              //  process No. list of column
+  Integer nnod_ = 0;                              //  nprocs of communicator
+  eigen_mpi_int inod_ = 0;                        //  inod in MERGE_COMM(1～)
+  Integer x_inod_ = 0;    //  x_inod in MERGE_COMM_X(1～)
+  Integer y_inod_ = 0;    //  y_inod in MERGE_COMM_Y(1～)
+  Integer div_bit_ = -1;  //  bit stream of divided direction
+  Integer div_nbit_ = 0;  //  number of dights of div_bit
+  std::unique_ptr<eigen_mpi_int[]>
+      group_processranklist_;  //  list to convert from group
+ public:
   std::unique_ptr<bt_node<Integer, Real>[]> sub_bt_node_;  //  sub tree node
   bt_node<Integer, Real> *parent_node_;                    //  parent node
-  Integer *procs_i_;        //  process No. list of row
-  Integer *procs_j_;        //  process No. list of column
-  Integer nnod_ = 0;        //  nprocs of communicator
-  Integer x_nnod_ = 0;      //  nprocs of X direction communicator
-  Integer y_nnod_ = 0;      //  nprocs of Y direction communicator
-  eigen_mpi_int inod_ = 0;  //  inod in MERGE_COMM(1～)
-  Integer x_inod_ = 0;      //  x_inod in MERGE_COMM_X(1～)
-  Integer y_inod_ = 0;      //  y_inod in MERGE_COMM_Y(1～)
-  Integer div_bit_ = -1;    //  bit stream of divided direction
-  Integer div_nbit_ = 0;    //  number of dights of div_bit
-
+  Integer x_nnod_ = 0;  //  nprocs of X direction communicator
+  Integer y_nnod_ = 0;  //  nprocs of Y direction communicator
   MPI_Group MERGE_GROUP_ = MPI_GROUP_NULL;    //  MERGE_COMM group
   MPI_Group MERGE_GROUP_X_ = MPI_GROUP_NULL;  //  MERGE_COMM_X group
   MPI_Group MERGE_GROUP_Y_ = MPI_GROUP_NULL;  //  MERGE_COMM_Y group
-  std::unique_ptr<eigen_mpi_int[]>
-      group_processranklist_;  //  list to convert from group
+
   //  rank to communicator rank
   std::unique_ptr<eigen_mpi_int[]> group_X_processranklist_;
   std::unique_ptr<eigen_mpi_int[]> group_Y_processranklist_;
@@ -461,8 +467,10 @@ Integer bt_node<Integer, Real>::FS_dividing(Integer n, Real d[], const Real e[],
   this->proc_jend_ = nnod.y;
   this->block_start_ = 0;
   this->block_end_ = nnod.nod;
-  this->procs_i_ = new Integer[nnod.nod];
-  this->procs_j_ = new Integer[nnod.nod];
+  this->ownership_procs_i_ = std::make_unique<Integer[]>(nnod.nod);
+  this->ownership_procs_j_ = std::make_unique<Integer[]>(nnod.nod);
+  this->procs_i_ = ownership_procs_i_.get();
+  this->procs_j_ = ownership_procs_j_.get();
   std::fill_n(this->procs_i_, nnod.nod, -1);
   std::fill_n(this->procs_j_, nnod.nod, -1);
   this->parent_node_ = nullptr;
@@ -820,17 +828,6 @@ void bt_node<Integer, Real>::FS_dividing_free() {
   this->MERGE_GROUP_Y_ = MPI_GROUP_NULL;
 
   this->parent_node_ = nullptr;
-
-  if (this->layer_ == 0) {
-    if (this->procs_i_ != nullptr) {
-      delete[] this->procs_i_;
-    }
-    if (this->procs_j_ != nullptr) {
-      delete[] this->procs_j_;
-    }
-    this->procs_i_ = nullptr;
-    this->procs_j_ = nullptr;
-  }
 }
 
 template <class Integer, class Real>
