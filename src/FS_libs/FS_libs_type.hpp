@@ -1,8 +1,10 @@
 #pragma once
 
-#include "../eigen_libs0.hpp"
-#include <cmath>
 #include <mpi.h>
+
+#include <cmath>
+
+#include "../eigen_libs0.hpp"
 
 namespace FS_libs {
 using eigen_libs0_wrapper::eigen_get_comm;
@@ -22,7 +24,7 @@ struct process_grid {
   int inod, x_inod, y_inod;
 };
 class process_info {
-private:
+ private:
   MPI_Comm FS_COMM_WORLD;
   int FS_MYRANK;
   bool FS_COMM_MEMBER;
@@ -66,7 +68,7 @@ private:
                         .y_inod = y_inod};
   }
 
-public:
+ public:
   inline const MPI_Comm &get_comm_world() const { return FS_COMM_WORLD; }
   inline int get_my_rank() const { return FS_MYRANK; }
   inline bool is_comm_member() const { return FS_COMM_MEMBER; }
@@ -113,4 +115,4 @@ public:
     }
   }
 };
-} // namespace FS_libs
+}  // namespace FS_libs

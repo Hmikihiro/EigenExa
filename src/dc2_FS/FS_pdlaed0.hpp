@@ -270,5 +270,5 @@ Integer FS_pdlaed0(const Integer n, Real d[], Real e[], Real q[],
   return info;
 }
 
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

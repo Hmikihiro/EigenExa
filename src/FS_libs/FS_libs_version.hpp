@@ -7,7 +7,7 @@
 
 namespace FS_libs_version {
 class version_t {
-public:
+ public:
   int Major_Version;
   int Minor_Version;
   int Patch_Level;
@@ -42,4 +42,4 @@ inline void FS_show_version() {
               << ") / (" << FS_Version.vcode << ")" << std::endl;
   }
 }
-} // namespace FS_libs_version
+}  // namespace FS_libs_version

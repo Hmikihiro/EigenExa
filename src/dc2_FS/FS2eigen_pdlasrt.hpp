@@ -26,15 +26,17 @@ namespace FS2eigen {
  * GColはそれぞれ行列のindexであり、次数nを超えないから32bit整数を用いる
  *
  */
-template <class Real> class GpositionValue {
-public:
+template <class Real>
+class GpositionValue {
+ public:
   int32_t GRow;
   int32_t GCol;
   Real MatrixValue;
 };
 
-template <class Integer, class Real> class CommBuf {
-public:
+template <class Integer, class Real>
+class CommBuf {
+ public:
   Integer rank;
   Integer Ndata;
   MPI_Request req;
@@ -47,25 +49,26 @@ public:
  * @brief lidの要素はFS_nbrow_max * FS_nbcol_max 以下である
  *
  */
-template <class Integer> class RANKLIST {
-public:
+template <class Integer>
+class RANKLIST {
+ public:
   Integer index;
   int *lid;
 };
 
-template <class Integer> class NrankMaxsize {
-public:
+template <class Integer>
+class NrankMaxsize {
+ public:
   Integer nrank;
   Integer maxsize;
 };
 
 template <class Integer>
-NrankMaxsize<Integer>
-get_nrank_maxsize(const Integer eigen_np,
-                  const Integer comm_send_or_recv_info[]) {
+NrankMaxsize<Integer> get_nrank_maxsize(
+    const Integer eigen_np, const Integer comm_send_or_recv_info[]) {
   Integer send_or_recv_nrank = 0;
   Integer send_or_recv_maxsize = 1;
-#pragma omp parallel for reduction(+ : send_or_recv_nrank)                     \
+#pragma omp parallel for reduction(+ : send_or_recv_nrank) \
     reduction(max : send_or_recv_maxsize)
   for (Integer i = 0; i < eigen_np; i++) {
     if (comm_send_or_recv_info[i] != 0) {
@@ -168,10 +171,9 @@ Integer eigen_rank_xy2comm(const FS_libs::FS_GRID_MAJOR grid_major,
  * \brief 送信先が被らないように初回の通信相手を選択する
  */
 template <class Integer, class Real>
-Integer
-select_first_communicater(const Integer send_nrank, const Integer eigen_np,
-                          const Integer eigen_myrank,
-                          const CommBuf<Integer, Real> comm_send_data[]) {
+Integer select_first_communicater(
+    const Integer send_nrank, const Integer eigen_np,
+    const Integer eigen_myrank, const CommBuf<Integer, Real> comm_send_data[]) {
   Integer i0 = 0;
   if (0 < send_nrank) {
     i0 = -1;
@@ -191,8 +193,8 @@ select_first_communicater(const Integer send_nrank, const Integer eigen_np,
   }
   return i0;
 }
-} // namespace FS2eigen
-} // namespace dc2_FS
+}  // namespace FS2eigen
+}  // namespace dc2_FS
 
 namespace dc2_FS {
 /**
@@ -358,7 +360,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
     // grow,
     // gcolはプロセス行で行列字数を割り切れない場合に対応するために拡張した字数の行列番号を返すので，
     // 拡張した範囲を省くために行列字数を超えたらexitする
-#pragma omp parallel for reduction(+ : comm_send_info[0 : eigen_np])           \
+#pragma omp parallel for reduction(+ : comm_send_info[0 : eigen_np]) \
     schedule(dynamic, 1)
     for (Integer lcol = 0; lcol < FS_nbcol_max; lcol++) {
       // 固有値を並び替える前の列番号を取得
@@ -402,7 +404,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
 
   const auto send_nrank_maxsize =
       FS2eigen::get_nrank_maxsize<Integer>((Integer)eigen_np, comm_send_info);
-  const auto send_nrank = send_nrank_maxsize.nrank; // 送信相手の総数
+  const auto send_nrank = send_nrank_maxsize.nrank;  // 送信相手の総数
   const auto send_maxsize = send_nrank_maxsize.maxsize;
 
   etime = MPI_Wtime();
@@ -448,7 +450,7 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
 
   const auto recv_nrank_maxsize = FS2eigen::get_nrank_maxsize<Integer>(
       (Integer)eigen_np, comm_recv_info.get());
-  const auto recv_nrank = recv_nrank_maxsize.nrank; // 受信相手の総数
+  const auto recv_nrank = recv_nrank_maxsize.nrank;  // 受信相手の総数
 
   etime = MPI_Wtime();
   prof_time[5] = etime - stime;
@@ -609,5 +611,5 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   return 0;
 }
 
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

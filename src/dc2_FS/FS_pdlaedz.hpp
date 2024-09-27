@@ -6,12 +6,11 @@
 
 #include <algorithm>
 
+#include "../FS_libs/FS_libs.hpp"
 #include "../cblas_lapacke_wrapper.hpp"
 #include "FS_const.hpp"
 #include "FS_dividing.hpp"
 #include "FS_prof.hpp"
-
-#include "../FS_libs/FS_libs.hpp"
 
 namespace {
 namespace dc2_FS {
@@ -125,5 +124,5 @@ void FS_pdlaedz(const Integer n, const Integer n1, const Real q[],
   }
 #endif
 }
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

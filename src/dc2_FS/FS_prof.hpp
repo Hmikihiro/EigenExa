@@ -20,7 +20,7 @@ namespace dc2_FS {
 constexpr int FS_max_region = 70 + 1;
 
 class FS_prof {
-public:
+ public:
   char region_name[FS_max_region][64];
   double region_time[FS_max_region];
   double region_start[FS_max_region];
@@ -28,7 +28,7 @@ public:
 #ifdef COUNT_CHECK
   int region_scount[FS_max_region];
 #endif
-public:
+ public:
   void init();
   void start(int id);
   void end(int id);
@@ -36,7 +36,7 @@ public:
   void finalize();
 };
 
-} // namespace dc2_FS
+}  // namespace dc2_FS
 
 namespace dc2_FS {
 inline void FS_prof::init() {
@@ -183,5 +183,5 @@ inline void FS_prof::finalize() {
 #endif
   }
 }
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

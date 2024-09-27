@@ -270,5 +270,5 @@ void FS_pdlasrt(const Integer n, Real d[], Real q[], const Integer ldq,
   }
 #endif
 }
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

@@ -13,4 +13,4 @@ extern "C" void FS_eigen_timer_reset(int bcast, int reduce, int redist,
 
 extern "C" double FS_eigen_timer_print();
 
-} // namespace eigen_devel_FS_wrapper
+}  // namespace eigen_devel_FS_wrapper

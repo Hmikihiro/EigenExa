@@ -4,7 +4,7 @@
 
 namespace FS_libs {
 process_info FS_info;
-} // namespace FS_libs
+}  // namespace FS_libs
 
 namespace FS_libs_interface {
 extern "C" void FS_init(int comm, char order) {
@@ -24,4 +24,4 @@ extern "C" int FS_get_myrank() { return FS_libs::FS_info.get_my_rank(); }
 extern "C" long FS_byte_data_context(int n, int int_size, int real_size) {
   return FS_libs::FS_byte_data_context(n, int_size, real_size);
 }
-} // namespace FS_libs_interface
+}  // namespace FS_libs_interface

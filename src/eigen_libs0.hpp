@@ -10,7 +10,7 @@ void eigen_get_id(int &id, int &x_id, int &y_id);
 char eigen_get_grid_major();
 }
 
-} // namespace eigen_libs0_interface
+}  // namespace eigen_libs0_interface
 
 namespace eigen_libs0_wrapper {
 struct eigen_comm {
@@ -62,13 +62,14 @@ template <class Integer>
 Integer eigen_translate_g2l(Integer ictr, Integer nnod) {
   return ictr / nnod;
 }
-template <class Integer> Integer eigen_owner_node(Integer ictr, Integer nnod) {
+template <class Integer>
+Integer eigen_owner_node(Integer ictr, Integer nnod) {
   return ictr % nnod;
 }
 
-} // namespace eigen_libs0_wrapper
+}  // namespace eigen_libs0_wrapper
 
 namespace eigen_libs0 {
 static int eigen_NB_f = 48;
 static int eigen_NB_b = 128;
-} // namespace eigen_libs0
+}  // namespace eigen_libs0

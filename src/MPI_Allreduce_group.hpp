@@ -10,8 +10,9 @@
 
 namespace {
 namespace MPI_Group_property {
-template <typename Number> class MPI_Group_type {
-public:
+template <typename Number>
+class MPI_Group_type {
+ public:
   Number *sbuf;
   Number *rbuf;
   size_t count;
@@ -28,7 +29,7 @@ public:
   int comm_group_size;
   std::unique_ptr<int[]> comm_group_ranklist;
 };
-} // namespace MPI_Group_property
+}  // namespace MPI_Group_property
 namespace MPI_Allreduce_main {
 using MPI_Group_property::MPI_Group_type;
 
@@ -169,7 +170,7 @@ void Group_Allreduce(MPI_Group_type<Number> &mygroup) {
   }
   std::copy_n(mygroup.sbuf, mygroup.count, mygroup.rbuf);
 }
-} // namespace MPI_Allreduce_main
+}  // namespace MPI_Allreduce_main
 namespace MPI_Allreduce_group {
 using MPI_Allreduce_main::Group_Allreduce;
 using MPI_Group_property::MPI_Group_type;
@@ -224,7 +225,7 @@ void set_group(Number sbuf[], Number rbuf[], size_t count,
     mygroup.rbuf = rbuf;
   }
 }
-} // namespace MPI_Allreduce_group
+}  // namespace MPI_Allreduce_group
 
 template <typename Number>
 int MPI_Group_Allreduce(Number sbuf[], Number rbuf[], size_t count,
@@ -237,4 +238,4 @@ int MPI_Group_Allreduce(Number sbuf[], Number rbuf[], size_t count,
   MPI_Allreduce_group::free_group<Number>(mygroup, rbuf, count);
   return 0;
 }
-} // namespace
+}  // namespace

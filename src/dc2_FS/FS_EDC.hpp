@@ -74,7 +74,6 @@ template <class Integer, class Real>
 Integer FS_EDC(const Integer n, Real *d, Real *e, Real *q, const Integer ldq,
                Real *work, const Integer lwork, Integer *iwork,
                const Integer liwork, FS_prof *prof) {
-
   FS_prof prof_tmp = {};
 
   Integer info = 0;
@@ -113,8 +112,8 @@ Integer FS_EDC(const Integer n, Real *d, Real *e, Real *q, const Integer ldq,
     prof_tmp.start(11);
 #endif
     info = lapacke::stedc<Real>('I', n, d, e, q, ldq, work, lwork,
-                                 reinterpret_cast<eigen_mathlib_int *>(iwork),
-                                 liwork);
+                                reinterpret_cast<eigen_mathlib_int *>(iwork),
+                                liwork);
 
 #if TIMER_PRINT
     prof_tmp.end(11);
@@ -129,11 +128,11 @@ Integer FS_EDC(const Integer n, Real *d, Real *e, Real *q, const Integer ldq,
       info = lapacke::lascl<Real>('G', 0, 0, orgnrm, ONE<Real>, n, 1, d, n);
       if (n - 1 >= 1) {
         info = lapacke::lascl<Real>('G', 0, 0, orgnrm, ONE<Real>, n - 1, 1, e,
-                                     n - 1);
+                                    n - 1);
       }
     }
     info = FS_pdlaed0<Integer, Real>(n, d, e, q, ldq, work, lwork, iwork,
-                                      liwork, prof_tmp);
+                                     liwork, prof_tmp);
     // Scale back.
     if (info == 0 && orgnrm != ZERO<Real>) {
       info = lapacke::lascl<Real>('G', 0, 0, ONE<Real>, orgnrm, n, 1, d, n);
@@ -156,5 +155,5 @@ Integer FS_EDC(const Integer n, Real *d, Real *e, Real *q, const Integer ldq,
 #endif
   return info;
 }
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

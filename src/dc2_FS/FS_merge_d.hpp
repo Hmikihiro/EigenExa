@@ -82,5 +82,5 @@ void FS_merge_d(const Integer n, const Real d[],
     }
   }
 }
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

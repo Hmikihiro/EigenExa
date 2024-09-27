@@ -151,7 +151,8 @@ void pdlaed2_comm(const Integer mycol, const Integer ldq, Real q[],
 /**
  * @brief return of FS_pdlaed2
  */
-template <class Integer, class Real> struct FS_pdlead2_result {
+template <class Integer, class Real>
+struct FS_pdlead2_result {
   /**
    * @brief  On exit, RHO has been modified to the value
    *         \n required by FS_PDLAED3.
@@ -271,13 +272,12 @@ template <class Integer, class Real> struct FS_pdlead2_result {
  * @note This routine is modified from ScaLAPACK PDLAED2.f
  */
 template <class Integer, class Real>
-FS_pdlead2_result<Integer, Real>
-FS_pdlaed2(const Integer n, const Integer n1, Real d[], Real q[],
-           const Integer ldq, const bt_node<Integer, Real> &subtree,
-           const Real rho, Real z[], Real w[], Real dlamda[],
-           const Integer ldq2, Real q2[], Integer indx[], Integer ctot[],
-           Real qbuf[], Integer coltyp[], Integer indcol[], Integer indxc[],
-           Integer indxp[], Integer psm[], FS_prof &prof) {
+FS_pdlead2_result<Integer, Real> FS_pdlaed2(
+    const Integer n, const Integer n1, Real d[], Real q[], const Integer ldq,
+    const bt_node<Integer, Real> &subtree, const Real rho, Real z[], Real w[],
+    Real dlamda[], const Integer ldq2, Real q2[], Integer indx[],
+    Integer ctot[], Real qbuf[], Integer coltyp[], Integer indcol[],
+    Integer indxc[], Integer indxp[], Integer psm[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_PDLAED2 start." << std::endl;
@@ -482,5 +482,5 @@ FS_pdlaed2(const Integer n, const Integer n1, Real d[], Real q[],
 
   return result;
 }
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

@@ -85,8 +85,9 @@ void set_indxc(const Integer k, const Integer indx[], const Integer indcol[],
  *
  * @tparam Integer
  */
-template <class Integer> class ComputeArea {
-public:
+template <class Integer>
+class ComputeArea {
+ public:
   /** 上側の行列の次数 */
   Integer np1;
   /** 下側の行列の次数 */
@@ -102,7 +103,7 @@ ComputeArea<Integer> get_np12(const Integer n, const Integer n1,
   Integer npa = 0;
   Integer np1 = 0;
   Integer np2 = 0;
-#pragma omp parallel for reduction(min : minrow) reduction(max : maxrow)       \
+#pragma omp parallel for reduction(min : minrow) reduction(max : maxrow) \
     reduction(+ : npa)
   for (Integer i = 0; i < n; i++) {
     if (indrow[i] == myrow) {
@@ -234,21 +235,22 @@ ComputeArea<Integer> get_np12(const Integer n, const Integer n1,
  * @note This routine is modified from ScaLAPACK PDLAED3.f
  */
 template <class Integer, class Real>
-Integer
-FS_pdlaed3(const Integer k, const Integer n, const Integer n1, Real d[],
-           const Real rho, Real dlamda[], const Real w[], const Integer ldq,
-           Real q[], const bt_node<Integer, Real> &subtree, const Integer ldq2,
-           Real q2[], const Integer ldu, Real u[], const Integer indx[],
-           const Integer lctot, const Integer ctot[], Real q2buf1[],
-           Real q2buf2[], Real z[], Real buf[], Integer indrow[],
-           Integer indcol[], Integer indxc[], Integer indxr[], FS_prof &prof) {
+Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1, Real d[],
+                   const Real rho, Real dlamda[], const Real w[],
+                   const Integer ldq, Real q[],
+                   const bt_node<Integer, Real> &subtree, const Integer ldq2,
+                   Real q2[], const Integer ldu, Real u[], const Integer indx[],
+                   const Integer lctot, const Integer ctot[], Real q2buf1[],
+                   Real q2buf2[], Real z[], Real buf[], Integer indrow[],
+                   Integer indcol[], Integer indxc[], Integer indxr[],
+                   FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_pdlaed3 start" << std::endl;
   }
 #endif
   Integer info = 0;
-  { // FS_pdlaed3_end;
+  {  // FS_pdlaed3_end;
 #if TIMER_PRINT
     prof.start(60);
 #endif
@@ -591,7 +593,7 @@ FS_pdlaed3(const Integer k, const Integer n, const Integer n1, Real d[],
         // isend
         nsend = np1 * n12 + np2 * n23;
         if (nsend > 0) {
-          const auto dstcol = (mycol + npcol - 1) % npcol; // 左側に送信
+          const auto dstcol = (mycol + npcol - 1) % npcol;  // 左側に送信
           const auto dest = subtree.group_Y_processranklist_[dstcol];
           MPI_Isend(sendq2, nsend, MPI_Datatype_wrapper::MPI_TYPE<Real>, dest,
                     1, FS_libs::FS_get_comm_world(), &req[0]);
@@ -602,7 +604,7 @@ FS_pdlaed3(const Integer k, const Integer n, const Integer n1, Real d[],
         nrecv = np1 * (ctot[0 * lctot + pjcoln] + ctot[1 * lctot + pjcoln]) +
                 np2 * (ctot[1 * lctot + pjcoln] + ctot[2 * lctot + pjcoln]);
         if (nrecv > 0) {
-          const auto srccol = (mycol + npcol + 1) % npcol; // 右側から受信
+          const auto srccol = (mycol + npcol + 1) % npcol;  // 右側から受信
           const auto source = subtree.group_Y_processranklist_[srccol];
           MPI_Irecv(recvq2, nrecv, MPI_Datatype_wrapper::MPI_TYPE<Real>, source,
                     1, FS_libs::FS_get_comm_world(), &req[1]);
@@ -730,5 +732,5 @@ FS_pdlead3_end:
 #endif
   return info;
 }
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

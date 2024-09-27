@@ -3,9 +3,10 @@
  * @brief dc2_FS_C_Interface
  */
 
+#include <memory>
+
 #include "../eigen_libs0.hpp"
 #include "dc2_FS.hpp"
-#include <memory>
 
 extern "C" {
 void dc2_FS_fp64(int n, int nvec, double d[], double e[], double z[], int ldz,

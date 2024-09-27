@@ -19,61 +19,65 @@
 
 namespace {
 namespace dc2_FS {
-template <class Integer> struct g1l {
+template <class Integer>
+struct g1l {
   Integer l_index;
   Integer rocsrc;
 };
 
-template <class Integer> struct GridIndex {
+template <class Integer>
+struct GridIndex {
   Integer row;
   Integer col;
 };
 
-template <class Integer> class GridInfo {
-public:
+template <class Integer>
+class GridInfo {
+ public:
   Integer nprow;
   Integer npcol;
   Integer myrow;
   Integer mycol;
 };
 
-template <class Integer, class Real> class bt_node {
-public:
+template <class Integer, class Real>
+class bt_node {
+ public:
   Integer bt_id = 0;
   Integer layer_ = 0;
   bool direction_horizontal_ = true;
   Integer nstart_ = 0;
   Integer nend_ = 1;
   Integer nend_active_ = 1;
-  Integer proc_istart_ = 0; //  process start number of direction i
-  Integer proc_iend_ = 1;   //  process end   number of direction i
-  Integer proc_jstart_ = 0; //  process start number of direction j
-  Integer proc_jend_ = 1;   //  process end   number of direction j
-  Integer block_start_ = 0; //  merge block start number(refer to procs_i/j)
-  Integer block_end_ = 1;   //  merge block end   number(refer to procs_i/j)
-  std::unique_ptr<bt_node<Integer, Real>[]> sub_bt_node_; //  sub tree node
-  bt_node<Integer, Real> *parent_node_;                   //  parent node
-  Integer *procs_i_;       //  process No. list of row
-  Integer *procs_j_;       //  process No. list of column
-  Integer nnod_ = 0;       //  nprocs of communicator
-  Integer x_nnod_ = 0;     //  nprocs of X direction communicator
-  Integer y_nnod_ = 0;     //  nprocs of Y direction communicator
-  eigen_mpi_int inod_ = 0; //  inod in MERGE_COMM(1～)
-  Integer x_inod_ = 0;     //  x_inod in MERGE_COMM_X(1～)
-  Integer y_inod_ = 0;     //  y_inod in MERGE_COMM_Y(1～)
-  Integer div_bit_ = -1;   //  bit stream of divided direction
-  Integer div_nbit_ = 0;   //  number of dights of div_bit
+  Integer proc_istart_ = 0;  //  process start number of direction i
+  Integer proc_iend_ = 1;    //  process end   number of direction i
+  Integer proc_jstart_ = 0;  //  process start number of direction j
+  Integer proc_jend_ = 1;    //  process end   number of direction j
+  Integer block_start_ = 0;  //  merge block start number(refer to procs_i/j)
+  Integer block_end_ = 1;    //  merge block end   number(refer to procs_i/j)
+  std::unique_ptr<bt_node<Integer, Real>[]> sub_bt_node_;  //  sub tree node
+  bt_node<Integer, Real> *parent_node_;                    //  parent node
+  Integer *procs_i_;        //  process No. list of row
+  Integer *procs_j_;        //  process No. list of column
+  Integer nnod_ = 0;        //  nprocs of communicator
+  Integer x_nnod_ = 0;      //  nprocs of X direction communicator
+  Integer y_nnod_ = 0;      //  nprocs of Y direction communicator
+  eigen_mpi_int inod_ = 0;  //  inod in MERGE_COMM(1～)
+  Integer x_inod_ = 0;      //  x_inod in MERGE_COMM_X(1～)
+  Integer y_inod_ = 0;      //  y_inod in MERGE_COMM_Y(1～)
+  Integer div_bit_ = -1;    //  bit stream of divided direction
+  Integer div_nbit_ = 0;    //  number of dights of div_bit
 
-  MPI_Group MERGE_GROUP_ = MPI_GROUP_NULL;   //  MERGE_COMM group
-  MPI_Group MERGE_GROUP_X_ = MPI_GROUP_NULL; //  MERGE_COMM_X group
-  MPI_Group MERGE_GROUP_Y_ = MPI_GROUP_NULL; //  MERGE_COMM_Y group
+  MPI_Group MERGE_GROUP_ = MPI_GROUP_NULL;    //  MERGE_COMM group
+  MPI_Group MERGE_GROUP_X_ = MPI_GROUP_NULL;  //  MERGE_COMM_X group
+  MPI_Group MERGE_GROUP_Y_ = MPI_GROUP_NULL;  //  MERGE_COMM_Y group
   std::unique_ptr<eigen_mpi_int[]>
-      group_processranklist_; //  list to convert from group
+      group_processranklist_;  //  list to convert from group
   //  rank to communicator rank
   std::unique_ptr<eigen_mpi_int[]> group_X_processranklist_;
   std::unique_ptr<eigen_mpi_int[]> group_Y_processranklist_;
 
-public:
+ public:
   /**
    * @brief main routine of dividing tree
    *
@@ -161,8 +165,8 @@ public:
    *                       = 0: successful exit   @n
    *                       /=0: error exit
    */
-  std::pair<const bt_node<Integer, Real> *, Integer>
-  FS_dividing_getleaf(Integer info) const {
+  std::pair<const bt_node<Integer, Real> *, Integer> FS_dividing_getleaf(
+      Integer info) const {
     const FS_libs::Nod inod = FS_libs::FS_get_id();
     if (inod.x - 1 == this->proc_istart_ && inod.x == this->proc_iend_ &&
         inod.y - 1 == this->proc_jstart_ && inod.y == this->proc_jend_) {
@@ -368,8 +372,8 @@ void FS_create_hint(bool hint[]);
 template <class Integer>
 void bitprint(Integer kout, Integer title, Integer ibit, Integer nbit);
 
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace
 
 namespace {
 namespace dc2_FS {
@@ -446,9 +450,9 @@ Integer bt_node<Integer, Real>::FS_dividing(Integer n, Real d[], const Real e[],
 
   const auto Next = ((n % nnod.nod) == 0) ? n : ((n / nnod.nod + 1) * nnod.nod);
 
-  this->layer_ = 0; // root nodeは0, sub_node[0]と[1]は1
+  this->layer_ = 0;  // root nodeは0, sub_node[0]と[1]は1
   this->direction_horizontal_ = hint[this->layer_];
-  this->nstart_ = 0; // このbt_nodeの担当する範囲であり、ループの開始地点
+  this->nstart_ = 0;  // このbt_nodeの担当する範囲であり、ループの開始地点
   this->nend_ = Next;
   this->nend_active_ = n;
   this->proc_istart_ = 0;
@@ -505,8 +509,8 @@ Integer bt_node<Integer, Real>::FS_dividing_recursive(
     Integer i;
     for (i = bt_id; i < nnod.nod; i++) {
       if (this->procs_i_[i] < 0) {
-        this->procs_i_[i] = this->proc_istart_; // ここでのみ変更される
-        this->procs_j_[i] = this->proc_jstart_; // ここでのみ変更される
+        this->procs_i_[i] = this->proc_istart_;  // ここでのみ変更される
+        this->procs_j_[i] = this->proc_jstart_;  // ここでのみ変更される
 
         this->block_start_ = i;
         this->block_end_ = i + 1;
@@ -584,15 +588,15 @@ void bt_node<Integer, Real>::dividing_setBitStream() {
 
   this->div_bit_ = 0;
   if (this->direction_horizontal_ == false) {
-    this->div_bit_ |= (1 << 0); // IBSET
+    this->div_bit_ |= (1 << 0);  // IBSET
   }
 
   this->div_nbit_ = 1;
   bt_node<Integer, Real> *node = &(this->sub_bt_node_[0]);
   while (node->sub_bt_node_ != nullptr) {
-    this->div_bit_ <<= 1; // ISHIFT
+    this->div_bit_ <<= 1;  // ISHIFT
     if (node->direction_horizontal_ == false) {
-      this->div_bit_ |= (1 << 0); // IBSET
+      this->div_bit_ |= (1 << 0);  // IBSET
     }
     this->div_nbit_ += 1;
     node = &(node->sub_bt_node_[0]);
@@ -843,7 +847,7 @@ g1l<Integer> bt_node<Integer, Real>::FS_info_G1L(FS_libs::FS_GRID_MAJOR comp,
       if (!(this->div_bit_ & (1 << b))) {
         i_bit0 <<= 1;
         if (IBLK & (1 << b)) {
-          i_bit0 |= 1; // IBSET
+          i_bit0 |= 1;  // IBSET
         }
       } else {
         i_bit1 <<= 1;
@@ -998,5 +1002,5 @@ void bt_node<Integer, Real>::print_node() const {
   std::cout << "bit stream     = " << this->div_bit_ << std::endl;
   std::cout << "#dights of bit = " << this->div_nbit_ << std::endl;
 }
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

@@ -65,7 +65,8 @@ void FS_reduce_zd(const Integer n, const bt_node<Integer, Real> &subtree,
 
   // reduce
   MPI_Group_Allreduce(work, z, n * 2, MPI_Datatype_wrapper::MPI_TYPE<Real>,
-                      MPI_SUM, FS_libs::FS_get_comm_world(), subtree.MERGE_GROUP_);
+                      MPI_SUM, FS_libs::FS_get_comm_world(),
+                      subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
   for (Integer j = 0; j < n; j++) {
@@ -89,5 +90,5 @@ void FS_reduce_zd(const Integer n, const bt_node<Integer, Real> &subtree,
 #endif
 }
 
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace

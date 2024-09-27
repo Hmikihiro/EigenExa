@@ -3,8 +3,9 @@
  * @file dc2_FS.hpp
  * @brief dc2_FS
  */
-#include <memory>
 #include <mpi.h>
+
+#include <memory>
 
 #include "../FS_libs/FS_libs.hpp"
 #include "../MPI_Datatype_wrapper.hpp"
@@ -29,7 +30,8 @@ using eigen_libs0_wrapper::eigen_get_procs;
 /**
  * @brief return value of dc2_FS
  */
-template <class Integer, class Real> struct dc2_FS_result {
+template <class Integer, class Real>
+struct dc2_FS_result {
   /**
    * @brief (output) integer \n
    *        = 0: successful exit \n
@@ -175,5 +177,5 @@ dc2_FS_result<Integer, Real> dc2_FS(const Integer n, const Integer nvec,
       .ret = ret_,
   };
 }
-} // namespace dc2_FS
-} // namespace
+}  // namespace dc2_FS
+}  // namespace
