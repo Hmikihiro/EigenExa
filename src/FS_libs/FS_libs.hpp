@@ -87,7 +87,7 @@ inline long FS_byte_data_context(int n, int int_byte_size, int real_byte_size) {
   return worksize.lwork * real_byte_size + worksize.liwork * int_byte_size;
 }
 
-inline int FS_get_comm_world() { return FS_info.get_comm_world(); }
+inline MPI_Comm FS_get_comm_world() { return FS_info.get_comm_world(); }
 
 inline int FS_get_myrank() { return FS_info.get_my_rank(); }
 
