@@ -234,15 +234,14 @@ ComputeArea<Integer> get_np12(const Integer n, const Integer n1,
  * @note This routine is modified from ScaLAPACK PDLAED3.f
  */
 template <class Integer, class Real>
-Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
-                   Real d[], const Real rho, Real dlamda[], const Real w[],
-                   const Integer ldq, Real q[],
-                   const bt_node<Integer, Real> &subtree, const Integer ldq2,
-                   Real q2[], const Integer ldu, Real u[],
-                   const Integer indx[], const Integer lctot,
-                   const Integer ctot[], Real q2buf1[], Real q2buf2[],
-                   Real z[], Real buf[], Integer indrow[], Integer indcol[],
-                   Integer indxc[], Integer indxr[], FS_prof &prof) {
+Integer
+FS_pdlaed3(const Integer k, const Integer n, const Integer n1, Real d[],
+           const Real rho, Real dlamda[], const Real w[], const Integer ldq,
+           Real q[], const bt_node<Integer, Real> &subtree, const Integer ldq2,
+           Real q2[], const Integer ldu, Real u[], const Integer indx[],
+           const Integer lctot, const Integer ctot[], Real q2buf1[],
+           Real q2buf2[], Real z[], Real buf[], Integer indrow[],
+           Integer indcol[], Integer indxc[], Integer indxr[], FS_prof &prof) {
 #ifdef _DEBUGLOG
   if (FS_libs::FS_get_myrank() == 0) {
     std::cout << "FS_pdlaed3 start" << std::endl;
@@ -270,8 +269,9 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
 
 #pragma omp parallel for schedule(static, 1)
     for (Integer i = 0; i < n; i += nb) {
-      Integer row = subtree.FS_info_G1L('R', i).rocsrc;
-      Integer col = subtree.FS_info_G1L('C', i).rocsrc;
+      Integer row = subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::ROW, i).rocsrc;
+      Integer col =
+          subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, i).rocsrc;
       for (Integer j = 0; j < nb; j++) {
         if (i + j < n) {
           indrow[i + j] = row;
@@ -389,9 +389,9 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
       buf[2 * k + i] = z[i];
     }
 
-    MPI_Group_Allreduce<Real>(&buf[2 * k], z, k,
-                               MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_PROD,
-                               FS_libs::FS_get_comm_world(), subtree.MERGE_GROUP_);
+    MPI_Group_Allreduce<Real>(
+        &buf[2 * k], z, k, MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_PROD,
+        FS_libs::FS_get_comm_world(), subtree.MERGE_GROUP_);
 
 #pragma omp parallel for
     for (Integer i = 0; i < k; i++) {
@@ -400,9 +400,9 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
     }
 
     if (mykl > 0) {
-      MPI_Group_Allreduce<Real>(buf, &buf[2 * k], 2 * mykl,
-                                 MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM,
-                                 FS_libs::FS_get_comm_world(), subtree.MERGE_GROUP_X_);
+      MPI_Group_Allreduce<Real>(
+          buf, &buf[2 * k], 2 * mykl, MPI_Datatype_wrapper::MPI_TYPE<Real>,
+          MPI_SUM, FS_libs::FS_get_comm_world(), subtree.MERGE_GROUP_X_);
     }
 
 #pragma omp parallel
@@ -418,9 +418,9 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
       }
     }
 
-    MPI_Group_Allreduce<Real>(buf, &buf[2 * k], 2 * k,
-                               MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM,
-                               FS_libs::FS_get_comm_world(), subtree.MERGE_GROUP_Y_);
+    MPI_Group_Allreduce<Real>(
+        buf, &buf[2 * k], 2 * k, MPI_Datatype_wrapper::MPI_TYPE<Real>, MPI_SUM,
+        FS_libs::FS_get_comm_world(), subtree.MERGE_GROUP_Y_);
 
     // Copy of D at the good place
 
@@ -451,7 +451,7 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
     for (Integer j = 0; j < mykl; j++) {
       const auto kk = indxc[j];
       const auto ju = indx[kk];
-      const auto jju = subtree.FS_index_G2L('C', ju);
+      const auto jju = subtree.FS_index_G2L(FS_libs::FS_GRID_MAJOR::COLUMN, ju);
       indxcb[jju] = j;
     }
 #endif
@@ -604,8 +604,8 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
         if (nrecv > 0) {
           const auto srccol = (mycol + npcol + 1) % npcol; // 右側から受信
           const auto source = subtree.group_Y_processranklist_[srccol];
-          MPI_Irecv(recvq2, nrecv, MPI_Datatype_wrapper::MPI_TYPE<Real>,
-                    source, 1, FS_libs::FS_get_comm_world(), &req[1]);
+          MPI_Irecv(recvq2, nrecv, MPI_Datatype_wrapper::MPI_TYPE<Real>, source,
+                    1, FS_libs::FS_get_comm_world(), &req[1]);
         }
 #ifdef _MPITEST
         bool flag;
@@ -633,7 +633,8 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
           for (Integer j = 0; j < mykl; j++) {
             const auto kk = indxc[j];
             const auto ju = indx[kk];
-            const auto jju = subtree.FS_index_G2L('C', ju);
+            const auto jju =
+                subtree.FS_index_G2L(FS_libs::FS_GRID_MAJOR::COLUMN, ju);
             Real aux;
             if (k == 1 || k == 2) {
               lapacke::laed4<Real>(k, kk + 1, dlamda, w, sbuf.get(), rho, aux);
@@ -648,7 +649,8 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
               for (Integer i = 0; i < klr; i++) {
                 const auto kk = indxr[i];
                 const auto iu = indx[kk];
-                const auto iiu = subtree.FS_index_G2L('C', iu);
+                const auto iiu =
+                    subtree.FS_index_G2L(FS_libs::FS_GRID_MAJOR::COLUMN, iu);
                 u[jju * ldu + iiu] = sbuf[kk];
               }
               continue;
@@ -661,7 +663,8 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
             for (Integer i = 0; i < klr; i++) {
               const auto kk = indxr[i];
               const auto iu = indx[kk];
-              const auto iiu = subtree.FS_index_G2L('C', iu);
+              const auto iiu =
+                  subtree.FS_index_G2L(FS_libs::FS_GRID_MAJOR::COLUMN, iu);
               u[jju * ldu + iiu] = sbuf[kk] / temp;
             }
           }
@@ -675,8 +678,8 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
           prof.start(67);
 #endif
           lapacke::gemm<Real>(CblasNoTrans, CblasNoTrans, np1, mykl, n12,
-                               FS_const::ONE<Real>, q2, ldq2, u, ldu,
-                               FS_const::ONE<Real>, q, ldq);
+                              FS_const::ONE<Real>, q2, ldq2, u, ldu,
+                              FS_const::ONE<Real>, q, ldq);
           eigen_dc_interface::flops += 2 * static_cast<double>(np1) *
                                        static_cast<double>(mykl) *
                                        static_cast<double>(n12);
@@ -698,9 +701,9 @@ Integer FS_pdlaed3(const Integer k, const Integer n, const Integer n1,
           prof.start(67);
 #endif
           lapacke::gemm<Real>(CblasNoTrans, CblasNoTrans, np2, mykl, n23,
-                               FS_const::ONE<Real>, &q2[jq2 * ldq2 + iq2],
-                               ldq2, &u[jju * ldu + iiu], ldu,
-                               FS_const::ONE<Real>, &q[jq * ldq + iq], ldq);
+                              FS_const::ONE<Real>, &q2[jq2 * ldq2 + iq2], ldq2,
+                              &u[jju * ldu + iiu], ldu, FS_const::ONE<Real>,
+                              &q[jq * ldq + iq], ldq);
           eigen_dc_interface::flops += 2 * static_cast<double>(np2) *
                                        static_cast<double>(mykl) *
                                        static_cast<double>(n23);

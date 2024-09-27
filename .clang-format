@@ -1,0 +1,3 @@
+Standard: c++14
+ColumnLimit: 80
+ReflowComments: false

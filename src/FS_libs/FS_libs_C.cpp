@@ -8,7 +8,9 @@ process_info FS_info;
 
 namespace FS_libs_interface {
 extern "C" void FS_init(int comm, char order) {
-  FS_libs::FS_init(MPI_Comm_f2c(comm), order);
+  const auto FS_order = (order == 'R') ? FS_libs::FS_GRID_MAJOR::ROW
+                                       : FS_libs::FS_GRID_MAJOR::COLUMN;
+  FS_libs::FS_init(MPI_Comm_f2c(comm), FS_order);
 }
 extern "C" void FS_free() { FS_libs::FS_free(); }
 

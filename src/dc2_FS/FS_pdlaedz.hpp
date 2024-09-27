@@ -56,7 +56,7 @@ namespace dc2_FS {
  *
  * @note This routine is modified from ScaLAPACK PDLAEDZ.f
  */
- 
+
 template <class Integer, class Real>
 void FS_pdlaedz(const Integer n, const Integer n1, const Real q[],
                 const Integer ldq, const bt_node<Integer, Real> &subtree,
@@ -78,7 +78,8 @@ void FS_pdlaedz(const Integer n, const Integer n1, const Real q[],
   std::fill_n(z, n, FS_const::ZERO<Real>);
 
   // Z1, Z2を含むプロセス行を取得
-  const auto iz1_info = subtree.FS_info_G1L('R', n1 - 1);
+  const auto iz1_info =
+      subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::ROW, n1 - 1);
   const auto &iz1 = iz1_info.l_index;
   const auto &iz1row = iz1_info.rocsrc;
   // Form z1 which consist of the last row of Q1
@@ -86,7 +87,7 @@ void FS_pdlaedz(const Integer n, const Integer n1, const Real q[],
     // z1を含むプロセス例
 #pragma omp parallel for
     for (Integer j = 0; j < n1; j += nb) {
-      const auto jz1 = subtree.FS_info_G1L('C', j);
+      const auto jz1 = subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, j);
       if (jz1.rocsrc == grid_info.mycol) {
         const auto nb1 = std::min(n1, j + nb) - j;
         const auto q_index = iz1 + jz1.l_index * ldq;
@@ -95,7 +96,7 @@ void FS_pdlaedz(const Integer n, const Integer n1, const Real q[],
     }
   }
 
-  const auto iz2_info = subtree.FS_info_G1L('R', n1);
+  const auto iz2_info = subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::ROW, n1);
   const auto &iz2 = iz2_info.l_index;
   const auto &iz2row = iz2_info.rocsrc;
   // Form z2 which consist of the first row of Q2
@@ -103,7 +104,8 @@ void FS_pdlaedz(const Integer n, const Integer n1, const Real q[],
     // z2を含むプロセス例
 #pragma omp parallel for
     for (Integer j = n1; j < n; j += nb) {
-      const auto jz2_info = subtree.FS_info_G1L('C', j);
+      const auto jz2_info =
+          subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, j);
       const auto &jz2 = jz2_info.l_index;
       const auto &jz2col = jz2_info.rocsrc;
       if (jz2col == grid_info.mycol) {

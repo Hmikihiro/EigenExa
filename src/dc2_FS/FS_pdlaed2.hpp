@@ -26,7 +26,7 @@ Integer get_NPA(const Integer n, const Integer nb,
   Integer npa = 0;
 #pragma omp parallel for reduction(+ : npa)
   for (Integer i = 0; i < n; i += nb) {
-    const auto row = subtree.FS_info_G1L('R', i).rocsrc;
+    const auto row = subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::ROW, i).rocsrc;
     if (row == myrow) {
       for (Integer j = 0; j < nb; j++) {
         if (i + j < n) {
@@ -112,12 +112,12 @@ void set_indxp(const Integer n, Integer &k2, const Integer nj, const Integer pj,
 template <class Integer, class Real>
 void pdlaed2_comm(const Integer mycol, const Integer ldq, Real q[],
                   const Integer npa, const bt_node<Integer, Real> &subtree,
-                  Real qbuf[], const Integer nj, const Integer pj,
-                  const Real c, const Real s, Integer indcol[]) {
-  const auto njj_info = subtree.FS_info_G1L('C', nj);
+                  Real qbuf[], const Integer nj, const Integer pj, const Real c,
+                  const Real s, Integer indcol[]) {
+  const auto njj_info = subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, nj);
   const auto &njj = njj_info.l_index;
   const auto &njcol = njj_info.rocsrc;
-  const auto pjj_info = subtree.FS_info_G1L('C', pj);
+  const auto pjj_info = subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, pj);
   const auto &pjj = pjj_info.l_index;
   const auto &pjcol = pjj_info.rocsrc;
 
@@ -147,7 +147,6 @@ void pdlaed2_comm(const Integer mycol, const Integer ldq, Real q[],
     lapacke::rot<Real>(npa, qbuf, 1, &q[njj * ldq + 0], 1, c, s);
   }
 }
-
 
 /**
  * @brief return of FS_pdlaed2
@@ -321,8 +320,7 @@ FS_pdlaed2(const Integer n, const Integer n1, Real d[], Real q[],
     const auto abs_zmax = std::abs(z[imax]);
     const auto abs_dmax = std::abs(d[jmax]);
     const auto eps = std::numeric_limits<Real>::epsilon() / 2;
-    const auto tol =
-        FS_const::EIGHT<Real> * eps * std::max(abs_dmax, abs_zmax);
+    const auto tol = FS_const::EIGHT<Real> * eps * std::max(abs_dmax, abs_zmax);
 
     // If the rank-1 modifier is small enough, no more needs to be done
     // except to reorganize Q so that its columns correspond with the
@@ -351,7 +349,8 @@ FS_pdlaed2(const Integer n, const Integer n1, Real d[], Real q[],
       }
 #pragma omp for
       for (Integer i = 0; i < n; i += nb) {
-        const auto col = subtree.FS_info_G1L('C', i).rocsrc;
+        const auto col =
+            subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, i).rocsrc;
         for (Integer j = 0; j < nb; j++) {
           if (i + j < n) {
             indcol[i + j] = col;
@@ -440,7 +439,8 @@ FS_pdlaed2(const Integer n, const Integer n1, Real d[], Real q[],
       auto js = indxp[j];
       auto col = indcol[js];
       auto ct = coltyp[js];
-      auto i = subtree.FS_index_L2G('C', psm[col + ct * lctot] - 1, col);
+      auto i = subtree.FS_index_L2G(FS_libs::FS_GRID_MAJOR::COLUMN,
+                                    psm[col + ct * lctot] - 1, col);
       indx[j] = i;
       indxc[ptt[ct] - 1] = i + 1;
       psm[col + ct * lctot] += 1;
@@ -451,9 +451,11 @@ FS_pdlaed2(const Integer n, const Integer n1, Real d[], Real q[],
       const auto js = indxp[j];
       const auto col = indcol[js];
       if (col == mycol) {
-        const auto jjs = subtree.FS_index_G2L('C', js);
+        const auto jjs =
+            subtree.FS_index_G2L(FS_libs::FS_GRID_MAJOR::COLUMN, js);
         const auto i = indx[j];
-        const auto jjq2 = subtree.FS_index_G2L('C', i);
+        const auto jjq2 =
+            subtree.FS_index_G2L(FS_libs::FS_GRID_MAJOR::COLUMN, i);
         lapacke::copy(npa, &q[jjs * ldq], 1, &q2[jjq2 * ldq2], 1);
       }
     }

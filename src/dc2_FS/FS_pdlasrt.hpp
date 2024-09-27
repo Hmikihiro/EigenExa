@@ -100,8 +100,9 @@ void FS_pdlasrt(const Integer n, Real d[], Real q[], const Integer ldq,
 //
 #pragma omp parallel for schedule(static, 1)
   for (Integer i = 0; i < n; i += nb) {
-    const auto row = subtree.FS_info_G1L('R', i).rocsrc;
-    const auto col = subtree.FS_info_G1L('C', i).rocsrc;
+    const auto row = subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::ROW, i).rocsrc;
+    const auto col =
+        subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, i).rocsrc;
     for (Integer j = 0; j < nb; j++) {
       if (i + j < n) {
         indrow[i + j] = row;
@@ -150,7 +151,8 @@ void FS_pdlasrt(const Integer n, Real d[], Real q[], const Integer ldq,
       // PJCOLに送信する列
       if (col == mycol && jcol == pjcol) {
         // ローカルインデクス
-        const auto jl = subtree.FS_index_G2L('C', gi);
+        const auto jl =
+            subtree.FS_index_G2L(FS_libs::FS_GRID_MAJOR::COLUMN, gi);
 
         // 送信バッファに格納
 
@@ -214,7 +216,7 @@ void FS_pdlasrt(const Integer n, Real d[], Real q[], const Integer ldq,
       // PJROWに送信する行
       if (row == myrow && irow == pjrow) {
         // ローカルインデクス
-        const auto il = subtree.FS_index_G2L('R', i);
+        const auto il = subtree.FS_index_G2L(FS_libs::FS_GRID_MAJOR::ROW, i);
 
         // 送信バッファに格納
         lapacke::copy<Real>(nq, &q2[il], ldq2, &sendq[nsend * nq], 1);

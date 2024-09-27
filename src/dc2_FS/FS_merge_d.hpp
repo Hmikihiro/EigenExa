@@ -49,11 +49,13 @@ void FS_merge_d(const Integer n, const Real d[],
     // 横分割のとき
 
     // 先頭列を含むプロセス列
-    const auto col = subtree.FS_info_G1L('C', 0).rocsrc;
+    const auto col =
+        subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, 0).rocsrc;
     if (col == grid_info.mycol) {
       // iを含むプロセス行
       for (Integer i = 0; i < n; i += NB) {
-        const auto row = subtree.FS_info_G1L('R', i).rocsrc;
+        const auto row =
+            subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::ROW, i).rocsrc;
         if (row == grid_info.myrow) {
           const auto NB1 = std::min(n, i + NB) - i;
           lapacke::copy(NB1, &d[i], 1, &d_out[i], 1);
@@ -64,13 +66,14 @@ void FS_merge_d(const Integer n, const Real d[],
     // 横分割のとき
 
     // 先頭行を含むプロセス行
-    const auto row = subtree.FS_info_G1L('R', 0).rocsrc;
+    const auto row = subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::ROW, 0).rocsrc;
 
     // dをコピー
     if (row == grid_info.myrow) {
       for (Integer j = 0; j < n; j += NB) {
         // jを含むプロセス列
-        const auto col = subtree.FS_info_G1L('C', j).rocsrc;
+        const auto col =
+            subtree.FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, j).rocsrc;
         if (col == grid_info.mycol) {
           const auto NB1 = std::min(n, j + NB) - j;
           lapacke::copy(NB1, &d[j], 1, &d_out[j], 1);

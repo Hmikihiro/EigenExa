@@ -28,8 +28,8 @@ namespace FS2eigen {
  */
 template <class Real> class GpositionValue {
 public:
-  int GRow;
-  int GCol;
+  int32_t GRow;
+  int32_t GCol;
   Real MatrixValue;
 };
 
@@ -125,7 +125,7 @@ void irecv(CommBuf<Integer, Real> &comm_recv_data,
             &comm_recv_data.req);
 }
 template <class Integer, class Real>
-Integer FS_nbroc_max(const char comp, const Integer n,
+Integer FS_nbroc_max(const FS_libs::FS_GRID_MAJOR comp, const Integer n,
                      const bt_node<Integer, Real> &subtree,
                      const Integer FS_nbroc, const Integer FS_myroc) {
   for (Integer i = 0; i < FS_nbroc; i++) {
@@ -140,22 +140,24 @@ Integer FS_nbroc_max(const char comp, const Integer n,
 template <class Integer, class Real>
 Integer get_FS_nbrow_max(const Integer n, const bt_node<Integer, Real> &subtree,
                          const Integer FS_nbrow, const Integer FS_myrow) {
-  return FS_nbroc_max('R', n, subtree, FS_nbrow, FS_myrow);
+  return FS_nbroc_max(FS_libs::FS_GRID_MAJOR::ROW, n, subtree, FS_nbrow,
+                      FS_myrow);
 }
 template <class Integer, class Real>
 Integer get_FS_nbcol_max(const Integer n, const bt_node<Integer, Real> &subtree,
                          const Integer FS_nbcol, const Integer FS_mycol) {
-  return FS_nbroc_max('C', n, subtree, FS_nbcol, FS_mycol);
+  return FS_nbroc_max(FS_libs::FS_GRID_MAJOR::COLUMN, n, subtree, FS_nbcol,
+                      FS_mycol);
 }
 
 template <class Integer>
-Integer eigen_rank_xy2comm(const char grid_major, const Integer x_inod,
-                           const Integer y_inod) {
+Integer eigen_rank_xy2comm(const FS_libs::FS_GRID_MAJOR grid_major,
+                           const Integer x_inod, const Integer y_inod) {
   const auto procs = eigen_libs0_wrapper::eigen_get_procs();
   const auto x_nnod = procs.x_procs;
   const auto y_nnod = procs.y_procs;
 
-  if (grid_major == 'R') {
+  if (grid_major == FS_libs::FS_GRID_MAJOR::ROW) {
     return y_inod + x_inod * y_nnod;
   } else {
     return x_inod + y_inod * x_nnod;
@@ -251,7 +253,7 @@ namespace dc2_FS {
  */
 template <class Integer, class Real>
 Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
-                         const bt_node<Integer, Real> &subtree, int ibuf[],
+                         const bt_node<Integer, Real> &subtree, int32_t ibuf[],
                          Real rbuf[], FS2eigen::GpositionValue<Real> tbuf[],
                          Integer indx[], FS_prof &prof) {
   double prof_time[40];
@@ -272,7 +274,9 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   const Integer eigen_nprow = eigen_procs.x_procs;
   const Integer eigen_npcol = eigen_procs.y_procs;
   const Integer eigen_myrank = eigen_libs0_wrapper::eigen_get_id().id;
-  const char eigen_grid_major = eigen_libs0_wrapper::eigen_get_grid_major();
+  const FS_libs::FS_GRID_MAJOR eigen_grid_major =
+      static_cast<FS_libs::FS_GRID_MAJOR>(
+          eigen_libs0_wrapper::eigen_get_grid_major());
   const auto eigen_comm = eigen_libs0_wrapper::eigen_get_comm().eigen_comm;
 
   Integer *comm_send_info = new Integer[eigen_np];
@@ -344,7 +348,8 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
 
 #pragma omp parallel for
     for (Integer lrow = 0; lrow < FS_nbrow_max; lrow++) {
-      const auto grow = subtree.FS_index_L2G('R', lrow, FS_grid_info.myrow);
+      const auto grow = subtree.FS_index_L2G(FS_libs::FS_GRID_MAJOR::ROW, lrow,
+                                             FS_grid_info.myrow);
       lrow2grow_index[lrow] = grow;
     }
 
@@ -357,7 +362,8 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
     schedule(dynamic, 1)
     for (Integer lcol = 0; lcol < FS_nbcol_max; lcol++) {
       // 固有値を並び替える前の列番号を取得
-      auto gcol = subtree.FS_index_L2G('C', lcol, FS_grid_info.mycol);
+      auto gcol = subtree.FS_index_L2G(FS_libs::FS_GRID_MAJOR::COLUMN, lcol,
+                                       FS_grid_info.mycol);
 
       // 固有値を並び替えた後の列番号に変換
       for (Integer k = 0; k < n; k++) {
@@ -409,7 +415,8 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   FS2eigen::GpositionValue<Real> *sendbuf;
 
   if (send_nrank != 0) {
-    comm_send_data = std::make_unique<FS2eigen::CommBuf<Integer, Real>[]>(send_nrank);
+    comm_send_data =
+        std::make_unique<FS2eigen::CommBuf<Integer, Real>[]>(send_nrank);
 
     FS2eigen::init_send<Integer, Real>(eigen_np, comm_send_info,
                                        comm_send_data.get());
@@ -453,7 +460,8 @@ Integer FS2eigen_pdlasrt(const Integer n, Real d[], const Integer ldq, Real q[],
   }
   std::unique_ptr<FS2eigen::CommBuf<Integer, Real>[]> comm_recv_data;
   if (recv_nrank != 0) {
-    comm_recv_data = std::make_unique<FS2eigen::CommBuf<Integer, Real>[]>(recv_nrank);
+    comm_recv_data =
+        std::make_unique<FS2eigen::CommBuf<Integer, Real>[]>(recv_nrank);
     FS2eigen::init_recv<Integer, Real>(eigen_np, comm_recv_info.get(),
                                        comm_recv_data.get());
     for (Integer k = 0; k < recv_nrank; k++) {

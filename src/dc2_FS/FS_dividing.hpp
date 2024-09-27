@@ -11,6 +11,7 @@
 #include <numeric>
 #include <utility>
 
+// mpiライブラリが使用しているintと同じint型を定義
 #define eigen_mpi_int int
 
 #include "../FS_libs/FS_libs.hpp"
@@ -68,7 +69,7 @@ public:
   MPI_Group MERGE_GROUP_Y_ = MPI_GROUP_NULL; //  MERGE_COMM_Y group
   std::unique_ptr<eigen_mpi_int[]>
       group_processranklist_; //  list to convert from group
-                              //  rank to communicator rank
+  //  rank to communicator rank
   std::unique_ptr<eigen_mpi_int[]> group_X_processranklist_;
   std::unique_ptr<eigen_mpi_int[]> group_Y_processranklist_;
 
@@ -133,7 +134,7 @@ public:
    */
   void dividing_setBitStream();
 
-   /**
+  /**
    * @brief 自プロセスがノードに含まれるかチェックする
    * @param[in] node   (input) tree node
    * @retval    true    含まれる
@@ -149,7 +150,6 @@ public:
     }
     return true;
   }
-
 
   /**
    * @brief search leaf node of own process recursive.
@@ -191,20 +191,20 @@ public:
    */
   void FS_create_merge_comm(FS_prof &prof);
 
-/**
- * @brief create local merge X,Y group
- */
+  /**
+   * @brief create local merge X,Y group
+   */
   void FS_create_mergeXY_group();
 
-/**
- * @brief create local merge group (recursive)
- * 
- */
+  /**
+   * @brief create local merge group (recursive)
+   *
+   */
   void FS_create_merge_comm_recursive();
 
- /**
-  * @brief deallocate tree information
-  */
+  /**
+   * @brief deallocate tree information
+   */
   void FS_dividing_free();
 
   /**
@@ -239,7 +239,7 @@ public:
    *
    * @return matrix size of one block
    *
-    */
+   */
   Integer FS_get_NB() const { return this->FS_get_N() / this->FS_get_NBLK(); }
 
   /**
@@ -288,7 +288,7 @@ public:
    *           ROCSRC row/column index of process grid include GINDX
    *
    */
-  g1l<Integer> FS_info_G1L(char comp, Integer g_index) const;
+  g1l<Integer> FS_info_G1L(FS_libs::FS_GRID_MAJOR comp, Integer g_index) const;
 
   /**
    * subroutine FS_INFOG2L
@@ -306,12 +306,12 @@ public:
    */
   inline const GridIndex<Integer> FS_info_G2L(Integer gr_index,
                                               Integer gc_index) const {
-    const auto r = this->FS_info_G1L('R', gr_index);
-    const auto i = this->FS_info_G1L('I', gc_index);
+    const auto r = this->FS_info_G1L(FS_libs::FS_GRID_MAJOR::ROW, gr_index);
+    const auto i = this->FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, gc_index);
     return GridIndex<Integer>{.row = r.l_index, .col = i.l_index};
   }
 
-   /**
+  /**
    * @brief convert index global to local
    *
    * @param[in]     COMP   (input) character @n
@@ -323,7 +323,7 @@ public:
    *
    * @return local index
    */
-  Integer FS_index_G2L(char comp, Integer g_index) const {
+  Integer FS_index_G2L(FS_libs::FS_GRID_MAJOR comp, Integer g_index) const {
     const auto g1l = this->FS_info_G1L(comp, g_index);
     return g1l.l_index;
   }
@@ -343,18 +343,19 @@ public:
    *
    * @return global index
    */
-  Integer FS_index_L2G(char comp, Integer l_indx, Integer my_roc) const;
+  Integer FS_index_L2G(FS_libs::FS_GRID_MAJOR comp, Integer l_indx,
+                       Integer my_roc) const;
 
   /**
    * @brief  output log of tree information recursive
-   * 
+   *
    */
   void print_tree() const;
 
- /**
-  * @brief output log of node information
-  * 
-  */
+  /**
+   * @brief output log of node information
+   *
+   */
   void print_node() const;
 };
 
@@ -369,7 +370,6 @@ void bitprint(Integer kout, Integer title, Integer ibit, Integer nbit);
 
 } // namespace dc2_FS
 } // namespace
-
 
 namespace {
 namespace dc2_FS {
@@ -436,10 +436,9 @@ inline void FS_create_hint(bool hint[]) {
  * \brief main routine of dividing tree
  */
 template <class Integer, class Real>
-Integer bt_node<Integer, Real>::FS_dividing(Integer n, Real d[],
-                                             const Real e[],
-                                             std::unique_ptr<bool[]> hint,
-                                             FS_prof &prof) {
+Integer bt_node<Integer, Real>::FS_dividing(Integer n, Real d[], const Real e[],
+                                            std::unique_ptr<bool[]> hint,
+                                            FS_prof &prof) {
 #if TIMER_PRINT
   prof.start(21);
 #endif
@@ -605,7 +604,7 @@ void bt_node<Integer, Real>::dividing_setBitStream() {
  */
 template <class Integer, class Real>
 void bt_node<Integer, Real>::FS_create_mergeXY_group() {
-  const char order = FS_libs::FS_get_grid_major();
+  const auto order = FS_libs::FS_get_grid_major();
   const FS_libs::Nod inod = FS_libs::FS_get_id();
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
   auto ranklist_group = std::make_unique<eigen_mpi_int[]>(nnod.nod);
@@ -616,7 +615,7 @@ void bt_node<Integer, Real>::FS_create_mergeXY_group() {
 
     const auto ii_nrank = [&]() mutable {
       Integer ii_incl_nrank = 0;
-      if (order == 'R') {
+      if (order == FS_libs::FS_GRID_MAJOR::ROW) {
         const auto jj = inod.y - 1;
         for (Integer ii = proc_istart; ii < proc_iend; ii++) {
           ranklist_group[ii_incl_nrank] = (ii)*nnod.y + (jj);
@@ -636,7 +635,8 @@ void bt_node<Integer, Real>::FS_create_mergeXY_group() {
                    &this->MERGE_GROUP_X_);
 
     std::iota(ranklist_group.get(), ranklist_group.get() + ii_nrank, 0);
-    this->group_X_processranklist_ = std::make_unique<eigen_mpi_int[]>(ii_nrank);
+    this->group_X_processranklist_ =
+        std::make_unique<eigen_mpi_int[]>(ii_nrank);
 
     MPI_Group_translate_ranks(this->MERGE_GROUP_X_, ii_nrank,
                               ranklist_group.get(), FS_libs::FS_get_group(),
@@ -648,7 +648,7 @@ void bt_node<Integer, Real>::FS_create_mergeXY_group() {
     const auto proc_jend = this->proc_jend_;
     const auto jj_nrank = [&]() mutable {
       Integer jj_incl_nrank = 0;
-      if (order == 'R') {
+      if (order == FS_libs::FS_GRID_MAJOR::ROW) {
         const auto ii = inod.x - 1;
         for (Integer jj = proc_jstart; jj < proc_jend; jj++) {
           ranklist_group[jj_incl_nrank] = (ii)*nnod.y + (jj);
@@ -669,7 +669,8 @@ void bt_node<Integer, Real>::FS_create_mergeXY_group() {
 
     std::iota(ranklist_group.get(), ranklist_group.get() + jj_nrank, 0);
 
-    this->group_Y_processranklist_ = std::make_unique<eigen_mpi_int[]>(jj_nrank);
+    this->group_Y_processranklist_ =
+        std::make_unique<eigen_mpi_int[]>(jj_nrank);
     MPI_Group_translate_ranks(this->MERGE_GROUP_Y_, jj_nrank,
                               ranklist_group.get(), FS_libs::FS_get_group(),
                               this->group_Y_processranklist_.get());
@@ -711,7 +712,7 @@ void bt_node<Integer, Real>::FS_create_merge_comm(FS_prof &prof) {
 template <class Integer, class Real>
 void bt_node<Integer, Real>::FS_create_merge_comm_recursive() {
   const FS_libs::Nod nnod = FS_libs::FS_get_procs();
-  const char order = FS_libs::FS_get_grid_major();
+  const auto order = FS_libs::FS_get_grid_major();
 
   if (this->sub_bt_node_ == nullptr) {
     return;
@@ -728,7 +729,7 @@ void bt_node<Integer, Real>::FS_create_merge_comm_recursive() {
 
     const auto nrank = [&]() mutable {
       Integer incl_nrank = 0;
-      if (order == 'R') {
+      if (order == FS_libs::FS_GRID_MAJOR::ROW) {
         for (Integer ii = node.proc_istart_; ii < node.proc_iend_; ii++) {
           for (Integer jj = node.proc_jstart_; jj < node.proc_jend_; jj++) {
             const auto i = ii - this->proc_istart_;
@@ -769,7 +770,7 @@ void bt_node<Integer, Real>::FS_create_merge_comm_recursive() {
         node.y_nnod_ = nj;
         MPI_Group_rank(node.MERGE_GROUP_, &node.inod_);
 
-        if (order == 'R') {
+        if (order == FS_libs::FS_GRID_MAJOR::ROW) {
           const auto y_nnod = node.y_nnod_;
           node.x_inod_ = (node.inod_) / y_nnod;
           node.y_inod_ = ((node.inod_) % y_nnod);
@@ -829,8 +830,8 @@ void bt_node<Integer, Real>::FS_dividing_free() {
 }
 
 template <class Integer, class Real>
-g1l<Integer> bt_node<Integer, Real>::FS_info_G1L(char comp,
-                                                  Integer g_index) const {
+g1l<Integer> bt_node<Integer, Real>::FS_info_G1L(FS_libs::FS_GRID_MAJOR comp,
+                                                 Integer g_index) const {
   const auto NB = this->FS_get_NB();
   const auto IBLK = (g_index) / NB;
 
@@ -853,8 +854,8 @@ g1l<Integer> bt_node<Integer, Real>::FS_info_G1L(char comp,
     }
   }
 
-  const auto rocsrc = (comp == 'R') ? i_bit0 : i_bit1;
-  const auto LBLK = (comp == 'R') ? i_bit1 : i_bit0;
+  const auto rocsrc = (comp == FS_libs::FS_GRID_MAJOR::ROW) ? i_bit0 : i_bit1;
+  const auto LBLK = (comp == FS_libs::FS_GRID_MAJOR::ROW) ? i_bit1 : i_bit0;
   // ローカルインデックス
   const auto l_index = LBLK * NB + (g_index % NB);
   return {l_index, rocsrc};
@@ -868,7 +869,7 @@ GridIndex<Integer> bt_node<Integer, Real>::FS_get_QTOP() const {
 
   const Integer ii = [&]() {
     for (Integer i = 0; i < n; i += nb) {
-      const auto row = this->FS_info_G1L('R', i);
+      const auto row = this->FS_info_G1L(FS_libs::FS_GRID_MAJOR::ROW, i);
       if (row.rocsrc == grid_info.myrow) {
         return i;
       }
@@ -878,7 +879,7 @@ GridIndex<Integer> bt_node<Integer, Real>::FS_get_QTOP() const {
 
   const Integer jj = [&]() {
     for (Integer j = 0; j < n; j += nb) {
-      const auto col = this->FS_info_G1L('C', j);
+      const auto col = this->FS_info_G1L(FS_libs::FS_GRID_MAJOR::COLUMN, j);
       if (col.rocsrc == grid_info.mycol) {
         return j;
       }
@@ -895,12 +896,14 @@ GridIndex<Integer> bt_node<Integer, Real>::FS_get_QTOP() const {
     root_node = root_node->parent_node_;
   }
 
-  return {root_node->FS_index_G2L('R', II), root_node->FS_index_G2L('C', JJ)};
+  return {root_node->FS_index_G2L(FS_libs::FS_GRID_MAJOR::ROW, II),
+          root_node->FS_index_G2L(FS_libs::FS_GRID_MAJOR::COLUMN, JJ)};
 }
 
 template <class Integer, class Real>
-Integer bt_node<Integer, Real>::FS_index_L2G(char comp, Integer l_index,
-                                              Integer my_roc) const {
+Integer bt_node<Integer, Real>::FS_index_L2G(FS_libs::FS_GRID_MAJOR comp,
+                                             Integer l_index,
+                                             Integer my_roc) const {
   // 1ブロックの次数
   const auto nb = this->FS_get_NB();
   // ローカルインデックスが該当するブロック位置(0から)
@@ -908,8 +911,9 @@ Integer bt_node<Integer, Real>::FS_index_L2G(char comp, Integer l_index,
   const auto lblk = (l_index) / nb;
 
   // 行/列の場合分け
-  const auto i_bit = (comp == 'R') ? std::make_pair(my_roc, lblk)
-                                   : std::make_pair(lblk, my_roc);
+  const auto i_bit = (comp == FS_libs::FS_GRID_MAJOR::ROW)
+                         ? std::make_pair(my_roc, lblk)
+                         : std::make_pair(lblk, my_roc);
   const auto &i_bit0 = i_bit.first;
   const auto &i_bit1 = i_bit.second;
 
